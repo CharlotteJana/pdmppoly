@@ -1,5 +1,6 @@
 ##### generator #####
 
+# only works for one discrete variable
 setGeneric("polyGenerator", function(obj, ...) standardGeneric("polyGenerator"))
 setMethod("polyGenerator", signature(obj = "polyPdmpModel"), function(obj) {
  function(poly){
@@ -9,7 +10,7 @@ setMethod("polyGenerator", signature(obj = "polyPdmpModel"), function(obj) {
      # discVar = value of the discrete variable
      n <- length(obj@init) - 1 # number of continuous variables
      nj <- length(obj@ratesprays) # number of jumptypes
-     discDomainIndex <- getIndex(discVar, obj@discDomain)
+     discDomainIndex <- getIndex(discVar, obj@discStates[[1]])
      
      ### poly
      if(arity(poly) != n+1) stop("arity of the polynomial has to equal ", n+1) # arity sollte eigentlich n sein?
@@ -20,8 +21,9 @@ setMethod("polyGenerator", signature(obj = "polyPdmpModel"), function(obj) {
      
      # sum over possible new discrete states
      ratematrix <- ratespraysToMatrix(obj)
-     list <- lapply(1:length(obj@discDomain), function(j){
-       if(!is.null(ratematrix[[discDomainIndex]][[j]])) ratematrix[[discDomainIndex]][[j]]*(subs(poly, n+1, obj@discDomain[j], keepArity = TRUE) - subs(poly, n+1, discVar, keepArity = TRUE))
+     list <- lapply(seq_along(obj@discStates[[1]]), function(j){
+       if(!is.null(ratematrix[[discDomainIndex]][[j]])) 
+         ratematrix[[discDomainIndex]][[j]]*(subs(poly, n+1, obj@discStates[[1]][j], keepArity = TRUE) - subs(poly, n+1, discVar, keepArity = TRUE))
        else 0*lone(1,n+1)
        })
      s2 <- Reduce("+", list)
@@ -31,6 +33,7 @@ setMethod("polyGenerator", signature(obj = "polyPdmpModel"), function(obj) {
  } 
 })
 
+# only works for one discrete variable
 EVGenerator <- function(obj, m, i){ 
   # Computes EV(generator(θᵢ*spray)), where
   # θᵢ is the i-th indicator variable for the discrete variable θ (i ϵ {1,...,k}),
@@ -38,7 +41,7 @@ EVGenerator <- function(obj, m, i){
   # The result is a (blown up) spray of arity n+k.
   
   ### definitions
-  dom <- obj@discDomain
+  dom <- obj@discStates[[1]]
   k <- length(dom) # number of different discrete states
   n <- length(obj@init) - 1 # number of continuous variables
   if(length(m) != n) stop("length(m) has to equal ", n)

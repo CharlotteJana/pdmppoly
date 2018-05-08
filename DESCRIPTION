@@ -20,3 +20,11 @@ Imports: deSolve,
     LaF
 Suggests: testthat
 RoxygenNote: 6.0.1
+Collate: 
+    '2_def_polyPdmp.R'
+    'polypdmp_class.R'
+    'polypdmp_methods.R'
+    'polypdmp_accessors.R'
+    '4_bsp_polyPdmp.R'
+    'polypdmp_generator.R'
+    'spray_extension.R'
