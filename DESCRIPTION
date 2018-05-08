@@ -1,0 +1,22 @@
+Package: pdmppoly
+Type: Package
+Title: Moment Approximation for Polynomial PDMPs
+Version: 0.0-1
+Author: Charlotte Jana
+Maintainer: Charlotte Jana <charlotte.jana@t-online.de>
+Description: Calculate the moments of piecewise deterministic markov processes 
+    that fulfill additional constraints. To be precise, these processes need to 
+    have polynomial rates and polynomial dynamics. Moment calculation is done
+    via a ode system arising by the generator, which can be calculated, too.
+    If the ode system is not closed, it is modified leading to approximated
+    results for the moments.
+License: GPL(>= 2)
+Encoding: UTF-8
+URL: https://github.com/CharlotteJana/pdmpsim
+BugReports: https://github.com/CharlotteJana/pdmpsim/issues
+LazyData: true
+Depends: R (>= 2.10), methods, pdmpsim
+Imports: deSolve,
+    LaF
+Suggests: testthat
+RoxygenNote: 6.0.1
