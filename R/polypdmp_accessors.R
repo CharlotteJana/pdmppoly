@@ -58,15 +58,6 @@ setMethod("dynsprays", "polyPdmpModel", function(obj) obj@dynsprays)
 #' @export
 setMethod("dynpolys<-", "polyPdmpModel", function(obj, value){
   
-  ### dynpolys is a list with length = (number of continuous variables)
-  ### every entry contains the ode for one of the continuous variables
-  ### these terms depend on the discrete parameter θ and can be defined in two different variants:
-  ### variant 1: a list of length = (number of different states for θ), every entry is a polynomial with θ fixed
-  ### variant 2: a list of two variables:
-  ###            a variable 'overall' which contains a polynomial that is independent of fixed values for θ 
-  ###              and is therefore the same for all states (attention: 'overall' can contain θ as a formal variable),
-  ###            a variable 'specific' which contains the rest of the term, it is a list of the same form as in variant 1
-
   obj@dynpolys <- value
   
   redefined <- redefineDynpolys(value, obj)
@@ -80,7 +71,8 @@ setMethod("dynpolys<-", "polyPdmpModel", function(obj, value){
   # (This is a nested list of sprays)
   
   obj@dynfunc <- function(t, x, parms = obj@parms){
-    discDomainIndex <- getIndex(x[length(x)], obj@discStates[[1]]) # index of discDomain that corresponds to the current value of the discrete variable
+    discName <- names(polyModel2@discStates)
+    discDomainIndex <- getIndex(x[discName], obj@discStates[[1]]) # index of discDomain that corresponds to the current value of the discrete variable
     if(!identical(parms, obj@parms)) {
       stop("please redefine the slot 'parms'.")
     }
@@ -92,7 +84,7 @@ setMethod("dynpolys<-", "polyPdmpModel", function(obj, value){
     return(c(dx,0))
   }
   # turn all 'dynsprays' into functions(x),
-  # pick the right ones (depending on discvar = x[n+1]) and apply them to x.
+  # pick the right ones (depending on discvar) and apply them to x.
   # (This is a vector of values with length = number of continuous variables).
   # Note: there is no real dependence of parms, because parms and obj@parms have to be equal.
 

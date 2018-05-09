@@ -6,7 +6,7 @@
 
 #### model1: constant activation (only transcription) #####
 polyModel1 <- polyPdmpModel(
-              descr = "Model 1: constant activation (only transcription)", 
+  descr = "gene regulation with constant activation", 
               discStates = list(θ = 0:1),
               parms = list(β = 1, α = 2, κ10 = 0.5, κ01 = 3),
               init = c(ξ = 0.5, θ = 1), 
