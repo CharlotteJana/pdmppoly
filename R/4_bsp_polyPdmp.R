@@ -5,6 +5,7 @@
 #' @include polypdmp_class.R polypdmp_accessors.R
 
 #### model1: constant activation (only transcription) #####
+require("spray")
 polyModel1 <- polyPdmpModel(
   descr = "gene regulation with constant activation", 
               discStates = list(θ = 0:1),

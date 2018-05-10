@@ -11,6 +11,7 @@
 \alias{ratesprays<-}
 \alias{dynsprays}
 \alias{dynsprays<-}
+\alias{parms<-}
 \alias{dynpolys,polyPdmpModel-method}
 \alias{ratepolys,polyPdmpModel-method}
 \alias{ratesprays,polyPdmpModel-method}
@@ -40,6 +41,8 @@ dynsprays(obj)
 
 dynsprays(obj) <- value
 
+parms(obj) <- value
+
 \S4method{dynpolys}{polyPdmpModel}(obj)
 
 \S4method{ratepolys}{polyPdmpModel}(obj)
@@ -61,6 +64,11 @@ dynsprays(obj) <- value
 \S4method{ratesprays}{polyPdmpModel}(obj) <- value
 
 \S4method{dynsprays}{polyPdmpModel}(obj) <- value
+}
+\arguments{
+\item{obj}{an object of class \code{\link{polyPdmpModel}}}
+
+\item{value}{the value that shall be set}
 }
 \description{
 Accessor functions for Class polyPdmpModel

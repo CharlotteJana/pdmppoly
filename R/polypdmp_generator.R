@@ -1,6 +1,7 @@
 ##### generator #####
 
-# only works for one discrete variable
+#' @note only works for one discrete variable
+#' @importFrom spray arity deriv subs lone 
 setGeneric("polyGenerator", function(obj, ...) standardGeneric("polyGenerator"))
 setMethod("polyGenerator", signature(obj = "polyPdmpModel"), function(obj) {
  function(poly){
@@ -33,7 +34,8 @@ setMethod("polyGenerator", signature(obj = "polyPdmpModel"), function(obj) {
  } 
 })
 
-# only works for one discrete variable
+#' @note only works for one discrete variable
+#' @importFrom spray product deriv subs lone
 EVGenerator <- function(obj, m, i){ 
   # Computes EV(generator(θᵢ*spray)), where
   # θᵢ is the i-th indicator variable for the discrete variable θ (i ϵ {1,...,k}),

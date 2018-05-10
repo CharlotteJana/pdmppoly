@@ -44,7 +44,7 @@
 #' For example, let's assume that we have three different jumptypes and a
 #' discrete variable \code{d} that can take the values 0 or 1 (so slot
 #' \code{discStates} would be defined as \code{list(d = 0:1)}). Then slot
-#' \code{ratepolys} will be given as follows:\cr
+#' \code{ratepolys} will be given as follows:
 #' \preformatted{quote(list(
 #'   list(rate of jtype 1 with d = 0, rate of jtype 1 with d = 1),
 #'   list(rate of jtype 2 with d = 0, rate of jtype 2 with d = 1),
@@ -91,6 +91,8 @@
 #' possiblity to write both ODEs in one formula: \eqn{\frac{df}{dt} = -3f +
 #' d}{df/dt = -3f + d}.
 #' @aliases polyPdmpModel polypdmpmodel polypdmp polyPdmp
+#' @importFrom pdmpsim pdmpModel
+#' @importFrom methods new
 #' @export
 setClass("polyPdmpModel", 
          slots = list(dynpolys = "call", ratepolys = "call", 
@@ -113,6 +115,7 @@ polyPdmpModel <- function(obj = NULL, .cache = new.env(),
   invisible(obj)
 } 
 
+#' @importFrom methods validObject callNextMethod
 setMethod("initialize", signature(.Object = "polyPdmpModel"),
           function(.Object, 
                    discStates, dynpolys, ratepolys, jumpfunc, parms, init, 

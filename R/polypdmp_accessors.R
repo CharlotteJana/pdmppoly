@@ -1,7 +1,11 @@
 #======== todo =================================================================
+#t1 muss ich wirklich für parms<- eine generic schreiben???
+
 
 #' Accessor functions for Class polyPdmpModel
 #' 
+#' @param obj an object of class \code{\link{polyPdmpModel}}
+#' @param value the value that shall be set
 #' @include polypdmp_class.R polypdmp_methods.R
 #' @name polypdmp-accessors
 NULL
@@ -32,6 +36,9 @@ setGeneric("dynsprays", function(obj) standardGeneric("dynsprays"))
 #' @rdname polypdmp-accessors
 #' @export
 setGeneric("dynsprays<-", function(obj, value) standardGeneric("dynsprays<-"))
+#' @rdname polypdmp-accessors
+#' @export
+setGeneric("parms<-", function(obj, value) standardGeneric("parms<-"))
 
 #======= Getters ==========
 
@@ -55,6 +62,7 @@ setMethod("dynsprays", "polyPdmpModel", function(obj) obj@dynsprays)
 
 #' @note only works for one discrete variable
 #' @rdname polypdmp-accessors
+#' @importFrom spray as.function.spray
 #' @export
 setMethod("dynpolys<-", "polyPdmpModel", function(obj, value){
   
@@ -71,7 +79,7 @@ setMethod("dynpolys<-", "polyPdmpModel", function(obj, value){
   # (This is a nested list of sprays)
   
   obj@dynfunc <- function(t, x, parms = obj@parms){
-    discName <- names(polyModel2@discStates)
+    discName <- names(obj@discStates)
     discDomainIndex <- getIndex(x[discName], obj@discStates[[1]]) # index of discDomain that corresponds to the current value of the discrete variable
     if(!identical(parms, obj@parms)) {
       stop("please redefine the slot 'parms'.")
@@ -94,6 +102,7 @@ setMethod("dynpolys<-", "polyPdmpModel", function(obj, value){
 
 #' @note only works for one discrete variable
 #' @rdname polypdmp-accessors
+#' @importFrom spray as.function.spray
 #' @export
 setMethod("ratepolys<-", "polyPdmpModel", function(obj, value){
   

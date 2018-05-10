@@ -2,6 +2,7 @@
 NULL
 
 # needed for "ratepolys←" and "dynpolys←" :
+#' @importFrom spray is.spray
 redefineRatepolys <- function(x, obj, where = parent.frame()){
   # check if 'x' is defined correctly, numbers are coerced to 'spray'-objects.
   # (This is still an object of type 'language')
@@ -15,7 +16,8 @@ redefineRatepolys <- function(x, obj, where = parent.frame()){
   else { stop("Input '", x, "' in 'ratepolys' is not correct.")}
 }
 
-# only works for one discrete variable
+#' @note only works for one discrete variable
+#' @importFrom spray is.zero is.spray
 redefineDynpolys <- function(x, obj, where = parent.frame(), overall = 0){
   # check if 'x' is defined correctly, numbers are coerced to 'spray'-objects,
   # all entrys of 'x' are coerced to the form 'variant 1' (description: see "dynpolys←")
@@ -70,6 +72,7 @@ redefineDynpolys <- function(x, obj, where = parent.frame(), overall = 0){
 #' getIndex("c", letters)
 #' getIndex(5.0000001, 2:6) # no result
 #' getIndex(5.00000001, 2:6) # difference is small enough to be found by all.equal
+#' @export
 getIndex <- function(var, vect){
   index <- which(vect == var) 
   if(length(index) == 0){
@@ -114,7 +117,8 @@ ratespraysToMatrix <- function(obj){
   return(ratematrix)
 }
 
-# only works for one discrete variable
+#' @note only works for one discrete variable
+#' @importFrom spray is.zero subs lone
 blowupSpray <- function(obj, spray){
   # This function blows the last variable of the spray object 
   # (which stands for the discrete variable θ) up to several different 

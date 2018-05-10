@@ -8,6 +8,7 @@ options(polyform = TRUE)
 # I changed the handling of the NULL polynomial, 
 # because scalar*(the NULL polynomial) didn't work
 
+#' @importFrom spray spraymaker
 my.spray <- function (M, x, addrepeats = FALSE){
   if (is.null(M)) { #new
     return(spraymaker(list(NULL, NULL)))
@@ -38,6 +39,7 @@ lockBinding("spray", as.environment("package:spray"))
 # as method 'subs' didn't work as expected, i had to redefine it
 
 # new version: 
+#' @importFrom spray spray value process_dimensions
 my.subs <- function (S, dims, x, keepArity = FALSE){
   dims <- process_dimensions(S, dims)
   
@@ -69,6 +71,7 @@ lockBinding("subs", as.environment("package:spray"))
 #### increase_arity ####
 # increase arity of a spray object
 
+#' @importFrom spray lone spray value
 increase_arity <- function(S, arity){
   if(is.null(arity(S))) return(0*lone(1, 1))
   if(arity(S) > arity) stop("The value for 'arity' is to low.")
