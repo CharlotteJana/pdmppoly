@@ -25,3 +25,9 @@ defines slot \code{ratepolys} and during initialization of a
 \code{\link{polyPdmpModel}} object. It replaces parameters stored in slot
 \code{parms} by its values and coerces all numbers to \code{spray} objects.
 }
+\examples{
+data(simplePoly)
+newRates <- quote(list(list(1, 2, 3), 
+                  list(lone(1,2), linear(3:4), product(1:2))))
+redefineRatepolys(newRates, simplePoly)                  
+}
