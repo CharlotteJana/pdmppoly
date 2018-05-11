@@ -25,5 +25,6 @@ Collate:
     'polypdmp_methods.R'
     'polypdmp_accessors.R'
     '4_bsp_polyPdmp.R'
+    'data.R'
     'polypdmp_generator.R'
     'spray_extension.R'

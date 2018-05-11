@@ -17,6 +17,11 @@ NULL
 #' is a recursive function. Changing it will have no effect on the result.
 #' @return an modified object of type language as described in section 
 #' Ratepolys in \code{\link{polyPdmpModel}}.
+#' @examples 
+#' data(simplePoly)
+#' newRates <- quote(list(list(1, 2, 3), 
+#'                   list(lone(1,2), linear(3:4), product(1:2))))
+#' redefineRatepolys(newRates, simplePoly)                  
 #' @importFrom spray is.spray
 #' @export
 redefineRatepolys <- function(x, obj, where = NULL){
