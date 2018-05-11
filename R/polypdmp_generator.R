@@ -24,7 +24,10 @@ setMethod("polyGenerator", signature(obj = "polyPdmpModel"), function(obj) {
      ratematrix <- ratespraysToMatrix(obj)
      list <- lapply(seq_along(obj@discStates[[1]]), function(j){
        if(!is.null(ratematrix[[discDomainIndex]][[j]])) 
-         ratematrix[[discDomainIndex]][[j]]*(subs(poly, n+1, obj@discStates[[1]][j], keepArity = TRUE) - subs(poly, n+1, discVar, keepArity = TRUE))
+         ratematrix[[discDomainIndex]][[j]] * (
+           increase_arity(subs(poly, n+1, obj@discStates[[1]][j]), n+1) - 
+             increase_arity(subs(poly, n+1, discVar), n+1)
+         )
        else 0*lone(1,n+1)
        })
      s2 <- Reduce("+", list)
@@ -53,13 +56,13 @@ EVGenerator <- function(obj, m, i){
   ### sum over continuous states j: ∂spray/∂zⱼ * dynfunc(j) * θᵢ
   list <- lapply(1:n, function(j) deriv(spray,j)*obj@dynsprays[[j]][[i]])
   s1 <- Reduce("+", list) # sum
-  s1 <- increase_arity(subs(s1, n+1, dom[i]), n+k) # substitute θ with i
+  s1 <- increase_arity(subs(s1, n+1, dom[i]), n+1:k) # substitute θ with i
   s1 <- s1*lone(n+i, n+k) # times θᵢ
   
   ### sum over j ϵ discDomain: rate(j→i)*spray*θⱼ
   list <- lapply(1:k, function(j){ # rate(j→i)*θⱼ
     if(!is.null(ratematrix[[j]][[i]])) {
-      increase_arity(subs(ratematrix[[j]][[i]], n+1, dom[j]), n+k)*lone(n+j,n+k)
+      increase_arity(subs(ratematrix[[j]][[i]], n+1, dom[j]), n+1:k)*lone(n+j,n+k)
     }
     else 0*lone(1,n+k)
   })
@@ -68,11 +71,11 @@ EVGenerator <- function(obj, m, i){
   
   ### sum over j ϵ discDomain: -rate(i→j)*spray*θᵢ
   list <- lapply(1:k, function(j){ # rate(i→j)  
-    if(!is.null(ratematrix[[i]][[j]])) increase_arity(subs(ratematrix[[i]][[j]], n+1, dom[i]), n+k)
+    if(!is.null(ratematrix[[i]][[j]])) increase_arity(subs(ratematrix[[i]][[j]], n+1, dom[i]), n+1:k)
     else 0*lone(1,n+k)
   })
   s3 <- Reduce("+", list) # sum
-  s3 <- -s3*increase_arity(spray, n+k)*lone(n+i, n+k) # times -spray*θᵢ
+  s3 <- -s3*increase_arity(spray, n+1:k)*lone(n+i, n+k) # times -spray*θᵢ
   
   sum <- s1+s2+s3
   return(sum)

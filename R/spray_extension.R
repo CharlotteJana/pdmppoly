@@ -39,25 +39,25 @@ options(polyform = TRUE)
 # as method 'subs' didn't work as expected, i had to redefine it
 
 # new version: 
-#' @importFrom spray spray value process_dimensions
-my.subs <- function (S, dims, x, keepArity = FALSE){
-  dims <- process_dimensions(S, dims)
-  
-  if(keepArity) {
-    index <- index(S)
-    index[, dims] <- 0
-  }
-  else index <- index(S)[, -dims, drop = FALSE]
-  
-  val <- Reduce("*", as.data.frame(x^drop(index(S)[, dims, drop = FALSE])))
-  return(spray(index, val * value(S), addrepeats = TRUE))
-}
-
-# assign to "subs"
-unlockBinding("subs", as.environment("package:spray"))
-assignInNamespace("subs", my.subs, ns="spray", envir=as.environment("package:spray"))
-assign("subs", my.subs, as.environment("package:spray"))
-lockBinding("subs", as.environment("package:spray"))
+#' #' @importFrom spray spray value process_dimensions
+#' my.subs <- function (S, dims, x, keepArity = FALSE){
+#'   dims <- process_dimensions(S, dims)
+#'   
+#'   if(keepArity) {
+#'     index <- index(S)
+#'     index[, dims] <- 0
+#'   }
+#'   else index <- index(S)[, -dims, drop = FALSE]
+#'   
+#'   val <- Reduce("*", as.data.frame(x^drop(index(S)[, dims, drop = FALSE])))
+#'   return(spray(index, val * value(S), addrepeats = TRUE))
+#' }
+#' 
+#' # assign to "subs"
+#' unlockBinding("subs", as.environment("package:spray"))
+#' assignInNamespace("subs", my.subs, ns="spray", envir=as.environment("package:spray"))
+#' assign("subs", my.subs, as.environment("package:spray"))
+#' lockBinding("subs", as.environment("package:spray"))
 
 ### old version:
 # subs <- function (S, dims, x) 

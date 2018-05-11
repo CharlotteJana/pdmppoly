@@ -2,7 +2,26 @@
 % Please edit documentation in R/spray_extension.R
 \name{increase_arity}
 \alias{increase_arity}
-\title{Increase arity of a spray object}
+\title{#' @importFrom spray spraymaker
+my.spray <- function (M, x, addrepeats = FALSE){
+  if (is.null(M)) { #new
+    return(spraymaker(list(NULL, NULL)))
+  }
+  if (is.vector(M)) {
+    M <- rbind(M)
+  }
+  if (inherits(M, "partition")) {
+    M <- t(M)
+  }
+  M <- as.matrix(M)
+  if (missing(x)) {
+    x <- rep(1, nrow(M))
+  }
+  if (length(x) == 1) {
+    x <- rep(x, nrow(M))
+  }
+  return(spraymaker(list(M, x), addrepeats = addrepeats))
+}}
 \usage{
 increase_arity(S, additionalCols)
 }
@@ -12,10 +31,36 @@ increase_arity(S, additionalCols)
 \item{additionalCols}{column indexes where to add new variables}
 }
 \description{
-Increase the arity of a spray object by adding new columns (with zeros) to
-the index matrix of the spray object.
+# assign to "spray"
+unlockBinding("spray", as.environment("package:spray"))
+assignInNamespace("spray", my.spray, ns="spray", envir=as.environment("package:spray"))
+assign("spray", my.spray, as.environment("package:spray"))
+lockBinding("spray", as.environment("package:spray"))
+#' @importFrom spray spray value process_dimensions
+my.subs <- function (S, dims, x, keepArity = FALSE){
+  dims <- process_dimensions(S, dims)
+  
+  if(keepArity) {
+    index <- index(S)
+    index[, dims] <- 0
+  }
+  else index <- index(S)[, -dims, drop = FALSE]
+  
+  val <- Reduce("*", as.data.frame(x^drop(index(S)[, dims, drop = FALSE])))
+  return(spray(index, val * value(S), addrepeats = TRUE))
+}
 }
 \details{
+# assign to "subs"
+unlockBinding("subs", as.environment("package:spray"))
+assignInNamespace("subs", my.subs, ns="spray", envir=as.environment("package:spray"))
+assign("subs", my.subs, as.environment("package:spray"))
+lockBinding("subs", as.environment("package:spray"))
+Increase arity of a spray object
+
+Increase the arity of a spray object by adding new columns (with zeros) to
+the index matrix of the spray object.
+
 The arity of a spray object defines the dimension of the polynomial. For
 example \code{lone(1, 2)} and \code{lone(1, 5)} look the same when printed to
 the console, but differ in their arity (2 or 5). This can be seen by using

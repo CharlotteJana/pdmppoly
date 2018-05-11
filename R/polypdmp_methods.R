@@ -179,17 +179,17 @@ blowupSpray <- function(obj, spray){
   
   n <- length(obj@init) # number of continous variables
   k <- length(obj@discStates[[1]]) # number of different discrete states
-  spray <- increase_arity(spray, n - 1 + k)
+  spray <- increase_arity(spray, n + 1:(k-1)) # änderung überprüfen!
   
   # part of spray that is independent of θ:
-  core <- subs(spray, n, 0, keepArity = TRUE) 
+  core <- increase_arity(subs(spray, n, 0), n) 
   blowedSpray <- core
   
   # add the specific parts (depend on θ):
   for(i in 1:k){
     discVar <- obj@discStates[[1]][i]
     if(!is.zero(spray-core)){
-      specific <- subs(spray-core, n, discVar, keepArity = TRUE)*lone(n-1+i, n-1+k)
+      specific <- increase_arity(subs(spray-core, n, discVar), n)*lone(n-1+i, n-1+k)
       blowedSpray <- blowedSpray + specific
     }
   }
