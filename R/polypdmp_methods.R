@@ -1,29 +1,65 @@
+#======== todo =================================================================
+#t3 länge der liste mit anzahl von jtypes vergleichen (if(is.null(where)) ...)
+
 #' @include polypdmp_class.R
 NULL
 
-# needed for "ratepolys←" and "dynpolys←" :
+#' Redefine Slot \code{ratepolys}
+#'
+#' This function is used internally for function \code{ratepolys<-} that 
+#' defines slot \code{ratepolys} and during initialization of a
+#' \code{\link{polyPdmpModel}} object. It replaces parameters stored in slot
+#' \code{parms} by its values and coerces all numbers to \code{spray} objects.
+#' @param x an object of type language as described in section Ratepolys in
+#'   \code{\link{polyPdmpModel}}.
+#' @param obj an object of class polyPdmpModel.
+#' @param where this parameter is necessary because \code{redefineRatepolys} 
+#' is a recursive function. Changing it will have no effect on the result.
+#' @return an modified object of type language as described in section 
+#' Ratepolys in \code{\link{polyPdmpModel}}.
 #' @importFrom spray is.spray
-redefineRatepolys <- function(x, obj, where = parent.frame()){
-  # check if 'x' is defined correctly, numbers are coerced to 'spray'-objects.
-  # (This is still an object of type 'language')
+#' @export
+redefineRatepolys <- function(x, obj, where = NULL){
   
-  eva <- with(as.list(obj@parms), eval(x)) #  only the names of the parameters are important
   dim <- length(obj@init)
-  if(is.numeric(eva)) {bquote(.(x)*one(.(dim)))} # turn numbers into 'spray'-objects
-  else if(is.spray(eva)) {x}
-  else if(is.list(eva)) {as.call(lapply(x, redefineRatepolys, obj = obj, where = where))}
-  else if(is.name(x) && identical(x, as.name("list"))) {x}
-  else { stop("Input '", x, "' in 'ratepolys' is not correct.")}
+  eva <- with(as.list(obj@parms), eval(x))
+
+  if(is.numeric(eva)) 
+    bquote(.(x)*one(.(dim))) # turn numbers into spray-objects
+  else if(is.spray(eva))
+    x
+  else if(is.list(eva)) # call redefineRatepolys for all list entries
+    as.call(lapply(x, redefineRatepolys, obj = obj, where = parent.frame()))
+  else if(is.name(x) && identical(x, as.name("list"))) 
+    x
+  else 
+    stop("Input '", x, "' in 'ratepolys' is not correct.")
 }
 
-#' @note only works for one discrete variable
+#' Redefine Slot \code{dynpolys}
+#'
+#' This function is used internally for function \code{dynpolys<-} that defines
+#' slot \code{dynpolys} and during initialization of a
+#' \code{\link{polyPdmpModel}} object. It replaces parameters stored in slot
+#' \code{parms} by its values and coerces all numbers to \code{spray} objects.
+#' It coerces all list elements that are given in variant 2 to spray objects
+#' defined as in variant 1 (see section Dynpolys in \code{\link{polyPdmpModel}}
+#' for a description of the two variants).
+#' @param x an object of type language as described in section Dynpolys in
+#'   \code{\link{polyPdmpModel}}.
+#' @param obj an object of class polyPdmpModel.
+#' @param where this parameter is necessary because \code{redefineDynpolys} 
+#' is a recursive function. Changing it will have no effect on the result.
+#' @param overall this parameter is necessary because \code{redefineDynpolys} 
+#' is a recursive function. Please do not change its value!
+#' @return a modified object of type language as described in section 
+#' Dynpolys in \code{\link{polyPdmpModel}}.
+#' @note This function only works for one discrete variable
 #' @importFrom spray is.zero is.spray
-redefineDynpolys <- function(x, obj, where = parent.frame(), overall = 0){
-  # check if 'x' is defined correctly, numbers are coerced to 'spray'-objects,
-  # all entrys of 'x' are coerced to the form 'variant 1' (description: see "dynpolys←")
-  # (This is still an object of type 'language')
+#' @export
+redefineDynpolys <- function(x, obj, where = NULL, overall = 0){
   
-  eva <- with(as.list(obj@parms), eval(x)) #  only the names of the parameters are important
+  eva <- with(as.list(obj@parms), eval(x))
   eoa <- with(as.list(obj@parms), eval(overall))
   dim <- length(obj@init)
   
@@ -33,9 +69,10 @@ redefineDynpolys <- function(x, obj, where = parent.frame(), overall = 0){
     eoa <- with(as.list(obj@parms), eval(overall))
   }
   
-  # if x == value (number or 'spray'): add 'overall' to x and turn x into a 'spray'-object (when necessary)
+  # if x == value (number or 'spray'): 
+  # add 'overall' to x and turn x into a 'spray'-object (when necessary)
   if(is.numeric(eva)) {
-    if(is.zero(eoa)) bquote(.(x)*one(.(dim))) # if 'overall' == 0: don't add anything, turn x into 'spray'
+    if(is.zero(eoa)) bquote(.(x)*one(.(dim))) 
     else  bquote(.(overall)+.(x)*one(.(dim)))
   }
   else if(is.spray(eva)){
@@ -43,8 +80,9 @@ redefineDynpolys <- function(x, obj, where = parent.frame(), overall = 0){
     else  bquote(.(overall)+.(x))
   }
   
-  # if x == 'list':  rerun 'redefineDyn'
-  else if(is.name(x) && identical(x, as.name("list"))) {x}
+  # if x == 'list':  rerun 'redefineDynpolys'
+  else if(is.name(x) && identical(x, as.name("list"))) 
+    x
   else if(is.list(eva)) {
     if(!is.null(x$overall) & is.null(x$specific)) {
       overall <- x$overall
@@ -52,9 +90,14 @@ redefineDynpolys <- function(x, obj, where = parent.frame(), overall = 0){
       zeroList[[1]] <- "list"
       x <- do.call(call, zeroList)
     } 
-    if(!is.null(x$overall)) {overall <- x$overall; x$overall <- NULL}
-    if(!is.null(x$specific)) {x <- x$specific}
-    as.call(lapply(x, redefineDynpolys, obj = obj, where = where, overall = overall))
+    if(!is.null(x$overall)){
+      overall <- x$overall
+      x$overall <- NULL
+    }
+    if(!is.null(x$specific))
+      x <- x$specific
+    
+    as.call(lapply(x, redefineDynpolys, obj, where = parent.frame(), overall))
   }
   
   # if x == something else: give error

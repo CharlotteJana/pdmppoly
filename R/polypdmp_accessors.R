@@ -7,6 +7,7 @@
 #' @param obj an object of class \code{\link{polyPdmpModel}}
 #' @param value the value that shall be set
 #' @include polypdmp_class.R polypdmp_methods.R
+#' @importFrom simecol "out<-"
 #' @name polypdmp-accessors
 NULL
 

@@ -53,11 +53,11 @@ Currently, all methods only work for PDMPs with a single discrete
 Slot ratepolys is a quted list. The length of the list determines the number
 of existing jumptypes (jumptypes are used in slot \code{jumpfunc} to
 determine the next state the process jumps too). It contains the rates
-determining the probability of a jump to be of type 1, 2, and so on. The rates are
-polynomials that usually depend on the value of the discrete variable at the
-time when the jump occurs. They are given as a list of spray objects, for every
-possible discrete state separately (in the same order as the states are given
-in slot \code{discStates}). \cr
+determining the probability of a jump to be of type 1, 2, and so on. The
+rates are polynomials that usually depend on the value of the discrete
+variable at the time when the jump occurs. They are given as a list of spray
+objects or numbers, for every possible discrete state separately (in the same
+order as the states are given in slot \code{discStates}). \cr
 
 For example, let's assume that we have three different jumptypes and a
 discrete variable \code{d} that can take the values 0 or 1 (so slot
