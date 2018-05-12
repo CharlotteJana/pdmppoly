@@ -1,8 +1,6 @@
-library(spray) # multipol with sparse arrays
+# library(spray) # multipol with sparse arrays
 options(polyform = TRUE)
 
-#### todo ####
-# keepArity in drop umbenennen
 
 ##### new version of 'spray' ####
 # I changed the handling of the NULL polynomial, 
@@ -84,7 +82,7 @@ options(polyform = TRUE)
 #' of the spray object. Parameter \code{additionalCols} defines the columnindex
 #' of the these additinoal columns.
 #' @param S spray object that shall have a new arity
-#' @param additionalCols column indexes where to add new variables
+#' @param position column indexes where to add new variables
 #' @examples
 #' lone(1, 5) + lone(1, 2) # throws error
 #' lone(1, 5) + increase_arity(lone(1, 2), 3:5)
@@ -92,23 +90,60 @@ options(polyform = TRUE)
 #' print_spray_matrixform(homog(2, 3))
 #' s <- increase_arity(homog(2, 3), 2) # insert variable in the middle
 #' print_spray_matrixform(s)
+#' 
+#' p <- subs(product(1:4), dims = 2:3, x = c(-1, 2)) # substitute values
+#' increase_arity(p, 2:3) # keep arity as before the substitution
 #' @importFrom spray lone spray value
-increase_arity <- function(S, additionalCols){
-  
-  n <- length(additionalCols)
-  if(!all(additionalCols %in% 1:(arity(S) + n))) 
-    stop("The values of additionalCols do not match with the arity of S.")
-  
-  arity <- n + ncol(index(S))
-  if(is.null(arity(S))) return(0*lone(1, 1)) # oder length(additionalCols)
+increase_arity <- function(S, position){
 
+  n <- length(position)
+  newArity <- n + arity(S)
   
-  matrix <- cbind(index(S), matrix(0, nrow = length(index(S)[,1]), ncol = n))
-  print(matrix)
-  id <- c(1:arity(S), additionalCols - 0.5)
-  print(id)
-  matrix <- matrix[, order(id)]
+  if(!all(position %in% 1:newArity)) 
+    stop("The values of position do not match with the arity of S.")
+  
+  if(is.null(arity(S))) return(0*lone(1, max(1, newArity)))
+  
+  Scols <- index(S)
+  matrix <- NULL
+  for(i in 1:newArity){
+    if(i %in% position) # add column with zeros
+      matrix <- cbind(matrix, rep(0, nrow(index(S))))
+    else{ # add column from polynomial S
+      matrix <- cbind(matrix, Scols[, 1])
+      if(!is.null(Scols)) 
+        Scols <- as.matrix(Scols[, -1], nrow = nrow(index(S)))
+    }
+  }
+  
+  
+  # br <- which(diff(position) > 1)
+  # print(br)
+  # p <- cut(position, 
+  #          breaks = c(0, position[unique(c(br, length(position)))]), 
+  #          right = TRUE)
+  # posList <- split(position, p)
+  # print(posList)
+  # 
+  # id <- 1:arity(S)
+  # for(i in seq_along(posList)){
+  #   k <- length(posList[[i]])
+  #   id <- c(id, posList[[i]][1] - k:1/(k+1))
+  # }
+  # print(id)
+  # matrix <- cbind(index(S), matrix(0, nrow = length(index(S)[,1]), ncol = n))
+  # matrix <- matrix[, order(id)]
+  
+  # names(position) <- rep("N", n)
+  # idx <- 1:arity(S)
+  # names(idx) <- rep("S", arity(S))
+  # 
+  # # m <- t(index(S))
+  # r <- nrow(index(S))
+  # for(i in seq_along(position)){ # add columns with zeros at position
+  #   idx <- append(idx, position[i], after = position[i]-1)
+  #   #m <- matrix(unlist(append(m, rep(0, r), after = position[i]-1)), ncol = r)
+  #   
+  # }
   spray(matrix, value(S))
 }
-
-# increase_arity(subs(S, dims, x), dims)

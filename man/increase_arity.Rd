@@ -23,12 +23,12 @@ my.spray <- function (M, x, addrepeats = FALSE){
   return(spraymaker(list(M, x), addrepeats = addrepeats))
 }}
 \usage{
-increase_arity(S, additionalCols)
+increase_arity(S, position)
 }
 \arguments{
 \item{S}{spray object that shall have a new arity}
 
-\item{additionalCols}{column indexes where to add new variables}
+\item{position}{column indexes where to add new variables}
 }
 \description{
 # assign to "spray"
@@ -79,4 +79,7 @@ lone(1, 5) + increase_arity(lone(1, 2), 3:5)
 print_spray_matrixform(homog(2, 3))
 s <- increase_arity(homog(2, 3), 2) # insert variable in the middle
 print_spray_matrixform(s)
+
+p <- subs(product(1:4), dims = 2:3, x = c(-1, 2)) # substitute values
+increase_arity(p, 2:3) # keep arity as before the substitution
 }
