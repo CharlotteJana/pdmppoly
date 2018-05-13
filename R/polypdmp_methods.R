@@ -129,7 +129,7 @@ getIndex <- function(var, vect){
     index <- which(comp == TRUE)
   }
   return(index)
-}      # get index of variable „var“ in vector „vect“
+}
 
 #' Convert ratesprays into a matrix
 #' 
@@ -165,36 +165,87 @@ ratespraysToMatrix <- function(obj){
   return(ratematrix)
 }
 
-#' @note only works for one discrete variable
+#' Change discrete variable in a polynomial
+#' 
+#' This function takes a polynomial (represented by a \code{spray} object),
+#' uses polyPdmpModel \code{obj} to identify the discrete variable and
+#' substitutes this variable in the polynomial by several indicator
+#' variables. The number of variables depends on the different possible
+#' states that the discrete variable can take. The method is used internally
+#' for computing the \code{\link{generator}} of a \code{polyPdmpModel}.
+#' 
+#' @details
+#' This function is best explained in an example. Lets assume that
+#' we have one continous variable \code{f} and one discrete variable \code{d}
+#' and that they are given in order \code{f, d} in variable \code{init(obj)}.
+#' Let's have \code{discStates(obj) = list(d = -1:1)}, so \code{d} can take
+#' the values -1, 0 or 1, respectively. A polynomial of arity 2 would then be
+#' transformed into a polynomial of arity 4, where the second variable (that 
+#' stands for \code{d}) is replaced by three indicator variables 
+#' \code{d1, d2, d3}, that can only take values 0 or 1, depending on the
+#' value of the original \code{d}. If we take for example the polynomial
+#'  \eqn{5f^2d^3 + f}{5f²d³ + f}, method \code{blowupSpray} changes it into
+#' \deqn{
+#' 5f^3\cdot(-1)\cdot d1 + 5f^3\cdot 0 \cdot d2 + 5f³\cdot 1\cdot d3 + f 
+#' = -5f^3d1 + 5f^3d3 + f.}{
+#' 5f³⋅(-1)⋅d1 + 5f³⋅0⋅d2 + 5f³⋅1⋅d3 + f = -5f³d1 + 5f³d3 + f.}
+#' If the order of \code{f} and \code{d} are reversed (i.e. \code{init(obj) =
+#' c(d = ..., f = ...)}), the additional variables \code{d1, d2, d3} would 
+#' still be added at the end, leaving \code{f} to be the first variable.
+#' 
+#' @examples
+#' # the examples discussed in section details:
+#' data("simplePoly") 
+#' blowupSpray(simplePoly, 5*product(2:3) + lone(1, 2))
+#' 
+#' # with other order in slot init:
+#' init(simplePoly) <- c(d = 1, f = 2)
+#' blowupSpray(simplePoly, 5*product(3:2) + lone(2, 1))  
+#' 
+#' @param obj object of class \code{\link{polyPdmpModel}}.
+#' @param spray object of class \code{spray}. This is the 
+#' polynomial that shall be modified.
+#' @note This method only works for one discrete variable
 #' @importFrom spray is.zero subs lone
+#' @export
 blowupSpray <- function(obj, spray){
-  # This function blows the last variable of the spray object 
-  # (which stands for the discrete variable θ) up to several different 
-  # indicator variables θ₁,…,θₖ, where k = # different states.
-  
-  # example: x² + 2*θ + θy becomes x² + 0*θ₁ + 2*1*θ₂ + 0*θ₁*y + 1*θ₂*y, if discDomain = c(0,1)
-  #          blowupPoly(polyModel9, linear(c(1,0,0),2) + linear(c(0,0,2),1) + product(c(0,1,1)))
   
   if(is.zero(spray)) return(spray)
   
   n <- length(obj@init) # number of continous variables
   k <- length(obj@discStates[[1]]) # number of different discrete states
-  spray <- increase_arity(spray, n + 1:(k-1)) # änderung überprüfen!
   
-  # part of spray that is independent of θ:
-  core <- increase_arity(subs(spray, n, 0), n) 
+  stopifnot(k > 0)
+  stopifnot(arity(spray) == n)
+  
+  #spray <- increase_arity(spray, n + 1:(k-1))
+  
+  # part of spray that is independent of discrete variable:
+  discIndex <- which(names(obj@init) == names(obj@discStates[1]))
+  c <- subs(spray, discIndex, 0)
+  if(is.zero(c)){
+    coreShort <- 0*lone(1, n)
+    core <- 0*lone(1, n-1+k)
+  }
+  else{
+    coreShort <- increase_arity(c, discIndex)
+    core <- increase_arity(c, n + 0:(k-1))
+  }
+  
+  # add the specific parts (depend on discrete variable):
   blowedSpray <- core
-  
-  # add the specific parts (depend on θ):
   for(i in 1:k){
     discVar <- obj@discStates[[1]][i]
-    if(!is.zero(spray-core)){
-      specific <- increase_arity(subs(spray-core, n, discVar), n)*lone(n-1+i, n-1+k)
-      blowedSpray <- blowedSpray + specific
+    if(!is.zero(spray - coreShort)){
+      specific <- subs(spray - coreShort, discIndex, discVar)
+      if(!is.zero(specific)){
+        specific <- increase_arity(specific,  n + 0:(k-1))*lone(n-1+i, n-1+k)
+        blowedSpray <- blowedSpray + specific
+      }
     }
   }
   return(blowedSpray)
-}  # change discrete variable θ to indicator variables θ₁,…,θₖ
+}
 
 
 ##### output methods ####
