@@ -1,5 +1,5 @@
 #======== todo =================================================================
-#t1 muss ich wirklich für parms<- eine generic schreiben???
+#t1 documentation schreiben
 
 
 #' Accessor functions for Class polyPdmpModel
@@ -37,9 +37,6 @@ setGeneric("dynsprays", function(obj) standardGeneric("dynsprays"))
 #' @rdname polypdmp-accessors
 #' @export
 setGeneric("dynsprays<-", function(obj, value) standardGeneric("dynsprays<-"))
-#' @rdname polypdmp-accessors
-#' @export
-setGeneric("parms<-", function(obj, value) standardGeneric("parms<-"))
 
 #======= Getters ==========
 

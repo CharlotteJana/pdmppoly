@@ -11,7 +11,6 @@
 \alias{ratesprays<-}
 \alias{dynsprays}
 \alias{dynsprays<-}
-\alias{parms<-}
 \alias{dynpolys,polyPdmpModel-method}
 \alias{ratepolys,polyPdmpModel-method}
 \alias{ratesprays,polyPdmpModel-method}
@@ -40,8 +39,6 @@ ratesprays(obj) <- value
 dynsprays(obj)
 
 dynsprays(obj) <- value
-
-parms(obj) <- value
 
 \S4method{dynpolys}{polyPdmpModel}(obj)
 

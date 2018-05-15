@@ -1,7 +1,17 @@
-##### generator #####
+#======== todo =================================================================
 
-#' @note only works for one discrete variable
+
+#' Compute the generator
+#' 
+#' There are several methods to compute the generator for a \code{\link{polyPdmpModel}} object.
+#' @include polypdmp_class.R polypdmp_accessors.R
+#' @name generator
+NULL
+
+#' @note Method \code{polyGenerator} only works for one discrete variable.
 #' @importFrom spray arity deriv subs lone 
+#' @rdname generator
+#' @export
 setGeneric("polyGenerator", function(obj, ...) standardGeneric("polyGenerator"))
 setMethod("polyGenerator", signature(obj = "polyPdmpModel"), function(obj) {
  function(poly){
@@ -9,7 +19,7 @@ setMethod("polyGenerator", signature(obj = "polyPdmpModel"), function(obj) {
      
      ### definitions
      # discVar = value of the discrete variable
-     n <- length(obj@init) - 1 # number of continuous variables
+     n <- length(obj@init) - length(obj@discStates) # number of continuous variables
      nj <- length(obj@ratesprays) # number of jumptypes
      discDomainIndex <- getIndex(discVar, obj@discStates[[1]])
      

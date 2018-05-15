@@ -1,5 +1,6 @@
 #======== todo =================================================================
 #t1 simulation sollte auch gehen, wenn d nicht an letzter stelle steht -> testen!
+#t1 schreiben, dass die simulation mit polyPdmps viiiiel länger dauert.
 
 #' Class polyPdmpModel
 #' 
