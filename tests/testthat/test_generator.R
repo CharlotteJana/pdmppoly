@@ -3,7 +3,117 @@
 library(spray)
 context("generator")
 
+#------------ helper functions ---------------
 
+funcdiff <- function(f, val1, val2){
+  increase_arity(subs(f, arity(f), val1), arity(f)) - 
+    increase_arity(subs(f, arity(f), val2), arity(f))
+}
+
+printGenerators <- function(polyMod, formalGen, m){
+  
+  states <- polyMod@discStates[[1]]
+  n <- length(polyMod@init) - length(polyMod@discStates)
+  k <- length(states)
+  
+  polyGen <- function(discVar)
+    polyGenerator(polyMod)(product(c(m, 0)))(discVar)
+  EVGen <- function(discVarIndex) 
+    EVGenerator(polyMod, m, discVarIndex)
+  
+  for(i in 1:k){
+    cat(noquote("polyGenerator    \tdiscVar ="), states[i], "\n")
+    print(polyGen(states[i]))
+    cat(noquote("formal generator \tdiscVar ="), states[i], "\n")
+    print(formalGen(states[i]))
+    cat(noquote("EVGenerator \t\tdiscVar ="), states[i], "\n")
+    print(EVGen(i))
+  }
+  
+  # sum over all discrete states:
+  pg <- Reduce("+", lapply(1:k, function(i){
+   lone(n+i, n+k)*increase_arity(polyGen(states[i]), n+1:k)
+  }))
+  evg <- Reduce("+", lapply(1:k, function(i) EVGen(i)))
+  cat("\nsum over all discVars:\n")
+  cat("polyGenerator\t")
+  print(pg)
+  cat("EVGenerator\t")
+  print(evg)
+  cat("difference\t ")
+  print(pg-evg)
+}
+#------------- tests --------------------------
+
+test_that("generator works for model 1", {
+  
+  #### definitions
+  data("genePdmp1")
+  data("genePoly1")
+  n <- length(genePoly1@init) - 1
+  states <- genePoly1@discStates[[1]]
+  k <- length(states)
+  
+  #------- compare with known generator -------
+  
+  f <- 5*linear(1:2)
+  
+  formalGen <- function(f, discVar){ # definition of known formula
+    gen <- quote(
+      deriv(f,1)*linear(c(-β,α)) + 
+        (discVar*κ10-(1-discVar)*κ01)*funcdiff(f,0,1)
+    )
+    gen <- with(as.list(parms(genePoly1)), eval(gen))
+    return(subs(gen, n+1, discVar))
+  }
+  
+  expect_identical(polyGenerator(genePoly1)(f)(1), 
+                   formalGen(f, 1))
+  
+  #------ compare with EVGenerator -----------
+  
+  m <- 3
+  mp <- product(c(m, 0))
+  #printGenerators(genePoly1, formalGen, m)
+  
+  # sum over all discrete states
+  a <- Reduce("+", lapply(1:k, function(i){
+    gen <- polyGenerator(genePoly1)(mp)(states[i])
+    lone(n+i, n+k)*increase_arity(gen, n+1:k)
+  }))
+  b <- Reduce("+", lapply(1:k, function(i) 
+    EVGenerator(genePoly1, m, i)
+  ))
+  expect_equal(a, b)
+  
+  #------- compare with generator from pdmpsim ---------
+  
+  fvals <- seq(from = 0, to = 10, by = 1)
+  g <- function(ξ, θ) 10*ξ + 5*θ
+  gp <- 5*linear(1:2)
+  #g <- function(ξ, θ) ξ^3
+  #gp <- product(c(3, 0))
+  
+  pdmpGen <- function(discVar, fvals){
+    sapply(fvals, function(val)
+      generator(genePdmp1)(g)(t = 1, x = c("ξ" = val, "θ" = discVar))
+    )
+  }
+  
+  polyGen <- function(discVar, fvals){
+    sapply(fvals, function(val){
+      #as.function.spray(polyGenerator(genePoly1)(gp)(discVar))(val)
+      as.function.spray(formalGen(gp, discVar))(val)
+    }
+    )
+  }
+  
+  test1 <- cbind(pdmpGen(0, fvals), pdmpGen(1, fvals))
+  test2 <- cbind(polyGen(0, fvals), polyGen(1, fvals))
+  print(test1)
+  print(test2)
+  expect_equal(test1, test2, check.attributes = FALSE)
+})
 
 
 
@@ -11,7 +121,7 @@ context("generator")
 ###### alt #########
 
 test_that("old code not suited for a test", {
-  skip()
+  skip("")
 
 # define generator for every polyModel (from formal definition)
 formalGenerator <- function(nr, f){
