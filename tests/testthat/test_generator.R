@@ -50,6 +50,8 @@ test_that("generator works for model 1", {
   #### definitions
   data("genePdmp1")
   data("genePoly1")
+  parms(genePdmp1)["κ10"] <- 2
+  parms(genePoly1)["κ10"] <- 2
   n <- length(genePoly1@init) - 1
   states <- genePoly1@discStates[[1]]
   k <- length(states)
@@ -89,10 +91,8 @@ test_that("generator works for model 1", {
   #------- compare with generator from pdmpsim ---------
   
   fvals <- seq(from = 0, to = 10, by = 1)
-  g <- function(ξ, θ) 10*ξ + 5*θ
+  g <- function(ξ, θ) 5*ξ + 10*θ
   gp <- 5*linear(1:2)
-  #g <- function(ξ, θ) ξ^3
-  #gp <- product(c(3, 0))
   
   pdmpGen <- function(discVar, fvals){
     sapply(fvals, function(val)
@@ -102,16 +102,13 @@ test_that("generator works for model 1", {
   
   polyGen <- function(discVar, fvals){
     sapply(fvals, function(val){
-      #as.function.spray(polyGenerator(genePoly1)(gp)(discVar))(val)
       as.function.spray(formalGen(gp, discVar))(val)
     }
     )
   }
   
-  test1 <- cbind(pdmpGen(0, fvals), pdmpGen(1, fvals))
-  test2 <- cbind(polyGen(0, fvals), polyGen(1, fvals))
-  print(test1)
-  print(test2)
+  test1 <- cbind(pdmpGen(0, fvals), pdmpGen(1, fvals)) 
+  test2 <- cbind(polyGen(0, fvals), polyGen(1, fvals)) 
   expect_equal(test1, test2, check.attributes = FALSE)
 })
 
