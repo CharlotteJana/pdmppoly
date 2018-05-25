@@ -28,11 +28,20 @@
 #' 
 #' p <- subs(product(1:4), dims = 2:3, x = c(-1, 2)) # substitute values
 #' increase_arity(p, 2:3) # keep arity as before the substitution
+#' 
+#' q <- subs(lone(1,1), 1, 0) # NULL polynomial without arity
+#' increase_arity(q, c(2, 5))
+#' @note If \code{S} is the NULL polynomial without a given arity (this can
+#' arise for example by using method \code{\link[spray]{subs}}), the returned
+#' spray object will be the NULL polynomial with its arity given as the maximal
+#' entry in vector \code{positions}. 
 #' @importFrom spray lone spray value
 increase_arity <- function(S, position){
 
   n <- length(position)
-  newArity <- n + arity(S)
+  newArity <- ifelse(is.null(arity(S)),
+                     max(position),
+                     n + arity(S))
   
   if(!all(position %in% 1:newArity)) 
     stop("The values of position do not match with the arity of S.")

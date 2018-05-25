@@ -69,7 +69,7 @@ EVGenerator <- function(obj, m, i){
   s1 <- Reduce("+", list) # sum
   s1 <- increase_arity(subs(s1, n+1, dom[i]), n+1:k) # substitute θ with i
   s1 <- s1*lone(n+i, n+k) # times θᵢ
-
+  
   ### sum over j ϵ discDomain: rate(j→i)*spray*θⱼ
   list <- lapply(1:k, function(j){ # rate(j→i)*θⱼ
     if(!is.null(ratematrix[[j]][[i]])) {
@@ -78,7 +78,8 @@ EVGenerator <- function(obj, m, i){
     else 0*lone(1,n+k)
   })
   s2 <- Reduce("+", list) # sum
-  s2 <- s2*increase_arity(spray, n+k)# times spray
+  s2 <- s2*increase_arity(spray, n + 2:k)# times spray
+
 
   ### sum over j ϵ discDomain: -rate(i→j)*spray*θᵢ
   list <- lapply(1:k, function(j){ # rate(i→j)  
