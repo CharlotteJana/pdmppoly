@@ -128,6 +128,8 @@ getIndex <- function(var, vect){
     comp <- mapply(function(x) {isTRUE(all.equal(x, var, check.names = FALSE))}, vect) 
     index <- which(comp == TRUE)
   }
+  if(length(index) == 0)
+    stop("Element ", var, " not present in vector ", paste(vect, collapse = ", "))
   return(index)
 }
 

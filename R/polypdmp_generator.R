@@ -1,5 +1,5 @@
 #======== todo =================================================================
-
+#t1 dokumentation für generatormethoden
 
 #' Compute the generator
 #' 
@@ -27,7 +27,11 @@ setMethod("polyGenerator", signature(obj = "polyPdmpModel"), function(obj) {
      if(arity(poly) != n+1) stop("arity of the polynomial has to equal ", n+1) # arity sollte eigentlich n sein?
      
      ### sum over continuous states
-     list <- lapply(1:n, function(i) deriv(poly,i)*obj@dynsprays[[i]][[stateIndex]])
+     list <- lapply(1:n, function(i){
+       ifelse(is.zero(deriv(poly, i)),
+              return(0*lone(1, arity(poly))),
+              return(deriv(poly,i)*obj@dynsprays[[i]][[stateIndex]]))
+       })
      s1 <- Reduce("+", list)
      
      # sum over possible new discrete states
@@ -48,7 +52,8 @@ setMethod("polyGenerator", signature(obj = "polyPdmpModel"), function(obj) {
  } 
 })
 
-#' @note only works for one discrete variable
+#' @param i integer giving the index of the state of the discrete variable <- umformulieren
+#' @note This method only works for one discrete variable.
 #' @importFrom spray product deriv subs lone
 EVGenerator <- function(obj, m, i){ 
   # Computes EV(generator(θᵢ*spray)), where
@@ -63,12 +68,17 @@ EVGenerator <- function(obj, m, i){
   if(length(m) != n) stop("length(m) has to equal ", n)
   spray <- product(c(m, 0)) # spray := z₁ᵐ¹*...*zₙᵐⁿ with arity = n+1
   ratematrix <- ratespraysToMatrix(obj)
-
+  
   ### sum over continuous states j: ∂spray/∂zⱼ * dynfunc(j) * θᵢ
-  list <- lapply(1:n, function(j) deriv(spray,j)*obj@dynsprays[[j]][[i]])
+  list <- lapply(1:n, function(j){
+    ifelse(is.zero(deriv(spray, j)),
+           return(0*lone(1, arity(spray))),
+           return(deriv(spray,j)*obj@dynsprays[[j]][[i]]))
+  })
   s1 <- Reduce("+", list) # sum
   s1 <- increase_arity(subs(s1, n+1, dom[i]), n+1:k) # substitute θ with i
-  s1 <- s1*lone(n+i, n+k) # times θᵢ
+  if(!is.zero(s1))
+    s1 <- s1*lone(n+i, n+k) # times θᵢ
   
   ### sum over j ϵ discDomain: rate(j→i)*spray*θⱼ
   list <- lapply(1:k, function(j){ # rate(j→i)*θⱼ
@@ -91,6 +101,6 @@ EVGenerator <- function(obj, m, i){
   
   sum <- s1+s2+s3
   return(sum)
-}  # EV(generator(θᵢ*z₁ᵐ¹*...*zₙᵐⁿ))
+}
 
 

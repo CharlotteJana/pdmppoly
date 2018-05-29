@@ -47,6 +47,7 @@ increase_arity <- function(S, position){
     stop("The values of position do not match with the arity of S.")
   
   if(is.null(arity(S))) return(0*lone(1, max(1, newArity)))
+  if(is.zero(S)) return(0*lone(1, newArity))
   
   matrix <- NULL
   j <- 1

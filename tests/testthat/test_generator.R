@@ -84,7 +84,7 @@ test_that("generator works for model 1", {
     gen <- polyGenerator(genePoly1)(mp)(states[i])
     lone(n+i, n+k)*increase_arity(gen, n+1:k)
   }))
-  b <- Reduce("+", lapply(1:k, function(i) 
+  b <- Reduce("+", lapply(1:k, function(i)
     EVGenerator(genePoly1, m, i)
   ))
   expect_equal(a, b)
@@ -248,6 +248,26 @@ test_that("generator works for the toggleSwitch model", {
   test1 <- cbind(pdmpGen(1, gvals), pdmpGen(3, gvals), pdmpGen(4, gvals)) 
   test2 <- cbind(polyGen(1, gvals), polyGen(3, gvals), polyGen(4, gvals)) 
   expect_equal(test1, test2, check.attributes = FALSE)
+})
+
+test_that("generator works for constant polynomials", {
+  
+  #### definitions
+  data("genePdmp2")
+  data("genePoly2")
+  n <- length(genePoly2@init) - 1
+  states <- genePoly2@discStates[[1]]
+  k <- length(states)
+  
+  m <- c(0, 0)
+  mp <- product(c(m, 0))
+  
+  expect_true(is.zero(polyGenerator(genePoly2)(mp)(1)))
+  
+  b <- Reduce("+", lapply(1:k, function(i){
+    EVGenerator(genePoly2, m, i)}
+  ))
+  expect_true(is.zero(b))
 })
 
 ###### alt #########

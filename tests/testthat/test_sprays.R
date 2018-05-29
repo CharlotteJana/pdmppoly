@@ -19,7 +19,7 @@ test_that("increase_arity works as expected", {
   expect_true(linear(c(0,0,1,0,1,0)) == increase_arity(linear(c(1,1)), c(1:2,4,6)))
   
   # the NULL polynomial:
-  expect_true(0*lone(1,3) == increase_arity(0*lone(1,1), 2))
+  expect_true(0*lone(1,5) == increase_arity(0*lone(1,1), 2:5))
 })
 
 test_that("getIndex works as expected", {
@@ -27,7 +27,7 @@ test_that("getIndex works as expected", {
   expect_equal(getIndex(2.0, c(1:5, 2)), c(2, 6))
   expect_equal(getIndex(4L, c(1:5, 4.0001)), 4)
   expect_equal(getIndex(1+1e-9, -1:2), 3)
-  expect_equal(length(getIndex(5, 1:3)), 0) # no result
+  expect_error(getIndex(5, 1:3))
 })
 
 test_that("blowupSpray works as expected", {
