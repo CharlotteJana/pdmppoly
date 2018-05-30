@@ -19,8 +19,8 @@ printGenerators <- function(polyMod, formalGen, m){
   
   polyGen <- function(discVar)
     polyGenerator(polyMod)(product(c(m, 0)))(discVar)
-  EVGen <- function(discVarIndex) 
-    EVGenerator(polyMod, m, discVarIndex)
+  EVGen <- function(discVar) 
+    EVGenerator(polyMod, m, discVar)
   
   for(i in 1:k){
     cat(noquote("polyGenerator    \tdiscVar ="), states[i], "\n")
@@ -28,14 +28,14 @@ printGenerators <- function(polyMod, formalGen, m){
     cat(noquote("formal generator \tdiscVar ="), states[i], "\n")
     print(formalGen(product(c(m, 0)), states[i]))
     cat(noquote("EVGenerator \t\tdiscVar ="), states[i], "\n")
-    print(EVGen(i))
+    print(EVGen(states[i]))
   }
   
   # sum over all discrete states:
   pg <- Reduce("+", lapply(1:k, function(i){
    lone(n+i, n+k)*increase_arity(polyGen(states[i]), n+1:k)
   }))
-  evg <- Reduce("+", lapply(1:k, function(i) EVGen(i)))
+  evg <- Reduce("+", lapply(1:k, function(i) EVGen(states[i])))
   cat("\nsum over all discVars:\n")
   cat("polyGenerator\t")
   print(pg)
@@ -85,7 +85,7 @@ test_that("generator works for model 1", {
     lone(n+i, n+k)*increase_arity(gen, n+1:k)
   }))
   b <- Reduce("+", lapply(1:k, function(i)
-    EVGenerator(genePoly1, m, i)
+    EVGenerator(genePoly1, m, states[i])
   ))
   expect_equal(a, b)
   
@@ -150,7 +150,7 @@ test_that("generator works for model 2", {
     lone(n+i, n+k)*increase_arity(gen, n+1:k)
   }))
   b <- Reduce("+", lapply(1:k, function(i) 
-    EVGenerator(genePoly2, m, i)
+    EVGenerator(genePoly2, m, states[i])
   ))
   expect_equal(a, b)
   
@@ -222,7 +222,7 @@ test_that("generator works for the toggleSwitch model", {
     lone(n+i, n+k)*increase_arity(gen, n+1:k)
   }))
   b <- Reduce("+", lapply(1:k, function(i) 
-    EVGenerator(genePoly7, m, i)
+    EVGenerator(genePoly7, m, states[i])
   ))
   expect_true(a == b)
   
@@ -265,7 +265,7 @@ test_that("generator works for constant polynomials", {
   expect_true(is.zero(polyGenerator(genePoly2)(mp)(1)))
   
   b <- Reduce("+", lapply(1:k, function(i){
-    EVGenerator(genePoly2, m, i)}
+    EVGenerator(genePoly2, m, states[i])}
   ))
   expect_true(is.zero(b))
 })
