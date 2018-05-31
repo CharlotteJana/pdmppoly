@@ -1,25 +1,18 @@
 #======== todo =================================================================
-#t1 LAF umdefinieren (mit Git!)
-#t3 documentation nur für multSimCsv oder für beide?
 
 #' Calculate raw moments
 #'
 #' This method calculates the raw moment of a given order for every time over
 #' all simulations.
-#' @param x object of class \code{\link{multSim}} or \code{\link{multSimCsv}}
+#' @param x object of class \code{\link{multSimCsv}}.
 #' @param order number that specifies the order of the moments
 #' @return data.frame with calculated moments
-#' @name moments
+#' @seealso \code{\link[pdmpsim]{moments}} to calculate the moments of
+#'   \code{\link{multSim}} objects
+#' @importFrom LaF colmoment
 #' @export
-moments <- function(x, order){
-  UseMethod("moments", x)
-}
-
-#'@rdname moments
-#'@importFrom LaF colmoment
-#'@export
 moments.multSimCsv <- function(x, order){
-  if(!identical(find('colmoment'),"package:LaF")) 
+  if(!exists('colmoment', where = asNamespace('LaF'), mode = 'function')) 
     stop("Method 'colmoment' is not defined in package 'LaF'.")
   moments <- NULL
   times <- fromtoby(x$model@times)

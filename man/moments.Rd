@@ -5,8 +5,6 @@
 \alias{moments.multSimCsv}
 \title{Calculate raw moments}
 \usage{
-moments(x, order)
-
 \method{moments}{multSimCsv}(x, order)
 }
 \arguments{
