@@ -2,6 +2,7 @@
 % Please edit documentation in R/polypdmp_generator.R
 \name{polyGenerator}
 \alias{polyGenerator}
+\alias{polygenerator}
 \title{Generator}
 \usage{
 polyGenerator(obj, ...)
@@ -50,6 +51,5 @@ generator(simplePoly)(g)(-1)
 
 # comparison with theoretic solution:
 Qg_theoretic <- product(c(2,0)-2*product(c(1,1))
-identical(polyGenerator(simplePoly)(g)(1),
-          subs(Qg_theoretic, 1, 1))
+identical(polyGenerator(simplePoly)(g)(1), subs(Qg_theoretic, 1, 1))
 }

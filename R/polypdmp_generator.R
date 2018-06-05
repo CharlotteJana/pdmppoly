@@ -1,6 +1,7 @@
 #======== todo =================================================================
 #t2 polygenerator in generator umbenennen?
 #t2 warum ist polygenerator eine funktion von discvar????
+#t2 EVGenerator umbenennen
 
 #' @include polypdmp_class.R polypdmp_accessors.R
 NULL
@@ -42,10 +43,10 @@ NULL
 #' 
 #' # comparison with theoretic solution:
 #' Qg_theoretic <- product(c(2,0)-2*product(c(1,1))
-#' identical(polyGenerator(simplePoly)(g)(1),
-#'           subs(Qg_theoretic, 1, 1))
+#' identical(polyGenerator(simplePoly)(g)(1), subs(Qg_theoretic, 1, 1))
 #' @note Method \code{polyGenerator} only works for one discrete variable and
 #' this variable should be the last entry in slot \code{init}.
+#' @aliases polygenerator
 #' @importFrom spray arity deriv subs lone 
 #' @export
 setGeneric("polyGenerator", function(obj, ...) standardGeneric("polyGenerator"))
@@ -93,9 +94,9 @@ setMethod("polyGenerator", signature(obj = "polyPdmpModel"), function(obj) {
 #' Let Q be the \code{\link{generator}} of a PDMP. Method \code{EVGenerator}
 #' computes the generator Q(f) where f is given as \deqn{f(i,z) = δ_{ji}\cdot
 #' z^{m[1]}z^{m[2]} ... z^{m[k]}}{f(i,z) = δᵢⱼ*z₁ᵐ¹*...*zₙᵐⁿ } with a given
-#' vector \code{m} and \code{j} being a fixed state of the discrete variable.
+#' vector \code{m} and \code{j} being a fixed state of the discrete variable d.
 #' This method is needed to compute the expected value \eqn{\mathbb{E}(X_t^m | d
-#' = j)}.
+#' = j)}{E(Xₜᵐ | d=j)}.
 #' @param obj object of class \code{\link{polyPdmpModel}}.
 #' @param j integer giving the state of the discrete variable.
 #' @param m integer vector whose length equals the number of continous

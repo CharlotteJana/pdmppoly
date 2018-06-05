@@ -24,9 +24,9 @@ a polynomial represented as \code{spray} object. This polynomial has
 Let Q be the \code{\link{generator}} of a PDMP. Method \code{EVGenerator}
 computes the generator Q(f) where f is given as \deqn{f(i,z) = δ_{ji}\cdot
 z^{m[1]}z^{m[2]} ... z^{m[k]}}{f(i,z) = δᵢⱼ*z₁ᵐ¹*...*zₙᵐⁿ } with a given
-vector \code{m} and \code{j} being a fixed state of the discrete variable.
+vector \code{m} and \code{j} being a fixed state of the discrete variable d.
 This method is needed to compute the expected value \eqn{\mathbb{E}(X_t^m | d
-= j)}.
+= j)}{E(Xₜᵐ | d=j)}.
 }
 \note{
 This method only works for one discrete variable.
