@@ -14,7 +14,8 @@ License: GPL(>= 2)
 Encoding: UTF-8
 LazyData: true
 Depends: R (>= 2.10), methods, pdmpsim
-Imports: simecol,
+Imports: prodlim,
+    simecol,
     spray
 Suggests: testthat
 Remotes: CharlotteJana/pdmpsim
@@ -22,6 +23,8 @@ RoxygenNote: 6.0.1
 Collate: 
     '2_def_polyPdmp.R'
     'data.R'
+    'momApp.R'
+    'momApp_compareResults.R'
     'spray_extension.R'
     'polypdmp_class.R'
     'polypdmp_methods.R'
