@@ -43,6 +43,7 @@ The following parameter sets were simulated:
 }
 
 \examples{
+library(spray)
 #------ code to generate the pdmpModel version -----
 
 genePdmp4 <- new("pdmpModel",

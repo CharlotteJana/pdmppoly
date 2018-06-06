@@ -10,6 +10,7 @@
 #' @seealso \code{\link[pdmpsim]{moments}} to calculate the moments of
 #'   \code{\link{multSim}} objects
 #' @importFrom LaF colmoment
+#' @importFrom pdmpsim moments
 #' @export
 moments.multSimCsv <- function(x, order){
   if(!exists('colmoment', where = asNamespace('LaF'), mode = 'function')) 

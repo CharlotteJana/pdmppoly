@@ -42,7 +42,7 @@ NULL
 #' generator(simplePoly)(g)(-1)
 #' 
 #' # comparison with theoretic solution:
-#' Qg_theoretic <- product(c(2,0)-2*product(c(1,1))
+#' Qg_theoretic <- product(c(2,0))-2*product(c(1,1))
 #' identical(polyGenerator(simplePoly)(g)(1), subs(Qg_theoretic, 1, 1))
 #' @note Method \code{polyGenerator} only works for one discrete variable and
 #' this variable should be the last entry in slot \code{init}.

@@ -197,6 +197,7 @@ ratespraysToMatrix <- function(obj){
 #' 
 #' @examples
 #' # the examples discussed in section details:
+#' library(spray)
 #' data("simplePoly") 
 #' blowupSpray(simplePoly, 5*product(2:3) + lone(1, 2))
 #' 

@@ -16,14 +16,13 @@
 #'   that changes the system of ODEs into a closed form that is solvable.
 #'   Possible values are \code{setZero} (the default) and reduceDegree.
 #' @details 
-#' The returned s3 class \code{momApp} contains 7 different elements:
+#' The returned s3 class \code{momApp} contains 6 different elements:
 #' \itemize{
-#' \item \code{polyPdmpName}: a string giving the name of the polyPdmpModel
+#' \item \code{model}: the polyPdmpModel \code{obj}
 #' \item \code{discRes}: a matrix giving the calculated moments of the different
 #' indicator variables that replace the discrete variable (see \code{\link{blowupSpray}}
 #' for an explanation of the indicator variables)
 #' \item \code{contRes}: a matrix giving the calculated moments of the continous variables
-#' \item \code{init}: a numeric vector giving the initial values 
 #' \item \code{degree}: integer defining the highest degree of moments to be calculated
 #' \item \code{closure}: string giving the closure method. See ... for more details.
 #' \item \code{contInd}: a data.frame with all moment indexes that are calculated
@@ -131,14 +130,10 @@ setMethod("momApp", signature(obj = "polyPdmpModel"),
     contNames <- c("time", gsub("\\*?[^\\*]+\\^0\\*?", "", contNames))
     dimnames(contRes)[[2]] <- contNames
     
-    # name of the model
-    polyPdmpName <- deparse(eval(substitute(substitute(obj)), parent.frame())) 
-  
-    result <- structure(list(polyPdmpName = polyPdmpName, 
+    result <- structure(list(model = obj, 
                              discRes = discRes, 
                              contRes = contRes, 
                              contInd = r,
-                             init = obj@init,
                              degree = l,
                              closure = closure
                              ), class = "momApp")

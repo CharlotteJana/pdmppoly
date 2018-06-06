@@ -14,7 +14,8 @@ License: GPL(>= 2)
 Encoding: UTF-8
 LazyData: true
 Depends: R (>= 2.10), methods, pdmpsim
-Imports: prodlim,
+Imports: LaF,
+    prodlim,
     simecol,
     spray
 Suggests: testthat
@@ -23,12 +24,15 @@ RoxygenNote: 6.0.1
 Collate: 
     '2_def_polyPdmp.R'
     'data.R'
-    'momApp.R'
-    'momApp_compareResults.R'
+    'distributions.R'
+    'distributions_existance.R'
     'spray_extension.R'
     'polypdmp_class.R'
     'polypdmp_methods.R'
     'polypdmp_accessors.R'
     'polypdmp_generator.R'
-    'momentApproximation.R'
+    'momApp.R'
+    'momApp_compareResults.R'
+    'momApp_outputMethods.R'
+    'momentboundaries.R'
     'msCsv_moments.R'

@@ -1,3 +1,4 @@
+library(spray)
 #------ code to generate the pdmpModel version -----
 
 genePdmp2 <- new("pdmpModel",

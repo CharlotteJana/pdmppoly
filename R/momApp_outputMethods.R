@@ -5,11 +5,11 @@
 
 #' @importFrom prodlim row.match
 #' @export
-plot.momApp <- function(object){
+plot.momApp <- function(x, ...){
   
-  l <- object$degree
-  k <- ncol(object$discRes) - 1
-  n <- length(object$init) - 1
+  l <- x$degree
+  k <- ncol(x$discRes) - 1
+  n <- length(x$init) - 1
   
   # s = matrix with all moment combinations we are interested in
   s <- NULL
@@ -20,8 +20,8 @@ plot.momApp <- function(object){
   }
   
   # plotRes = contRes[s]
-  t <- sapply(1:nrow(s), function(i) prodlim::row.match(s[i,], object$contInd))
-  plotRes <- object$contRes[,c(1, t)]
+  t <- sapply(1:nrow(s), function(i) prodlim::row.match(s[i,], x$contInd))
+  plotRes <- x$contRes[,c(1, t)]
   
   # plot
   graphics.off()
@@ -30,24 +30,24 @@ plot.momApp <- function(object){
   for(i in 1:n){
     matplot(plotRes[,1], plotRes[,((i-1)*l+2):(i*l+1)], 
             lty = 1, col = colors, adj = 0, type = "l",
-            xlab = "time", ylab = paste("moments of", names(object$init)[i]))
+            xlab = "time", ylab = paste("moments of", names(x$init)[i]), ...)
     legend("bottomright", inset = c(0, -0.4), 
            fill = colors, ncol = l/2, cex = 0.75,
            legend = parse(text = colnames(plotRes[,((i-1)*l+2):(i*l+1)])))
   }
-  #mtext(paste0("moment approximation for ", object$polyPdmpName), 
+  #mtext(paste0("moment approximation for ", x$polyPdmpName), 
   #      outer = TRUE, cex = 1.2, font = 2)
-  mtext(paste0("moment approximation with method \"", object$closure,"\""), 
+  mtext(paste0("moment approximation with method \"", x$closure,"\""), 
         outer = TRUE, cex = 1.2, font = 2)
 }
 
 #' @importFrom prodlim row.match
 #' @export
-print.momApp <- function(object){
-  model <- eval(parse(text = object$polyPdmpName))
-  l <- object$degree
-  k <- ncol(object$discRes) - 1
-  n <- length(object$init) - 1
+print.momApp <- function(x, ...){
+  model <- eval(parse(text = x$polyPdmpName))
+  l <- x$degree
+  k <- ncol(x$discRes) - 1
+  n <- length(x$init) - 1
   
   # create matrix with all moment combinations we are interested in
   s <- NULL
@@ -56,47 +56,48 @@ print.momApp <- function(object){
     m[,i] <- 1:l
     s <- rbind(s, m)
   }
-  colnames(s) <- c(names(object$init), "moment")
+  colnames(s) <- c(names(x$init), "moment")
   s <- as.data.frame(s)
   
   for(i in 1:(n*l)){ # fill the moments of continuous variables
-    s[i, n+2] <- object$contRes[nrow(object$contRes), 
-                                prodlim::row.match(as.vector(s[i,1:n]), 
-                                                   as.matrix(object$contInd))]
+    s[i, n+2] <- x$contRes[nrow(x$contRes), 
+                          prodlim::row.match(as.vector(s[i,1:n]), as.matrix(x$contInd))]
   }
   for(i in 1:l){ # fill the moments of the discrete variable
-    s[n*l+i, n+2] <- model@discStates[[1]]^i %*% object$discRes[nrow(object$discRes), 2:ncol(object$discRes)]
+    s[n*l+i, n+2] <- model@discStates[[1]]^i %*% x$discRes[nrow(x$discRes), 2:ncol(x$discRes)]
   }
-  cat("Moment approximation of ", object$polyPdmpName, " up to degree ", l, " \nwith moment closure method \"", object$closure, "\" results in \n", sep = "")
-  print(s[1:l,])
+  cat("Moment approximation of ", x$polyPdmpName, " up to degree ", l, " \nwith moment closure method \"", x$closure, "\" results in \n", sep = "")
+  print(s[1:l,], ...)
   #write.table(format(s, justify="right"), sep = "\t", row.names=F, quote=F)
 }
 
 #' @export
-summary.momApp <- function(object){
-  cat(noquote("$polyPdmpName \t"), object$polyPdmpName)
-  cat(noquote("\n$degree \t"), object$degree)
-  cat(noquote("\n$closure \t"), object$closure)
+summary.momApp <- function(x, ...){
+  cat(noquote("$polyPdmpName \t"), x$polyPdmpName)
+  cat(noquote("\n$degree \t"), x$degree)
+  cat(noquote("\n$closure \t"), x$closure)
   cat(noquote("\n\n$init \n"))
-  print(object$init)
+  print(x$init)
   cat(noquote("\n$discRes\n"))
-  print(summary(object$discRes[,-1]))
+  print(summary(x$discRes[,-1], ...))
   cat(noquote("\n$contRes\n"))
-  print(summary(object$contRes[,-1]))
+  print(summary(x$contRes[,-1], ...))
 }
 
+#' @importFrom utils tail
 #' @export
-tail.momApp <- function(object){
+tail.momApp <- function(x, ...){
   cat(noquote("$discRes\n"))
-  print(tail(object$discRes))
+  print(tail(x$discRes, ...))
   cat(noquote("\n$contRes\n"))
-  print(tail(object$contRes))
+  print(tail(x$contRes, ...))
 }
 
+#' @importFrom utils head
 #' @export
-head.momApp <- function(object){
+head.momApp <- function(x, ...){
   cat(noquote("$discRes\n"))
-  print(head(object$discRes))
+  print(head(x$discRes, ...))
   cat(noquote("\n$contRes\n"))
-  print(head(object$contRes))
+  print(head(x$contRes, ...))
 }

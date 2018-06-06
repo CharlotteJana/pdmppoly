@@ -1,7 +1,6 @@
 #======== todo =================================================================
 #t1 documentation for compareMomentClosure
 
-
 compareMomentClosure <- function(model, l = 4, m = 2){
   closureMethods <- c("setZero", "reduceDegree")
   print(paste("l = ", m*l))
