@@ -72,16 +72,16 @@ print.momApp <- function(x, ...){
 }
 
 #' @export
-summary.momApp <- function(x, ...){
-  cat(noquote("$polyPdmpName \t"), x$polyPdmpName)
-  cat(noquote("\n$degree \t"), x$degree)
-  cat(noquote("\n$closure \t"), x$closure)
+summary.momApp <- function(object, ...){
+  cat(noquote("$polyPdmpName \t"), object$polyPdmpName)
+  cat(noquote("\n$degree \t"), object$degree)
+  cat(noquote("\n$closure \t"), object$closure)
   cat(noquote("\n\n$init \n"))
-  print(x$init)
+  print(object$init)
   cat(noquote("\n$discRes\n"))
-  print(summary(x$discRes[,-1], ...))
+  print(summary(object$discRes[,-1], ...))
   cat(noquote("\n$contRes\n"))
-  print(summary(x$contRes[,-1], ...))
+  print(summary(object$contRes[,-1], ...))
 }
 
 #' @importFrom utils tail

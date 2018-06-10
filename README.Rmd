@@ -1,0 +1,11 @@
+# Erstellen des manuals
+
+* R CMD check durchführen
+* In Ordner pdmppoly.Rcheck gehen
+* die Datei uniinputch.sty und Rd.sty in den Ordner einfügen
+* die latex-Datei suchen und bearbeiten:
+
+	\usepackage{uniinputch}
+	\usepackage{amsmath, amssymb}
+
+* mit Kile die pdf erstellen
