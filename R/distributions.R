@@ -16,24 +16,29 @@ dtrunc <- function (x, spec, a = -Inf, b = Inf, ...) {
                     stop("this is not a distribution")}
   return(tt)
 }
+
+#' @importFrom actuar mnorm mlnorm mexp munif
 mtrunc <- function (order, spec, a = -Inf, b = Inf , ...){
   argList <- list(...)
   
-  if     (spec == "norm" & a == -Inf & b == Inf) return(mnorm(order, ...))
-  else if(spec == "lnorm" & a <= 0 & b == Inf)   return(mlnorm(order, ...))
-  else if(spec == "exp" & a <= 0 & b == Inf)     return(mexp(order, ...))
+  if(spec == "norm" & a == -Inf & b == Inf) 
+    return(actuar::mnorm(order, ...))
+  else if(spec == "lnorm" & a <= 0 & b == Inf)   
+    return(actuar::mlnorm(order, ...))
+  else if(spec == "exp" & a <= 0 & b == Inf)     
+    return(actuar::mexp(order, ...))
   else if(spec == "unif") {
-                if(a <= argList$min & b >= argList$max) {
-                  #print(paste("a =",a,", min =", argList$min, ", b =", b, ", max =", argList$max))
-                  return(munif(order, ...))};
-                if(a > argList$max | b < argList$min) {stop("this is not a distribution")}
-    }
+    if(a <= argList$min & b >= argList$max) 
+      return(actuar::munif(order, ...))
+    if(a > argList$max | b < argList$min) 
+      stop("this is not a distribution")
+  }
   else{
-  #print("Direct integration is used.")
+  #message("Direct integration is used.")
   sapply( order, 
-          function(i) integrate( 
-            Vectorize(function(x) x^i * dtrunc(x, spec = spec, a = a, b = b, ...)), 
-            lower=a, upper=b)$value)
+    function(i) integrate( 
+      Vectorize(function(x) x^i * dtrunc(x, spec = spec, a = a, b = b, ...)), 
+      lower=a, upper=b)$value)
   }
 }
 
@@ -55,7 +60,8 @@ mmix <- function(order, a = -Inf, b = Inf, weights, distrib){
   if(missing(weights)) weights = rep(1/n, n)
   weights <- weights/sum(weights)
   #sapply(1:n, function(i) print(c(list(order = order), a=a, b=b, distrib[[i]])))
-  h <- sapply(1:n, function(i) weights[i]*do.call("mtrunc", c(list(order=order), a=a, b=b, distrib[[i]])))
+  h <- sapply(1:n, function(i) 
+    weights[i]*do.call("mtrunc", c(list(order=order), a=a, b=b, distrib[[i]])))
   if(length(order)>1) h <- rowSums(h)
   else h <- sum(h)
   return(h)
