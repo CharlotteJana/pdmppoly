@@ -4,6 +4,8 @@
 #------- output methods -----------
 
 #' @importFrom prodlim row.match
+#' @importFrom graphics par matplot legend mtext
+#' @importFrom grDevices graphics.off rainbow
 #' @export
 plot.momApp <- function(x, ...){
   

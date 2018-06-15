@@ -35,6 +35,10 @@
 #' @return an object of class \code{\link{momApp}}.
 #' @note This method works only for PDMPs with one discrete variable.
 #' @importFrom prodlim row.match
+#' @importFrom spray index
+#' @importFrom simecol fromtoby
+#' @importFrom deSolve ode
+#' @importFrom stats aggregate as.formula
 #' @export
 setGeneric("momApp",
            function(obj, l = 4, closure = "setZero", ...)
@@ -143,6 +147,8 @@ setMethod("momApp", signature(obj = "polyPdmpModel"),
 
 ##### moment closure ####
 
+#' @importFrom spray as.spray
+#' @export
 momentClosure <- function(name, ode, l, n){
   value <- value(ode)
   index <- index(ode)

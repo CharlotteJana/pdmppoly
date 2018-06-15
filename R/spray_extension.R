@@ -35,7 +35,7 @@
 #' arise for example by using method \code{\link[spray]{subs}}), the returned
 #' spray object will be the NULL polynomial with its arity given as the maximal
 #' entry in vector \code{positions}. 
-#' @importFrom spray lone spray value
+#' @importFrom spray lone spray value index
 increase_arity <- function(S, position){
 
   n <- length(position)

@@ -8,6 +8,7 @@
 
 ###### Momente für beliebige gestutzte Verteilungen ######
 
+#' @importFrom utils str
 dtrunc <- function (x, spec, a = -Inf, b = Inf, ...) {
   # dtrunc stammt aus truncdist und wurde nur geringfügig von mir geändert
   if (a >= b) 
@@ -24,6 +25,8 @@ dtrunc <- function (x, spec, a = -Inf, b = Inf, ...) {
 }
 
 #' @importFrom actuar mnorm mlnorm mexp munif
+#' @importFrom stats integrate
+#' @export
 mtrunc <- function (order, spec, a = -Inf, b = Inf , ...){
   argList <- list(...)
   
@@ -98,12 +101,15 @@ mmix <- function(order, a = -Inf, b = Inf, weights, distrib){
   return(h)
 }
 
-random.distribution <- function(A=0, B=10, curve=TRUE){
-  n <- sample(1:4, 1)                         # zufällige Anzahl an Komponenten ϵ {1,2}
-  specs <- c("norm", "unif", "exp", "lnorm")  # mögliche Gestalt der Komponenten
-  weights <- sample(1:3, n, replace=TRUE)     # zufällige Gewichte
+#' @importFrom stats runif
+#' @export
+random.distribution <- function(A = 0, B = 10, curve = TRUE){
+  x <- NULL # to avoid warning 'no visible binding...' in R CMD check
+  n <- sample(1:4, 1)                         # random number of components
+  specs <- c("norm", "unif", "exp", "lnorm")  # possible shape of components
+  weights <- sample(1:3, n, replace=TRUE)     # random weights
   
-  distributions <- as.list(NULL)              # weitere zufällige Kenngrößen der Komponenten
+  distributions <- as.list(NULL) # random values for distribution parameters
   for(i in 1:n){
     unifMin <- sample(A:((A+B)/2),1)
     t <- switch(sample(specs,1),
@@ -113,7 +119,7 @@ random.distribution <- function(A=0, B=10, curve=TRUE){
                 "lnorm" = list(spec="lnorm", meanlog = sample(i:(2*i),1)))
     distributions[[i]] <- t
   }
-  if(curve) curve(dmix(distrib=distributions, a=A, b=B)(x), A-1, B+1)
+  if(curve) curve(dmix(distrib=distributions, a = A, b = B)(x), A-1, B+1)
   return(distributions)
 }
 
@@ -208,6 +214,7 @@ bspBEGG <- function(){
 
 #Momente der gestutzten Normalverteilung nach Orjebin_2014
 
+#' @importFrom stats dnorm qnorm
 mtnorm <- function(order, mean = 0, sd = 1, lower = - Inf, upper = Inf){
   max <- max(order)
   moments <- 0:(max+1) # startet mit m₋₁ = 0, and m₀ = 1
