@@ -167,48 +167,6 @@ random.distribution <- function(A = 0, B = 10, curve = TRUE){
 #   mmix(order, distrib = distributions, ...)
 # }
 
-########## BEGG ##########
-
-# BEGG = Bimodal extension of the generalized Gamma-Distribution
-
-# αϵ(0,2), β = 1 → Dichte ist schmalgipflig (leptokurtic)
-# α > 2,   β = 1 → Dichte ist breitgipflig (platykurtic)
-# δ0 = δ1        → Peaks haben gleiche Höhe
-# δ0 = δ1 = 0    → Dichte ist unimodal
-# ε = 0          → Peaks sind symmetrisch (Höhe evtl verschieden)
-# ε kontrolliert Schiefe
-# η kontrolliert die Stärke der Enden
-
-dBEGG <- function(α, β, δ0, δ1, η, ε, μ = 0, σ = 1){
-  a0 <- (δ0+1)/α
-  a1 <- (δ1+1)/α
-  f <- function(x){
-    if (x >= μ) {
-      return ((α*β)/(2*σ*η^a0*(1-ε)^δ0*gamma(a0/β))*((x-μ)/σ)^δ0*exp(-((x-μ)^(α*β))/(η^β*((1-ε)*σ)^(α*β))))
-      } else {
-      return ((α*β)/(2*σ*η^a1*(1+ε)^δ1*gamma(a1/β))*((μ-x)/σ)^δ1*exp(-((μ-x)^(α*β))/(η^β*((1+ε)*σ)^(α*β))))
-    } 
-  }
-  function(x) sapply(x, f)
-}
-mBEGG <- function(α, β, δ0, δ1, η, ε, μ = 0, σ = 1, order = 1:4){
-  ((-1)^order*η^(order/α)*(1+ε)^(order+1))/2 * gamma((δ1+order+1)/(α*β))/gamma((δ1+1)/(α*β))
-       +  (η^(order/α)*(1-ε)^(order+1))/2 * gamma((δ0+order+1)/(α*β))/gamma((δ0+1)/(α*β))  
-}
-
-bspBEGG <- function(){
-  bsp1 <- dBEGG(α = 2, β = 2, δ0 = 1, δ1 = 4, η = 1, ε = 0)
-  bsp2 <- dBEGG(α = 2, β = 1, δ0 = 0, δ1 = 2, η = 1, ε = -0.5)
-  bsp3 <- dBEGG(α = 3, β = 2, δ0 = 4, δ1 = 2, η = 2, ε = 0.3)
-  bsp4 <- dBEGG(α = 2, β = 1, δ0 = 0, δ1 = 0, η = 1, ε = 0.7)
-
- old.par <- par(mfrow=c(2, 2))
- curve(bsp1(x), -2, 2)
- curve(bsp2(x), -2, 3)
- curve(bsp3(x), -2.5, 1.5)
- curve(bsp4(x), -2, 2)
- par(old.par)
-}
 
 ##### gestutzte Normalverteilungennach Orjebin #####
 

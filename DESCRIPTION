@@ -27,6 +27,7 @@ Collate:
     '2_def_polyPdmp.R'
     'data.R'
     'distributions.R'
+    'distributions_BEGG.R'
     'distributions_existance.R'
     'distributions_unimodal.R'
     'spray_extension.R'
