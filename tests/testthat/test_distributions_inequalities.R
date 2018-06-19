@@ -1,6 +1,3 @@
-#======== todo =================================================================
-#t3 benötigte Pakete: distr <- wofür?
-
 context("distributions - inequalities")
 
 
@@ -19,6 +16,28 @@ test_that("exists.distribution works as expected", {
   expect_false(exists.distribution(-4, -5, 1:5))
 })
 
+test_that("exists.distribution returns TRUE for the gene1 model", {
+  
+  data("genePoly1")
+  parms <- parms(genePoly1)
+  
+  EWgene1 <- function(parms){
+      EW <- c()
+      EW["ξ"]  = with(as.list(parms),
+                      (α*κ01)/(β*(κ10+κ01)))
+      EW["ξ2"] = with(as.list(parms),
+                      (α^2*κ01*(κ01+β))/(β^2*(κ10+κ01)*(κ10+κ01+β)))
+      EW["ξ3"] = with(as.list(parms),
+                      (α^3*κ01*(κ01+β)*(κ01+2*β)) /
+                        (β^3*(κ10+κ01)*(κ10+κ01+β)*(κ10+κ01+2*β)))
+      EW["ξ4"] = with(as.list(parms),
+                      (α^4*κ01*(κ01+β)*(κ01+2*β)*(κ01+3*β)) /
+                        (β^4*(κ10+κ01)*(κ10+κ01+β)*(κ10+κ01+2*β)*(κ10+κ01+3*β)))
+      return(EW)
+  }
+  
+  expect_true(exists.distribution(0, parms[["α"]]/parms[["β"]], EWgene1(parms)))
+})
 
 test_that("is.unimodal returns TRUE for simple unimodal distributions", {
   
