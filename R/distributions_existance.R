@@ -1,5 +1,7 @@
 #======== todo =================================================================
 #t1 references for inequalities
+#t3 exists.distribution -> integral = 1 prüfen?
+#t3 messages umformulieren?
 #t2 warum wurden nicht alle ungl aus Simpson_Welch_amNeuesten.wxm implementiert?
 
 #' Check for existance of a distribution
@@ -11,39 +13,59 @@
 #' @param A numeric. The lower bound of the support of the distribution.
 #' @param B numeric. The upper bound of the support of the distriubtion.
 #' @param m numeric vector giving the non standardized moments \eqn{m_1, m_2,
-#'   m_3, ...}{m₁, m₂, m₃}, sorted by their degree.
+#'   m_3, ...}{m₁, m₂, m₃, ...}, sorted by their degree. 
+#'   This vector should have at least two entries.
+#' @examples
+#' exists.distribution(0, 1, actuar::mbeta(1:4, 0.5, 0.5)) # TRUE
+#' exists.distribution(-1, 2, actuar::munif(1:4, min = -1, max = 2)) # TRUE
+#' exists.distribution(-4, -5, 1:5) # FALSE
 #' @return boolean variable indicating if a distribution exists (TRUE) or 
 #' not (FALSE). This method does not return a suitable distribution.
 exists.distribution <- function(A, B, m){
   
-  #[A,B] = Support der ZG
-  #m = sortierter Vektor mit nicht standardisierten Momenten
+  if(length(m) < 2){
+    stop("At least two moment values are required.")
+  }
   
-  #------- definitions -------
+  if(m[[2]] < m[[1]]^2)
+    return(FALSE)
+  
+  #----- definitions ------
+  
+  bool <- TRUE
   sd <- sqrt(m[[2]]-m[[1]]^2) # standard derivation
   a <- (A-m[[1]])/sd # lower bound of support of the standardized distribution
   b <- (B-m[[1]])/sd # upper bount of support of the standardized distribution
-  m <- standardize.moments(m)
+
+  stand.moments <- NULL
+  for(j in seq_along(m)){  # standardize moments m
+    e <- m[[1]]
+    s <- sapply(1:j, function(k) choose(j,k)*m[[k]]*(-e)^(j-k))
+    stand.moments[[j]] <- (sum(s) + (-e)^j)/ sd^j
+  }
+  m <- stand.moments
   
-  bool <- TRUE
+  #----- inequalities for support ------
   
   # Integral = 1 prüfen?
   
-  if(1+a*b > 0) # 1.1, Teuscher, Guiard: (3)
-    message("There is no distribution with lower bound", A, 
-            "and upper bound", B)
+  if(1+a*b > 0){ # 1.1, Teuscher, Guiard: (3)
+    message("There is no distribution with lower bound ", A, 
+            " and upper bound ", B)
+    bool <- FALSE
+  }
   
   #----- inequalities for 3rd moment ------
   
   if(length(m) >= 3){ 
     if(m[[3]] < a - 1/a){ # 1.2, Teuscher, Guiard: (3)
-      message("There is no distribution with lower bound", A,
-              "and the 3rd moment given as", m[[3]])
+      message("There is no distribution with lower bound ", A,
+              " and the 3rd moment given as ", m[[3]])
       bool <- FALSE
     }
     if(m[[3]] > b - 1/b){ # 1.3, Teuscher, Guiard: (3)
-      message("There is no distribution with upper bound", B,
-              "and the 3rd moment given as", m[[3]])
+      message("There is no distribution with upper bound ", B,
+              " and the 3rd moment given as ", m[[3]])
       bool <- FALSE
     }
   }
@@ -52,14 +74,14 @@ exists.distribution <- function(A, B, m){
   
   if(length(m) >= 4){ # 1.4, Teuscher, Guiard: (2)
     if(m[4]-m[3]^2-1 > -(a^2-a*m[3]-1)*(b^2-b*m[3]-1) / (1+a*b)){
-      message("There is no distribution with the 3rd moment being", m[[3]],
-              "the 4rth moment being", m[[4]], "and the support being [",
-              a, b, "]")
+      message("There is no distribution with the 3rd moment being ", m[[3]],
+              " the 4rth moment being ", m[[4]], " and the standardized ",
+              "support being [", a, ",", b, "]")
       bool = FALSE
     }
     if(m[4]-m[3]^2-1 < 0){ # 2.6, Teuscher, Guiard: (1)
-      message("There is no distribution with the 3rd moment being", m[[3]],
-              "and the 4rth moment being", m[[4]])
+      message("There is no distribution with the 3rd moment being ", m[[3]],
+              " and the 4rth moment being ", m[[4]])
       bool = FALSE
     }
   }

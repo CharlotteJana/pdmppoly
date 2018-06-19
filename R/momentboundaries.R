@@ -1,20 +1,24 @@
 #======== todo =================================================================
 
-compute.central.moment <- function(j, moments){
-  e <- moments[1]
-  s <- sapply(1:j, function(k) choose(j,k)*moments[k]*(-e)^(j-k))
-  sum(s) + (-e)^j
-}
-
-centr.moments <- function(moments){
-  sapply(1:length(moments), function(j) compute.central.moment(j, moments))
-}
-
-stand.moments <- function(moments){
-  sd <- sqrt(moments[2]-moments[1]^2)
-  sapply(1:length(moments), function(j) compute.central.moment(j,moments)/sd^j)
-}
-
+# # nur in dieser datei benutzt, sonst nicht
+# compute.central.moment <- function(j, moments){
+#   e <- moments[1]
+#   s <- sapply(1:j, function(k) choose(j,k)*moments[k]*(-e)^(j-k))
+#   print(s)
+#   sum(s) + (-e)^j
+# }
+# 
+# # nirgends benutzt
+# centr.moments <- function(moments){
+#   sapply(1:length(moments), function(j) compute.central.moment(j, moments))
+# }
+# 
+# # nirgends benutzt, vllt = standardize.moments?
+# stand.moments <- function(moments){
+#   sd <- sqrt(moments[2]-moments[1]^2)
+#   sapply(1:length(moments), function(j) compute.central.moment(j,moments)/sd^j)
+# }
+# 
 
 test.momentboundaries <- function(n = 100){
   A <- 0                                      # untere Grenze = 0
