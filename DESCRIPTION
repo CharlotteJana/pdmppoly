@@ -38,5 +38,4 @@ Collate:
     'momApp.R'
     'momApp_compareResults.R'
     'momApp_outputMethods.R'
-    'momentboundaries.R'
     'msCsv_moments.R'
