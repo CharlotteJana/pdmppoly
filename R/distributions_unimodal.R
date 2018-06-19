@@ -50,8 +50,8 @@ is.2_b_unimodal <- function(A, B, m, eps = 1e-10){
   b <- (B-m[[1]])/sd # upper bound of support of the standardized distribution
 
   if (1+a*b > 0){
-    print("There is no distribution with these parameters, 
-          because 1+ab > 0.")
+    message("There is no distribution with these parameters, 
+             because 1+ab > 0.")
     return(FALSE)
   }
   
@@ -66,9 +66,9 @@ is.2_b_unimodal <- function(A, B, m, eps = 1e-10){
       bool <- (b >= sqrt(3))
   }
   if(bool){
-    print("The distribution is not 2-b-unimodal.")
+    message("The distribution is not 2-b-unimodal.")
   } else {    
-    print("The distripution cannot be unimodal.")
+    message("The distripution cannot be unimodal.")
   }
   return(bool)
 }
@@ -87,13 +87,13 @@ is.4_b_unimodal <- function(A, B, m, eps = 1e-10){
   Q <- 4*g1*(a+b)+(3-a^2)*(3-b^2)
 
   if (1+a*b > 0 | g2 < g1^2-2 | g2 > g1^2-2-(a*b*(g1-a+1/a)*(g1-b+1/b))/(1+a*b) | g1 > b-1/b | g1 < a-1/a){
-    print("There is no distribution with these parameters, because")
-    if(1+a*b > 0) print("1+a*b > 0.")
-    if(g2 < g1^2-2) print("γ2 < γ1²-2.")
+    message("There is no distribution with these parameters, because ")
+    if(1+a*b > 0) message("1+a*b > 0.")
+    if(g2 < g1^2-2) message("γ2 < γ1²-2.")
     if(g2 > g1^2-2-(a*b*(g1-a+1/a)*(g1-b+1/b))/(1+a*b)) 
-      print("γ2 > γ1²-2-(a*b*(γ1-a+1/a)*(γ1-b+1/b))/(1+a*b) .")
-    if(g1 > b-1/b) print("γ1 > b-1/b.")
-    if(g1 < a-1/a) print("γ1 < a-1/a.")
+      message("γ2 > γ1²-2-(a*b*(γ1-a+1/a)*(γ1-b+1/b))/(1+a*b) .")
+    if(g1 > b-1/b) message("γ1 > b-1/b.")
+    if(g1 < a-1/a) message("γ1 < a-1/a.")
     return(FALSE)
   }
   
@@ -146,7 +146,7 @@ is.4_b_unimodal <- function(A, B, m, eps = 1e-10){
       eq2 <- (g1^2 <= eps + (108*q[2]^4)/((1-q[2])*(1+3*q[2])^3))
       boolLower <- (g1^2 + eps >= eq1 & eq2)
   } else {
-      print("Error during calculation of the lower bound.")
+      message("Error during calculation of the lower bound.")
   }
   
 #   if (g2 < -1.3125){
@@ -168,9 +168,9 @@ is.4_b_unimodal <- function(A, B, m, eps = 1e-10){
   ### return
   
   if(boolUpper & boolLower){
-    print("The distribution is 4-b-unimodal.")
+    message("The distribution is 4-b-unimodal.")
   } else {    
-    print("The distribution cannot be unimodal.")
+    message("The distribution cannot be unimodal.")
   }
   return(boolUpper & boolLower)
 }
