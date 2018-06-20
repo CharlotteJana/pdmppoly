@@ -5,7 +5,7 @@
 \alias{polygenerator}
 \title{Generator}
 \usage{
-polyGenerator(obj, ...)
+polyGenerator(obj)
 }
 \arguments{
 \item{obj}{an object of class \code{\link{polyPdmpModel}}.}

@@ -19,7 +19,7 @@ demonstration purposes and is used in some unit tests and function examples.
 library(spray)
 #------ code to generate this model -----
 
-simplePoly <- polyPdmpModel(
+simplePoly <- new("polyPdmpModel",
    descr = "polyModel with two jumptypes",
    init = c(f = 0, d = 0),
    times = c(from = 0, to = 10, by = 0.01),

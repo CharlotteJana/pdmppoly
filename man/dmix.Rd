@@ -3,9 +3,12 @@
 \name{dmix}
 \alias{dmix}
 \alias{mmix}
+\alias{mmix}
 \title{Mixtures of truncated distributions}
 \usage{
 dmix(a = -Inf, b = Inf, distrib, weights)
+
+mmix(order, a = -Inf, b = Inf, weights, distrib)
 }
 \arguments{
 \item{a}{numeric giving the lower bound of the support. Defaults to -Inf.}

@@ -49,7 +49,7 @@ NULL
 #' @aliases polygenerator
 #' @importFrom spray arity deriv subs lone 
 #' @export
-setGeneric("polyGenerator", function(obj, ...) standardGeneric("polyGenerator"))
+setGeneric("polyGenerator", function(obj) standardGeneric("polyGenerator"))
 setMethod("polyGenerator", signature(obj = "polyPdmpModel"), function(obj) {
  function(poly){
    function(discVar){

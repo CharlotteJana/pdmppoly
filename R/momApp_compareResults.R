@@ -6,7 +6,7 @@ compareMomentClosure <- function(model, l = 4, m = 2){
   print(paste("l = ", m*l))
   results <- lapply(closureMethods, function(i) {
     print(i)
-    momentApprox(model, l = m*l, closure = i)
+    momApp(model, l = m*l, closure = i)
   })
   
   n <-  length(model@init) - 1

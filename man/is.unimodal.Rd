@@ -18,7 +18,8 @@ is.4_b_unimodal(A, B, m, eps = 1e-10)
 \item{B}{numeric. The upper bound of the support of the distriubtion.}
 
 \item{m}{numeric vector giving the non standardized moments \eqn{m_1, m_2,
-m_3, ...}{m₁, m₂, m₃}, sorted by their degree.}
+m_3, ...}{m₁, m₂, m₃, ...}, sorted by their degree. 
+This vector should have at least two entries.}
 
 \item{eps}{numeric value. Some inequalities are of the form \code{... > 0}.
 For numerical reasons it is better to test for \code{... > eps} where

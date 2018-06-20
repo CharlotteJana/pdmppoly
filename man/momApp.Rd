@@ -9,7 +9,7 @@
 \alias{momApp,polyPdmpModel-method}
 \title{Moment approximation for polynomial PDMPs}
 \usage{
-momApp(obj, l = 4, closure = "setZero", ...)
+momApp(obj, l = 4, closure = "setZero")
 
 \S4method{momApp}{polyPdmpModel}(obj, l = 4, closure = "setZero")
 }

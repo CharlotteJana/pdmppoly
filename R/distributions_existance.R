@@ -21,6 +21,7 @@
 #' exists.distribution(-4, -5, 1:5) # FALSE
 #' @return boolean variable indicating if a distribution exists (TRUE) or 
 #' not (FALSE). This method does not return a suitable distribution.
+#' @export
 exists.distribution <- function(A, B, m){
   
   if(length(m) < 2){

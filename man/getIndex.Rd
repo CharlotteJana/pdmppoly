@@ -18,6 +18,6 @@ This method is used internally. If no index is found with \code{\link{which}}
 }
 \examples{
 getIndex("c", letters)
-getIndex(5.0000001, 2:6) # no result
+\donttest{getIndex(5.0000001, 2:6)} # error
 getIndex(5.00000001, 2:6) # difference is small enough to be found by all.equal
 }

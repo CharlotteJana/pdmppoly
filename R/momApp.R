@@ -41,7 +41,7 @@
 #' @importFrom stats aggregate as.formula
 #' @export
 setGeneric("momApp",
-           function(obj, l = 4, closure = "setZero", ...)
+           function(obj, l = 4, closure = "setZero")
              standardGeneric("momApp"))
 
 #' @rdname momApp

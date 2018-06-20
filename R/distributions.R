@@ -1,6 +1,6 @@
 #======== todo =================================================================
 #t1 documentation für alle funktionen
-#t1 dmix: parameter beschreiben
+#t1 dmix: parameter distrib beschreiben
 #t1 wie dtrunc zitieren?
 #t2 älteren Code rausnehmen -> wohin?
 
@@ -9,6 +9,7 @@
 ###### Momente für beliebige gestutzte Verteilungen ######
 
 #' @importFrom utils str
+#' @export
 dtrunc <- function (x, spec, a = -Inf, b = Inf, ...) {
   # dtrunc stammt aus truncdist und wurde nur geringfügig von mir geändert
   if (a >= b) 
@@ -82,7 +83,7 @@ dmix <- function(a = -Inf, b = Inf, distrib, weights){
   }
 }
 
-#' @rdname mmix
+#' @rdname dmix
 #' @export
 mmix <- function(order, a = -Inf, b = Inf, weights, distrib){
   
@@ -172,7 +173,8 @@ random.distribution <- function(A = 0, B = 10, curve = TRUE){
 
 #Momente der gestutzten Normalverteilung nach Orjebin_2014
 
-#' @importFrom stats dnorm qnorm
+#' @importFrom stats dnorm qnorm pnorm
+#' @export
 mtnorm <- function(order, mean = 0, sd = 1, lower = - Inf, upper = Inf){
   max <- max(order)
   moments <- 0:(max+1) # startet mit m₋₁ = 0, and m₀ = 1

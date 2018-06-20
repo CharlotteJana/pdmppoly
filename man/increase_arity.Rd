@@ -34,7 +34,8 @@ spray object will be the NULL polynomial with its arity given as the maximal
 entry in vector \code{positions}.
 }
 \examples{
-lone(1, 5) + lone(1, 2) # throws error
+library(spray)
+\donttest{lone(1, 5) + lone(1, 2)} # throws error
 lone(1, 5) + increase_arity(lone(1, 2), 3:5)
 
 print_spray_matrixform(homog(2, 3))

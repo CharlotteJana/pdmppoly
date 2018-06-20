@@ -71,7 +71,8 @@ dBEGG <- function(alpha, beta, delta0, delta1, eta, eps, mu = 0, sigma = 1){
 
 #' @describeIn BEGG raw moments
 #' @export
-mBEGG <- function(alpha, beta, delta0, delta1, eta, eps, mu = 0, sigma = 1, order = 1:4){
+mBEGG <- function(alpha, beta, delta0, delta1, eta, eps, mu = 0, sigma = 1, 
+                  order = 1:4){
   
   ((-1) ^ order * eta ^ (order / alpha) * (1 + eps) ^ (order + 1))/2 * 
   gamma((delta1 + order + 1) / (alpha * beta)) / 

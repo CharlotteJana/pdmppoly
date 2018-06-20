@@ -118,7 +118,7 @@ redefineDynpolys <- function(x, obj, where = NULL, overall = 0){
 #' @param var element that one expects to be part of \code{vect}
 #' @examples
 #' getIndex("c", letters)
-#' getIndex(5.0000001, 2:6) # no result
+#' \donttest{getIndex(5.0000001, 2:6)} # error
 #' getIndex(5.00000001, 2:6) # difference is small enough to be found by all.equal
 #' @export
 getIndex <- function(var, vect){
@@ -253,12 +253,11 @@ blowupSpray <- function(obj, spray){
 
 ##### output methods ####
 
-setMethod(f="print",
-          signature="polyPdmpModel",
-          definition=function(x, ...)
-          {
-            .local <- function (x, all = FALSE, ...) 
-            {
+#' @importFrom methods slot slotNames
+#' @export
+setMethod(f = "print",
+          signature = "polyPdmpModel",
+          definition = function(x, ...){
               if (all) {
                 print.default(x, all = TRUE, ...)
               }
@@ -284,7 +283,5 @@ setMethod(f="print",
                 }
                 cat("Hint: use print(x, all=TRUE) to see all polyPdmpModel slots.\n")
               }
-            }
-            .local(x, ...)
           }
 )

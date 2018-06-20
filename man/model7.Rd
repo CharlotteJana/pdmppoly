@@ -84,7 +84,7 @@ genePdmp7 <- new("pdmpModel",
 #------ code to generate the polyPdmpModel version -----
 
 library("spray")
-genePoly7 <- polyPdmpModel(
+genePoly7 <- new("polyPdmpModel",
   descr = "Model 7: toggleswitch with two promotors (polynomial version)",
   discDomain = 1:4,   
   parms = list(βA = 0.5, βB = 0.5, αA = 2, αB = 4, 

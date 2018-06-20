@@ -12,7 +12,8 @@ exists.distribution(A, B, m)
 \item{B}{numeric. The upper bound of the support of the distriubtion.}
 
 \item{m}{numeric vector giving the non standardized moments \eqn{m_1, m_2,
-m_3, ...}{m₁, m₂, m₃}, sorted by their degree.}
+m_3, ...}{m₁, m₂, m₃, ...}, sorted by their degree. 
+This vector should have at least two entries.}
 }
 \value{
 boolean variable indicating if a distribution exists (TRUE) or 
@@ -23,4 +24,9 @@ This method checks different inequalities to determine if there exists a one
 dimensional distribution with given support \eqn{[A, B]} and raw moments
 \eqn{m_1, m_2, m_3, ...}{m₁, m₂, m₃, ...}. Only inequalities that include
 moments up to order 5 are implemented.
+}
+\examples{
+exists.distribution(0, 1, actuar::mbeta(1:4, 0.5, 0.5)) # TRUE
+exists.distribution(-1, 2, actuar::munif(1:4, min = -1, max = 2)) # TRUE
+exists.distribution(-4, -5, 1:5) # FALSE
 }
