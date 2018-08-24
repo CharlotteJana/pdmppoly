@@ -39,3 +39,4 @@ Collate:
     'momApp_compareResults.R'
     'momApp_outputMethods.R'
     'msCsv_moments.R'
+    'pdmp_analysis.R'
