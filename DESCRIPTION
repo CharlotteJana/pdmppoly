@@ -16,6 +16,7 @@ LazyData: true
 Depends: R (>= 2.10), methods, pdmpsim
 Imports: actuar,
     deSolve,
+    ggplot2,
     LaF,
     prodlim,
     simecol,
@@ -38,5 +39,6 @@ Collate:
     'momApp.R'
     'momApp_compareResults.R'
     'momApp_outputMethods.R'
+    'momentboundaries.R'
     'msCsv_moments.R'
     'pdmp_analysis.R'
