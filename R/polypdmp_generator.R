@@ -136,7 +136,7 @@ EVGenerator <- function(obj, m, j){
   if(!is.zero(s1))
     s1 <- s1*lone(n+index, n+k) # times θⱼ
   
-  ### sum over q ϵ discDomain: rate(q→j)*spray*θⱼ
+  ### sum over q ϵ discStates: rate(q→j)*spray*θⱼ
   list <- lapply(1:k, function(q){ # rate(q→j)*θⱼ
     if(!is.null(ratematrix[[q]][[index]])) {
       h <- subs(ratematrix[[q]][[index]], n+1, obj@discStates[[1]][q])
@@ -148,7 +148,7 @@ EVGenerator <- function(obj, m, j){
   s2 <- s2*increase_arity(spray, n + 2:k)# times spray
 
 
-  ### sum over q ϵ discDomain: -rate(j→q)*spray*θⱼ
+  ### sum over q ϵ discStates: -rate(j→q)*spray*θⱼ
   list <- lapply(1:k, function(q){ # rate(j→q) 
     if(!is.null(ratematrix[[index]][[q]])) 
       increase_arity(subs(ratematrix[[index]][[q]], n+1, j), n+1:k)

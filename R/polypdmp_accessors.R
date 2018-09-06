@@ -78,14 +78,14 @@ setMethod("dynpolys<-", "polyPdmpModel", function(obj, value){
   
   obj@dynfunc <- function(t, x, parms = obj@parms){
     discName <- names(obj@discStates)
-    discDomainIndex <- getIndex(x[discName], obj@discStates[[1]]) # index of discDomain that corresponds to the current value of the discrete variable
+    discStatesIndex <- getIndex(x[discName], obj@discStates[[1]]) # index of discStates that corresponds to the current value of the discrete variable
     if(!identical(parms, obj@parms)) {
       stop("please redefine the slot 'parms'.")
     }
     else dynsprays <- obj@dynsprays
     
     funcs <- lapply(dynsprays, function(y) lapply(y, as.function.spray))
-    funcs <- lapply(funcs, function(list) list[[discDomainIndex]]) # pick the right sprays out of dynpolys (one for every continous variable)
+    funcs <- lapply(funcs, function(list) list[[discStatesIndex]]) # pick the right sprays out of dynpolys (one for every continous variable)
     dx <- sapply(funcs, function(f) unname(do.call(f, list(x)))) # apply these functions to x
     return(c(dx,0))
   }
@@ -116,14 +116,14 @@ setMethod("ratepolys<-", "polyPdmpModel", function(obj, value){
   # (This is a nested list of sprays)
   
   obj@ratefunc <- function(t, x, parms = obj@parms){
-    discDomainIndex <- getIndex(x[length(x)], obj@discStates[[1]]) # index of discDomain that corresponds to the current value of the discrete variable
+    discStatesIndex <- getIndex(x[length(x)], obj@discStates[[1]]) # index of discStates that corresponds to the current value of the discrete variable
     if(!identical(parms,obj@parms)){ 
       stop("please redefine the slot 'parms' (by using 'parms<-).")
     }                     
     else ratesprays <- obj@ratesprays
     
     funcs <-lapply(ratesprays, function(y) lapply(y, as.function.spray))
-    funcs <- lapply(funcs, function(list) list[[discDomainIndex]]) # pick the right sprays out of ratepolys (one for every jumptype)
+    funcs <- lapply(funcs, function(list) list[[discStatesIndex]]) # pick the right sprays out of ratepolys (one for every jumptype)
     return(sapply(funcs, function(f) unname(do.call(f, list(x))))) # apply these functions to x
   }
   # turn all 'ratesprays' into functions(x),
