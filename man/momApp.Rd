@@ -41,6 +41,8 @@ for an explanation of the indicator variables)
 \item \code{degree}: integer defining the highest degree of moments to be calculated
 \item \code{closure}: string giving the closure method. See ... for more details.
 \item \code{contInd}: a data.frame with all moment indexes that are calculated
+\item \code{moments}: a data.frame with the resulting moments, of the same structure
+ as \code{\link[pdmpsim]moments}.
 }
 }
 \note{

@@ -5,6 +5,7 @@
 # use messages (auch bei "all.equal was used")
 #t1 Aufruf mit l=1 gibt Fehler
 #t1 MomApprox: description schreiben
+#t1 MomApp: discrete variable sollte an jeder stelle in init kommen dürfen
 
 #' Moment approximation for polynomial PDMPs
 #' 
@@ -26,6 +27,8 @@
 #' \item \code{degree}: integer defining the highest degree of moments to be calculated
 #' \item \code{closure}: string giving the closure method. See ... for more details.
 #' \item \code{contInd}: a data.frame with all moment indexes that are calculated
+#' \item \code{moments}: a data.frame with the resulting moments, of the same structure
+#'  as \code{\link[pdmpsim]moments}.
 #' }
 #' @name momApp
 #' @aliases momentApproximation momentapproximation momapp
@@ -113,7 +116,7 @@ setMethod("momApp", signature(obj = "polyPdmpModel"),
     }
     out <- ode(y = state, times = times, func = func, 
                parms = obj@parms, method = obj@solver)
-     
+
   ### create class 'momApp' from the result 'out' 
   
     # discRes = only indicator variables
@@ -134,7 +137,27 @@ setMethod("momApp", signature(obj = "polyPdmpModel"),
     contNames <- c("time", gsub("\\*?[^\\*]+\\^0\\*?", "", contNames))
     dimnames(contRes)[[2]] <- contNames
     
+   # discMoments <- discRes %>% 
+   #                transmute(value = ... %*% discStates(polyModel)[[1]], time)
+    # discRes[["θ"]] <- as.matrix(discRes[n]) %*% discStates(polyModel)[[1]]^2
+    indexes <- sapply(colnames(r),
+      function(s) which(stringr::str_detect(contNames, paste0("^",s, "\\^[:digit:]+$"))))
+
+    moments <- contRes[, c(1, indexes)] %>% 
+               as.data.frame() %>% 
+               tidyr::gather(key = variable, value = value, -time) %>%
+               dplyr::mutate(order = as.numeric(stringr::str_match(variable, "[:digit:]+$"))) %>%
+               dplyr::mutate_at(.vars = "variable", .funs = str_match, pattern = "^[:alnum:]+") %>%
+               tidyr::spread(key = variable, value = value) %>%
+               dplyr::full_join(as.data.frame(discRes), by = "time")
+    
+    discNames <- colnames(discRes)[-1]
+    moments[, names[n+1]] <- rowSums(as.matrix(moments[discNames]) * 
+                             sapply(states, function(i) i^moments$order))
+    moments[, discNames] <- NULL
+
     result <- structure(list(model = obj, 
+                             moments = moments,
                              discRes = discRes, 
                              contRes = contRes, 
                              contInd = r,
