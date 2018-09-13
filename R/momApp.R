@@ -5,8 +5,7 @@
 # use messages (auch bei "all.equal was used")
 #t1 Aufruf mit l=1 gibt Fehler
 #t1 MomApprox: description schreiben
-#t1 MomApp: discrete variable sollte an jeder stelle in init kommen dürfen
-#t1 test momApp
+#t1 test momApp: verschiedene closure methoden
 
 #' Moment approximation for polynomial PDMPs
 #' 
@@ -58,6 +57,8 @@ setMethod("momApp", signature(obj = "polyPdmpModel"),
   n <- length(obj@init) - length(obj@discStates) # continuous variables
   k <- length(states)
   names <- names(obj@init)  # names of all variables
+  dnames <- names(obj@discStates)
+  cnames <- names[!names %in% dnames]
     
   ### create all moment combinations that are needed 
   
@@ -65,17 +66,17 @@ setMethod("momApp", signature(obj = "polyPdmpModel"),
     r <- data.frame(sapply(1:n, function(i) i = 0:l))
     r <- expand.grid(r)
     if(n > 1) r <- r[which(rowSums(r) >= 0 & rowSums(r[,1:n]) <= l), ]
-    dimnames(r) <- list(1:nrow(r), names[-(n+1)])
+    dimnames(r) <- list(1:nrow(r), cnames)
     
     # create k indicator variables that indicate the state of the discrete var
-    indicatorNames <- sapply(1:k, function(i) paste0(names[n+1], states[i]))
+    indicatorNames <- sapply(1:k, function(i) paste0(dnames, states[i]))
     indicatorMatrix <- matrix(rep(t(diag(k)), length.out = 2*k*nrow(r)), 
                               ncol = k, byrow = TRUE)
    
     # t = all moment combinations times all indicator variables
     t <- as.data.frame(r[rep(seq_len(nrow(r)), each=k),])
     t <- cbind(t, indicatorMatrix)
-    dimnames(t) <- list(1:nrow(t), c(names[1:n], indicatorNames))
+    dimnames(t) <- list(1:nrow(t), c(cnames, indicatorNames))
     t <- as.matrix(t)
     
   ### calculate EVGenerator to every moment combination
@@ -120,16 +121,14 @@ setMethod("momApp", signature(obj = "polyPdmpModel"),
                parms = obj@parms, method = obj@solver)
 
   ### create class 'momApp' from the result 'out' 
-  
     # discRes = only indicator variables
     discRes <- out[, c(1:(k+1))] # Achtung: Zeitspalte kommt dazu
     colnames(discRes)[-1] <- colnames(t)[(n+1):(n+k)] 
-    
+
     # contRes = only continous variables (indicator variables are summed up)
     contRes <- cbind(t, t(out[, -1]))
     contRes <- aggregate(as.formula(paste("contRes[,-(1:(n+k))] ~", 
-                                          paste(colnames(contRes)[1:n], 
-                                                collapse = "+"))), 
+                                          paste(cnames, collapse = "+"))), 
                          data = contRes, 
                          FUN = sum)
     #contInd <- as.matrix(contRes[, 1:n], dimnames = list(NULL, names[1:n]))
@@ -151,10 +150,10 @@ setMethod("momApp", signature(obj = "polyPdmpModel"),
                tidyr::spread(key = variable, value = value) %>%
                dplyr::full_join(as.data.frame(discRes), by = "time")
     
-    discNames <- colnames(discRes)[-1]
-    moments[, names[n+1]] <- rowSums(as.matrix(moments[discNames]) * 
+
+    moments[, dnames] <- rowSums(as.matrix(moments[indicatorNames]) * 
                              sapply(states, function(i) i^moments$order))
-    moments[, discNames] <- NULL
+    moments[, indicatorNames] <- NULL
 
     result <- structure(list(model = obj, 
                              moments = moments,

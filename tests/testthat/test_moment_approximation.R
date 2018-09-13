@@ -26,7 +26,9 @@ test_that("order of variables doesn't matter", {
   res1 <- momApp(genePoly4, closure = "reduceDegree")
   init(genePoly4) <- rev(init(genePoly4))
   res2 <- momApp(genePoly4, closure = "reduceDegree")
-  expect_identical(res1, res2)
+  expect_identical(res1$moments, res2$moments)
+  expect_identical(res1$discRes, res2$discRes)
+  expect_identical(res1$contRes, res2$contRes)
 })
 
 test_that("moment calculation works for model 1", {
