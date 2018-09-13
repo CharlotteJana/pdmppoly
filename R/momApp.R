@@ -6,6 +6,7 @@
 #t1 Aufruf mit l=1 gibt Fehler
 #t1 MomApprox: description schreiben
 #t1 MomApp: discrete variable sollte an jeder stelle in init kommen dürfen
+#t1 test momApp
 
 #' Moment approximation for polynomial PDMPs
 #' 
@@ -42,6 +43,7 @@
 #' @importFrom simecol fromtoby
 #' @importFrom deSolve ode
 #' @importFrom stats aggregate as.formula
+#' @importFrom dplyr %>%
 #' @export
 setGeneric("momApp",
            function(obj, l = 4, closure = "setZero")
@@ -137,9 +139,6 @@ setMethod("momApp", signature(obj = "polyPdmpModel"),
     contNames <- c("time", gsub("\\*?[^\\*]+\\^0\\*?", "", contNames))
     dimnames(contRes)[[2]] <- contNames
     
-   # discMoments <- discRes %>% 
-   #                transmute(value = ... %*% discStates(polyModel)[[1]], time)
-    # discRes[["θ"]] <- as.matrix(discRes[n]) %*% discStates(polyModel)[[1]]^2
     indexes <- sapply(colnames(r),
       function(s) which(stringr::str_detect(contNames, paste0("^",s, "\\^[:digit:]+$"))))
 
@@ -147,7 +146,8 @@ setMethod("momApp", signature(obj = "polyPdmpModel"),
                as.data.frame() %>% 
                tidyr::gather(key = variable, value = value, -time) %>%
                dplyr::mutate(order = as.numeric(stringr::str_match(variable, "[:digit:]+$"))) %>%
-               dplyr::mutate_at(.vars = "variable", .funs = str_match, pattern = "^[:alnum:]+") %>%
+               dplyr::mutate_at(.vars = "variable", 
+                                .funs = stringr::str_match, pattern = "^[:alnum:]+") %>%
                tidyr::spread(key = variable, value = value) %>%
                dplyr::full_join(as.data.frame(discRes), by = "time")
     

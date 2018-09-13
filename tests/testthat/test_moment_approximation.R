@@ -1,7 +1,33 @@
 #======== todo =================================================================
-#t1 ersten test als demo und dann vereinfachen
+#t2 langen test als demo und dann vereinfachen
+#t2 tests mit verschiedenen closure methoden
 
 context("moment approximation")
+
+test_that("moment calculation leads to same results for model 1 and model 2", {
+  data(genePoly1)
+  data(genePoly2)
+  init(genePoly1) <- c("ξ" = 0.5, "θ" = 1)
+  init(genePoly2) <- c("ξ1" = 0.5, "ξ2" = 0, "θ" = 1)
+  parms(genePoly1) <- list(β = 0.5, α = 1, κ10 = 0.1, κ01 = 0.3)
+  parms(genePoly2) <- list(β1 = 0.5, α1 = 1, κ10 = 0.1, κ01 = 0.3, β2 = 1, α2 = 0.5)
+  res1 <- momApp(genePoly1)
+  res2 <- momApp(genePoly2)
+  
+  expect_equal(res1$discRes, res2$discRes)
+  expect_equal(res1$contRes[, 1:5], res2$contRes[, 1:5], 
+               check.names = FALSE, check.attributes = FALSE)
+  expect_equal(res1$moments, res2$moments[, -4], check.names = FALSE)
+  
+})
+
+test_that("order of variables doesn't matter", {
+  data(genePoly4)
+  res1 <- momApp(genePoly4, closure = "reduceDegree")
+  init(genePoly4) <- rev(init(genePoly4))
+  res2 <- momApp(genePoly4, closure = "reduceDegree")
+  expect_identical(res1, res2)
+})
 
 test_that("moment calculation works for model 1", {
   
@@ -51,3 +77,4 @@ test_that("moment calculation works for model 1", {
     expect_equal(s[i, 3], s[i, 4], tolerance = 1e-04)
   }
 })
+
