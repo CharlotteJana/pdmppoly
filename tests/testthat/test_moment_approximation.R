@@ -21,7 +21,15 @@ test_that("moment calculation leads to same results for model 1 and model 2", {
   
 })
 
-test_that("order of variables doesn't matter", {
+test_that("momApp works for a model with more than 2 discrete states", {
+  data(simplePoly)
+  res <- momApp(simplePoly, l = 1)
+  zeros <- rep(0, nrow(res$moments))
+  expect_equal(res$moments[["f"]], zeros)
+  expect_equal(res$moments[["d"]], zeros)
+})
+
+test_that("order of variables in init doesn't matter", {
   data(genePoly4)
   res1 <- momApp(genePoly4, closure = "reduceDegree")
   init(genePoly4) <- rev(init(genePoly4))

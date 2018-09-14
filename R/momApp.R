@@ -1,11 +1,10 @@
 #======== todo =================================================================
-# warum werden bei str(...) bei contInd so komische Sachen angezeigt?
-# contRes und discRes umbenennen
-# init rausnehmen?
-# use messages (auch bei "all.equal was used")
+#t3 contRes und discRes umbenennen
+#t3 init = dirac measure?
 #t1 Aufruf mit l=1 gibt Fehler
-#t1 MomApprox: description schreiben
+#t1 MomApp: description schreiben
 #t1 test momApp: verschiedene closure methoden
+#t1 momentClosure: documentation
 
 #' Moment approximation for polynomial PDMPs
 #' 
@@ -70,7 +69,7 @@ setMethod("momApp", signature(obj = "polyPdmpModel"),
     
     # create k indicator variables that indicate the state of the discrete var
     indicatorNames <- sapply(1:k, function(i) paste0(dnames, states[i]))
-    indicatorMatrix <- matrix(rep(t(diag(k)), length.out = 2*k*nrow(r)), 
+    indicatorMatrix <- matrix(rep(t(diag(k)), length.out = k*k*nrow(r)), 
                               ncol = k, byrow = TRUE)
    
     # t = all moment combinations times all indicator variables
@@ -107,7 +106,7 @@ setMethod("momApp", signature(obj = "polyPdmpModel"),
     )
     
   ### simulate the system of odes with deSolve
-    discInd <- getIndex(obj@init[length(obj@init)], states)
+    discInd <- getIndex(obj@init[dnames], states)
     state <- apply(t, 1, function(row) 
       if(row[n+discInd] == 1) 
         Reduce("*", obj@init[1:n]^row[1:n]) 
@@ -131,7 +130,6 @@ setMethod("momApp", signature(obj = "polyPdmpModel"),
                                           paste(cnames, collapse = "+"))), 
                          data = contRes, 
                          FUN = sum)
-    #contInd <- as.matrix(contRes[, 1:n], dimnames = list(NULL, names[1:n]))
     contRes <- cbind(out[, 1], t(contRes[-1, -(1:n)]))
     contNames <- c(sapply(2:(nrow(r)), function(row) 
       paste(colnames(r), r[row, 1:n], sep = "^", collapse = "*")))
