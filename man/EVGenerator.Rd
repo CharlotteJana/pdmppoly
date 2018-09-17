@@ -29,7 +29,8 @@ This method is needed to compute the expected value \eqn{\mathbb{E}(X_t^m | d
 = j)}{E(Xₜᵐ | d=j)}.
 }
 \note{
-This method only works for one discrete variable.
+This method only works for one discrete variable. This variable has to
+be the last element of vector \code{init} of model \code{obj}.
 }
 \seealso{
 \code{\link{polyGenerator}} to compute the generator and obtain the

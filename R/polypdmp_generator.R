@@ -2,6 +2,7 @@
 #t2 polygenerator in generator umbenennen?
 #t2 warum ist polygenerator eine funktion von discvar????
 #t2 EVGenerator umbenennen
+#t2 EVGenerator und Generator unabhängig von der Stelle von θ in init machen
 
 #' @include polypdmp_class.R polypdmp_accessors.R
 NULL
@@ -109,7 +110,8 @@ setMethod("polyGenerator", signature(obj = "polyPdmpModel"), function(obj) {
 #'   result as spray object with the same number of variables as
 #'   \code{init(obj)}, \code{\link{generator}} to compute the generator and
 #'   obtain the result as function.
-#' @note This method only works for one discrete variable.
+#' @note This method only works for one discrete variable. This variable has to
+#' be the last element of vector \code{init} of model \code{obj}.
 #' @importFrom spray product deriv subs lone
 EVGenerator <- function(obj, m, j){ 
   # Computes EV(generator(θⱼ*spray)), where

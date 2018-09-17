@@ -27,6 +27,6 @@ moments.multSimCsv <- function(x, order){
   colnames(moments) <- sapply(1:length(x$csvList), function(i) 
     regmatches(x$csvList, regexec("_([^_]+).csv", x$csvList))[[i]][2])
   rownames(moments) <- NULL
-  moments <- data.frame(time = times, moments)
+  moments <- data.frame(order = order, time = times, moments)
   return(moments)
 }

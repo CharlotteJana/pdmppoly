@@ -14,7 +14,7 @@ test_that("method 'mean' and 'moments(..., order = 1)' give equal results", {
     moments <- moments(ms, order = 1)
     momentsCsv <- moments(msCsv, order = 1)
     
-    expect_equal(means, moments)
+    expect_equal(means, dplyr::select(moments, -order))
     expect_equal(means, meansCsv, tolerance = 1e-07)
     expect_equal(moments, momentsCsv, tolerance = 1e-07)
     # 'm.' and 'm.Csv' are not exactly equal because 'multSimCsv' only stores 7 digits.

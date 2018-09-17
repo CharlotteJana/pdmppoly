@@ -30,10 +30,27 @@ test_that("momApp works for a model with more than 2 discrete states", {
 })
 
 test_that("order of variables in init doesn't matter", {
+  skip("functionality not implemented yet")
   data(genePoly4)
   res1 <- momApp(genePoly4, closure = "reduceDegree")
-  init(genePoly4) <- rev(init(genePoly4))
-  res2 <- momApp(genePoly4, closure = "reduceDegree")
+  
+  model <- new("polyPdmpModel",
+                   descr = "Model 4 with different order of variables",
+                   parms = parms(genePoly4), 
+                   init = rev(init(genePoly4)), 
+                   discStates = list(θ = 0:1),
+                   dynpolys = quote(list(
+                     list(overall = linear(c(-β,α)))
+                   )),
+                   ratepolys = quote(list(  
+                     list(κ01*lone(2,2), κ10)
+                   )),
+                   jumpfunc = function(t, x, parms, jtype) {
+                     c(1 - x[1], x[2])
+                   }, 
+                   times = times(genePoly4), 
+                   solver = "lsodar")
+  res2 <- momApp(model, closure = "reduceDegree")
   expect_identical(res1$moments, res2$moments)
   expect_identical(res1$discRes, res2$discRes)
   expect_identical(res1$contRes, res2$contRes)

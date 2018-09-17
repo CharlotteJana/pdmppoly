@@ -1,5 +1,5 @@
 #======== todo =================================================================
-#t2 tests mit Modell mit zwei stetige variablen
+#t2 tests mit Modell mit zwei stetigen variablen
 
 library(spray)
 context("helper functions")
