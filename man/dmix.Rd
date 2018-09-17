@@ -15,6 +15,12 @@ mmix(order, a = -Inf, b = Inf, weights, distrib)
 
 \item{b}{numeric giving the upper bound of the support. Defaults to Inf.}
 
+\item{distrib}{a list. Every element is itself a list representing a distribution.
+This list should have one named element \code{spec} which describes the
+distribution, i. e. "exp" for the exponential distribution or
+"norm" for the normal distribution. The other elements are optional
+additional parameters for the specfied distribution.}
+
 \item{weights}{numeric vector with the same length as \code{distrib}.
 Provides weights for every distribution given in \code{distrib}.}
 }
@@ -23,7 +29,7 @@ Mixtures of truncated distributions
 }
 \examples{
 distributions <- list(list(spec="exp", rate = 2),
-                     list(spec="norm", mean=0, sd = 0.5),
-                     list(spec="unif", min=2, max=3))
+                     list(spec="norm", mean = 0, sd = 0.5),
+                     list(spec="unif", min = 2, max = 3))
 curve(dmix(3, a=-1, weights = c(.1,.3,.1), distrib=distributions)(x),-2,5)
 }
