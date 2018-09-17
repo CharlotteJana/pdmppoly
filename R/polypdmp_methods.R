@@ -146,19 +146,20 @@ getIndex <- function(var, vect){
 #' @export
 ratespraysToMatrix <- function(obj){
   
-  n <- length(obj@init) - 1 # number of continuous variables
+  n <- length(obj@init) - length(obj@discStates) # number of continuous variables
   nj <- length(obj@ratesprays) # number of jumptypes
   k <- length(obj@discStates[[1]]) # number of different discrete states
   z <- obj@init
+  discIndex <- which(names(obj@init) == names(obj@discStates[1]))
   
   ratematrix <- rep(list(rep(list(NULL), k)), k)
   for(jtype in 1:nj){ 
     for(i in 1:k){
       oldDiscVar <- obj@discStates[[1]][[i]]
-      z[length(z)] <- oldDiscVar
+      z[discIndex] <- oldDiscVar
       for(j in 1:k){
         newDiscVar <- obj@discStates[[1]][[j]]
-        if(obj@jumpfunc(1, z, obj@parms, jtype)[length(z)] == newDiscVar){
+        if(obj@jumpfunc(1, z, obj@parms, jtype)[discIndex] == newDiscVar){
           ratematrix[[i]][[j]] <- obj@ratesprays[[jtype]][[i]]
         }
       } 
@@ -257,8 +258,8 @@ blowupSpray <- function(obj, spray){
 #' @export
 setMethod(f = "print",
           signature = "polyPdmpModel",
-          definition = function(x, ...){
-              if (all) {
+          definition = function(x, all = FALSE, ...){
+              if(all){
                 print.default(x, all = TRUE, ...)
               }
               else {

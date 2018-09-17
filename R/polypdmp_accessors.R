@@ -87,7 +87,10 @@ setMethod("dynpolys<-", "polyPdmpModel", function(obj, value){
     funcs <- lapply(dynsprays, function(y) lapply(y, as.function.spray))
     funcs <- lapply(funcs, function(list) list[[discStatesIndex]]) # pick the right sprays out of dynpolys (one for every continous variable)
     dx <- sapply(funcs, function(f) unname(do.call(f, list(x)))) # apply these functions to x
-    return(c(dx,0))
+    contNames <- names(obj@init)[!names(obj@init) %in% discName]
+    dynamics <- rep(0, length(obj@init)) %>% setNames(names(obj@init))
+    dynamics[contNames] <- dx
+    return(dynamics)
   }
   # turn all 'dynsprays' into functions(x),
   # pick the right ones (depending on discvar) and apply them to x.
@@ -116,7 +119,7 @@ setMethod("ratepolys<-", "polyPdmpModel", function(obj, value){
   # (This is a nested list of sprays)
   
   obj@ratefunc <- function(t, x, parms = obj@parms){
-    discStatesIndex <- getIndex(x[length(x)], obj@discStates[[1]]) # index of discStates that corresponds to the current value of the discrete variable
+    discStatesIndex <- getIndex(x[names(obj@discStates)], obj@discStates[[1]]) # index of discStates that corresponds to the current value of the discrete variable
     if(!identical(parms,obj@parms)){ 
       stop("please redefine the slot 'parms' (by using 'parms<-).")
     }                     
