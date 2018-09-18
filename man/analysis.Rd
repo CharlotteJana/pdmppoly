@@ -4,7 +4,8 @@
 \alias{analysis}
 \title{Analysis of models used in thesis ...}
 \usage{
-analysis(data, model, seeds = 1:50, useCsv = F, dir = getwd())
+analysis(data, model, polyModel, seeds = 1:50, useCsv = FALSE,
+  dir = getwd(), momentorders = 1:10)
 }
 \arguments{
 \item{data}{a data.frame, see Details below}
@@ -18,6 +19,9 @@ or \code{\link{multSimCsv}} should be used for simulation. Defaults to FALSE.}
 
 \item{dir}{string giving the directory where files will be stored.
 Defaults to the working directory.}
+
+\item{momentorders}{vector giving all the orders of moments that shall 
+be calculated. Defaults to 1:4.}
 }
 \description{
 Analysis of models used in thesis ...
