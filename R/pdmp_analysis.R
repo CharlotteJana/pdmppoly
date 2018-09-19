@@ -9,30 +9,31 @@
 #' @param data a data.frame, see Details below
 #' @param model an object of class \code{\link{pdmpModel}}
 #' @param seeds number of seeds to be simulated
-#' @param useCsv boolean variable, indicating if \code{\link{multSim}} (FALSE)
+#' @param useCsv boolean variable indicating if \code{\link{multSim}} (FALSE)
 #' or \code{\link{multSimCsv}} should be used for simulation. Defaults to FALSE.
 #' @param dir string giving the directory where files will be stored.
-#' Defaults to the working directory.
+#' @param subDirs boolean variable indicating if subdirectories for every
+#' simulation shall be created. Defaults to FALSE.
 #' @param momentorders vector giving all the orders of moments that shall 
-#' be calculated. Defaults to 1:4.
+#' be calculated. Defaults to 1:10.
+#' @param plotorder vector giving all the orders of moments that shall be plotted.
+#' Defaults to 1:4.
 #' @importFrom pdmpsim format
 #' @importFrom ggplot2 labs
 #' @export
 analysis <- function(data, model, polyModel, seeds = 1:50, useCsv = FALSE, 
-                     dir = getwd(), momentorders = 1:10){
+                     dir = file.path(getwd(), "simulations"), subDirs = FALSE, 
+                     momentorders = 1:10, plotorder = 1:4){
   
-  workingdir <- getwd()
-  setwd(dir)
-  on.exit(setwd(workingdir))
+  #workingdir <- getwd()
+  #setwd(dir)
+  #on.exit(setwd(workingdir))
   
   initNames <- names(init(model))
   parmsNames <- names(parms(model))
   discVars <- names(discStates(model))
   
-  message("All files are stored in ", dir)
-  
   for(i in seq_len(nrow(data))){
-    
     ### set new values for init, parms, times ###
     suppressWarnings({
       for(name in initNames){
@@ -60,9 +61,18 @@ analysis <- function(data, model, polyModel, seeds = 1:50, useCsv = FALSE,
         }, silent = TRUE)
       }
     })
+  
+    # filenames
+    if(subDirs)
+      dir.create(file.path(dir, data[i, "prefix"]), showWarnings = FALSE, recursive = TRUE)
+    fname <- ifelse(subDirs, 
+                    file.path(dir, data[i, "prefix"], data[i, "prefix"]),
+                    file.path(dir, data[i, "prefix"]))
+            #paste0(data[i,"prefix"], "_", 
+            #pdmpsim::format(model, short = T, slots = "parms"))
+    
     message("\n", pdmpsim::format(model, short = F, collapse = "\n",
                                   slots = c("descr", "parms", "init", "times")))
-    
     ### simulate ###
     
     if(useCsv){
@@ -70,16 +80,14 @@ analysis <- function(data, model, polyModel, seeds = 1:50, useCsv = FALSE,
     }
     else{
       ms <- multSim(model, seeds)
-      fname <- paste0(data[i,1], "_", 
-               pdmpsim::format(model, short = T, slots = "parms"))
       saveRDS(ms, file = paste0(fname, ".rda"))
       msData <- getMultSimData(ms)
       
       ### moments
       moments <- list()
       msim <- NULL
-      for(i in momentorders){
-        msim <- dplyr::bind_rows(msim, moments(ms, i))
+      for(m in momentorders){
+        msim <- dplyr::bind_rows(msim, moments(ms, m))
       }
       moments[["Simulation"]] <- msim
       #saveRDS(moments, file = paste0(fname, "__moments.rda"))
@@ -155,7 +163,7 @@ analysis <- function(data, model, polyModel, seeds = 1:50, useCsv = FALSE,
     density(msData, t = times,
             main = descr(model),
             sub = pdmpsim::format(model, short = F, slots = "parms"))
-    dev.print(png, filename = paste0(dir,"/", fname, "__densities.png"),
+    dev.print(png, filename = paste0(fname, "__densities.png"),
               width = 20.4, height = 11, units = "cm", res = 140)
     dev.off()
   
@@ -176,17 +184,24 @@ analysis <- function(data, model, polyModel, seeds = 1:50, useCsv = FALSE,
                                                           "reduceDegree", 
                                                           "setZero"))
     plotdata$variable <- as.character(plotdata$variable)
+    plotdata <- subset(plotdata, order <= plotorder)
 
-    plot <- ggplot(data = plotdata, aes(x = time, y = value)) + 
-      geom_line(aes(color = method, linetype = method), size = 1) +
-      theme(axis.title.y = element_blank(), 
-            axis.title.x = element_blank()) + 
-      labs(title = "Moments",
+    plot <- ggplot2::ggplot(data = plotdata, ggplot2::aes(x = time, y = value))+ 
+      ggplot2::geom_line(size = 1,
+                         ggplot2::aes(color = method, linetype = method)) +
+      ggplot2::theme(axis.title.y = ggplot2::element_blank(), 
+                     axis.title.x = ggplot2::element_blank()) + 
+      ggplot2::labs(
+           title = model@descr,
+           subtitle = format(model, slots = c("parms"), short = FALSE),
            caption = paste("Number of Simulations:", length(seeds))) +
-      facet_wrap(variable ~ order, scales = "free_y",
-                 labeller = label_bquote(cols = .(variable)^.(order)))
+      ggplot2::facet_wrap(variable ~ order, 
+            scales = "free_y", nrow = length(model@init),
+            labeller = ggplot2::label_bquote(cols = E(.(variable)^.(order))))
       ggplot2::ggsave(filename = paste0(fname,"__moments.png"), plot = plot, 
                       dpi = 300, width = 20.4, height = length(model@init)*5.5, 
                       units = "cm")
+
+      message("All files are stored in ",ifelse(subDirs, file.path(dir, data[i, "prefix"]), dir))
   }
 }

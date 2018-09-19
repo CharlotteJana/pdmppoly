@@ -5,7 +5,8 @@
 \title{Analysis of models used in thesis ...}
 \usage{
 analysis(data, model, polyModel, seeds = 1:50, useCsv = FALSE,
-  dir = getwd(), momentorders = 1:10)
+  dir = file.path(getwd(), "simulations"), subDirs = FALSE,
+  momentorders = 1:10, plotorder = 1:4)
 }
 \arguments{
 \item{data}{a data.frame, see Details below}
@@ -14,14 +15,19 @@ analysis(data, model, polyModel, seeds = 1:50, useCsv = FALSE,
 
 \item{seeds}{number of seeds to be simulated}
 
-\item{useCsv}{boolean variable, indicating if \code{\link{multSim}} (FALSE)
+\item{useCsv}{boolean variable indicating if \code{\link{multSim}} (FALSE)
 or \code{\link{multSimCsv}} should be used for simulation. Defaults to FALSE.}
 
-\item{dir}{string giving the directory where files will be stored.
-Defaults to the working directory.}
+\item{dir}{string giving the directory where files will be stored.}
+
+\item{subDirs}{boolean variable indicating if subdirectories for every
+simulation shall be created. Defaults to FALSE.}
 
 \item{momentorders}{vector giving all the orders of moments that shall 
-be calculated. Defaults to 1:4.}
+be calculated. Defaults to 1:10.}
+
+\item{plotorder}{vector giving all the orders of moments that shall be plotted.
+Defaults to 1:4.}
 }
 \description{
 Analysis of models used in thesis ...
