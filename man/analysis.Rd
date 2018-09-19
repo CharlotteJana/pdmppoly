@@ -6,7 +6,8 @@
 \usage{
 analysis(data, model, polyModel, seeds = 1:50, useCsv = FALSE,
   dir = file.path(getwd(), "simulations"), subDirs = FALSE,
-  momentorders = 1:10, plotorder = 1:4)
+  momentorders = 1:10, plotorder = 1:4, plot = TRUE, lower = NULL,
+  upper = NULL)
 }
 \arguments{
 \item{data}{a data.frame, see Details below}
@@ -28,6 +29,12 @@ be calculated. Defaults to 1:10.}
 
 \item{plotorder}{vector giving all the orders of moments that shall be plotted.
 Defaults to 1:4.}
+
+\item{plot}{boolean variable. Should \code{analysis} generate plots?}
+
+\item{lower}{integer. Lower bound of the compact support of the distribution.}
+
+\item{upper}{integer. Upper bound of the compact support of the distribution.}
 }
 \description{
 Analysis of models used in thesis ...
