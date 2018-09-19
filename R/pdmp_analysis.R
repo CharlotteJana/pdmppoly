@@ -1,6 +1,7 @@
 #======== todo =================================================================
 #t1: documentation
 #t1: useCsv = multSimCsv implementieren
+#t2: model und polyModel aus data auslesen
 # install_github("CharlotteJana/pdmpsim@charlotte")
 
 #' Analysis of models used in thesis ...
@@ -36,20 +37,26 @@ analysis <- function(data, model, polyModel, seeds = 1:50, useCsv = FALSE,
     suppressWarnings({
       for(name in initNames){
         try({
-          if(!is.na(data[i, name]))
+          if(!is.na(data[i, name])){
             init(model)[name] <- data[i, name]
+            init(polyModel)[name] <- data[i, name]
+          }
         }, silent = TRUE)
       }
       for(name in parmsNames){
         try({
-          if(!is.na(data[i, name]))
+          if(!is.na(data[i, name])){
             parms(model)[name] <- data[i, name]
+            parms(polyModel)[name] <- data[i, name]
+          }
         }, silent = TRUE)
       }
       for(name in c("from", "to", "by")){
         try({
-        if(!is.na(data[i, name]))
-          times(model)[name] <- data[i, name]
+          if(!is.na(data[i, name])){
+            times(model)[name] <- data[i, name]
+            times(polyModel)[name] <- data[i, name]
+          }
         }, silent = TRUE)
       }
     })
