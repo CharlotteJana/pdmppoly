@@ -119,11 +119,11 @@
 #' @rdname modelK2
 "genePolyK2"
 
-#========= genePoly F₊ ===============
+#========= genePoly F ===============
 
 #' Gene regulation with positive feedback
 #' 
-#' This PDMP models the most a gene regulation mechanism where we have one gene
+#' This PDMP models a gene regulation mechanism where we have one gene
 #' and a positive feedback loop. This means that the rate to unblock the gene
 #' depends on the concentration of the gene product \code{ξ}, where a high
 #' concentration leads to a higher rate and vice versa. Transcription and
@@ -153,6 +153,40 @@
 
 #' @rdname modelF
 "genePolyF"
+
+#========= genePoly KF ===============
+
+#' Gene regulation with positive feedback and constant rates
+#' 
+#' This PDMP models a gene regulation mechanism similar to
+#' \code{\link{genePolyF}}, where we have one gene and a positive feedback loop.
+#' The rate to unblock the gene depends on the concentration of the gene product
+#' \code{ξ}, but it is never zero because there is an additional rate that is
+#' independet of \code{ξ}. Transcription and translation are considered as one
+#' step and are not modeled separately. In PROM, this model is referred to as
+#' \emph{Model F₊}, therefore it is named \code{genePdmpKF} and
+#' \code{genePolyKF} here.
+#' @section Simulation:
+#' The simulations in PROM were done with slot \code{times} set to
+#' \itemize{
+#' \item \code{from = 0, to = 1000, by = 0.1.}
+#' }
+#' The following parameter sets were simulated:
+#' \itemize{
+#' \item \code{κ01 = 0.02, κ10 = 0.02, α = 1, β = 0.2}
+#' \item \code{κ01 = 0.02, κ10 = 0.02, α = 7, β = 0.2}
+#' }
+#' @example inst/models/geneKF.R 
+#' @format 
+#'   \code{genePdmpKF} is an object of class \code{\link[pdmpsim]{pdmpModel}},\cr 
+#'   \code{genePolyKF} is an object of class \code{\link{polyPdmpModel}}.
+#' @source The parameter values do not rely on real data.
+#' @name modelKF
+#' @aliases genePolyKF genePdmpKF geneKF
+"genePdmpKF"
+
+#' @rdname modelKF
+"genePolyKF"
 
 #========= Model T ===============
 

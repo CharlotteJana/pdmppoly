@@ -38,6 +38,18 @@ test_that("definitons for model F coincide", {
                    sim(genePolyF, outSlot = FALSE, seed = 40))
 })
 
+test_that("definitons for model KF coincide", {
+  data("genePdmpKF")
+  data("genePolyKF")
+  
+  t <- c(from = 0, to = 10, by = 0.2)
+  times(genePdmpKF) <- t
+  times(genePolyKF) <- t
+  
+  expect_identical(sim(genePdmpKF, outSlot = FALSE, seed = 10),
+                   sim(genePolyKF, outSlot = FALSE, seed = 10))
+})
+
 test_that("definitons for model T coincide", {
 
   data("genePdmpT")

@@ -21,7 +21,7 @@ genePdmpF
 genePolyF
 }
 \description{
-This PDMP models the most a gene regulation mechanism where we have one gene
+This PDMP models a gene regulation mechanism where we have one gene
 and a positive feedback loop. This means that the rate to unblock the gene
 depends on the concentration of the gene product \code{ξ}, where a high
 concentration leads to a higher rate and vice versa. Transcription and
