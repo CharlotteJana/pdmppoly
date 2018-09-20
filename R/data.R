@@ -2,7 +2,7 @@
 #t1 references for every model
 #t3 benaim: detailed description
 #t1 PROM durch meine Promotion ersetzen
-#t1 toggleSwich als vergleich mit ins example!
+#t1 Raten berichtigen
 
 #========== simplePoly =====================
 
@@ -187,6 +187,39 @@
 
 #' @rdname modelKF
 "genePolyKF"
+
+#========= genePoly BF ===============
+
+#' Gene regulation with positive feedback with basal transcription
+#' 
+#' This PDMP models a gene regulation mechanism similar to
+#' \code{\link{genePolyF}}, where we have one gene and a positive feedback loop.
+#' The difference is that in both discrete states transcription takes place, but
+#' with different rates \eqn{α_0, α_1}, where \eqn{α_0 < α_1}. Transcription and
+#' translation are considered as one step and are not modeled separately. In
+#' PROM, this model is referred to as \emph{Model BF₊}, therefore it is named
+#' \code{genePdmpBF} and \code{genePolyBF} here.
+#' @section Simulation:
+#' The simulations in PROM were done with slot \code{times} set to
+#' \itemize{
+#' \item \code{from = 0, to = 1000, by = 0.1.}
+#' }
+#' The following parameter sets were simulated:
+#' \itemize{
+#' \item \code{κ01 = 0.02, κ10 = 0.02, α = 1, β = 0.2}
+#' \item \code{κ01 = 0.02, κ10 = 0.02, α = 7, β = 0.2}
+#' }
+#' @example inst/models/geneBF.R 
+#' @format 
+#'   \code{genePdmpBF} is an object of class \code{\link[pdmpsim]{pdmpModel}},\cr 
+#'   \code{genePolyBF} is an object of class \code{\link{polyPdmpModel}}.
+#' @source The parameter values do not rely on real data.
+#' @name modelBF
+#' @aliases genePolyBF genePdmpBF geneBF
+"genePdmpBF"
+
+#' @rdname modelBF
+"genePolyBF"
 
 #========= Model T ===============
 
