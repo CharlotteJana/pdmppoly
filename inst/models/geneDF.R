@@ -1,8 +1,8 @@
 library(spray)
 #------ code to generate the pdmpModel version -----
 
-genePdmp8 <- new("pdmpModel", 
-     descr = "Model 8: dimers + positive feedback",
+genePdmpDF <- new("pdmpModel", 
+     descr = "Model DF: dimers + positive feedback",
      parms = list(β = 1, α = 1, κ01 = 1, κ10 = 1, γ21 = 1, γ12 = 1),
      init = c(ξ = 1, ξd = 0.5, θ = 1), 
      discStates = list(θ = 0:1),
@@ -25,8 +25,8 @@ genePdmp8 <- new("pdmpModel",
 #------ code to generate the polyPdmpModel version -----
 
 library("spray")
-genePoly8 <- new("polyPdmpModel", 
-    descr = "Model 8: dimers + positive feedback (polynomial version)",
+genePolyDF <- new("polyPdmpModel", 
+    descr = "Model DF: dimers + positive feedback (polynomial version)",
     parms = list(β = 1, α = 1, κ01 = 1, κ10 = 1, γ21 = 1, γ12 = 1), 
     init = c(ξ = 1, ξd = 0.5, θ = 1), 
     discStates = list(θ = 0:1),
@@ -45,5 +45,5 @@ genePoly8 <- new("polyPdmpModel",
 
 #------- comparison of the models --------------
 
-all.equal(sim(genePdmp8, outSlot = FALSE, seed = 12),
-          sim(genePoly8, outSlot = FALSE, seed = 12))
+all.equal(sim(genePdmpDF, outSlot = FALSE, seed = 12),
+          sim(genePolyDF, outSlot = FALSE, seed = 12))

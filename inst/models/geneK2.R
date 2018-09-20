@@ -1,8 +1,8 @@
 library(spray)
 #------ code to generate the pdmpModel version -----
 
-genePdmp2 <- new("pdmpModel",
-   descr = "Model 2: constant activation with translation",
+genePdmpK2 <- new("pdmpModel",
+   descr = "Model K2: constant activation with translation",
    parms = list(β1 = 0.025, α1 = 1, κ10 = 0.01, κ01 = 0.01, α2 = 0.5, β2 = 0.02),
    init = c(ξ1 = 0.5, ξ2 = 0, θ = 1), 
    discStates = list(θ = 0:1),
@@ -21,8 +21,8 @@ genePdmp2 <- new("pdmpModel",
 
 #------ code to generate the polyPdmpModel version -----
 
-genePoly2 <- new("polyPdmpModel",
-   descr = "Model 2: constant activation with translation (polynomial version)",
+genePolyK2 <- new("polyPdmpModel",
+   descr = "Model K2: constant activation with translation (polynomial version)",
    parms = list(β1 = 0.025, α1 = 1, κ10 = 0.01, κ01 = 0.01, α2 = 0.5, β2 = 0.02),
    init = c(ξ1 = 0.5, ξ2 = 0, θ = 1), 
    discStates = list(θ = 0:1),
@@ -41,5 +41,5 @@ genePoly2 <- new("polyPdmpModel",
 
 #------- comparison of the models --------------
 
-identical(sim(genePdmp2, outSlot = FALSE, seed = 20),
-          sim(genePoly2, outSlot = FALSE, seed = 20))
+identical(sim(genePdmpK2, outSlot = FALSE, seed = 20),
+          sim(genePolyK2, outSlot = FALSE, seed = 20))

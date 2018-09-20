@@ -48,7 +48,7 @@
 #' @rdname Benaim
 "polyBenaim"
 
-#========= genePoly 1 ===============
+#========= Model K ===============
 
 #' Gene regulation with constant activation
 #' 
@@ -56,8 +56,8 @@
 #' where we have one gene and a constant activation rate without
 #' a further regulation mechanism. Transcription and translation
 #' are considered as one step and are not modeled separately.
-#' In PROM, this model is referred to as \emph{Model 1},
-#' therefore it is named \code{genePdmp1} and \code{genePoly1} here.
+#' In PROM, this model is referred to as \emph{Model K},
+#' therefore it is named \code{genePdmpK} and \code{genePolyK} here.
 #' @section Simulation:
 #' The simulations in PROM were done with slot \code{times} set to
 #' \itemize{
@@ -70,20 +70,20 @@
 #' \item \code{κ01 = 0.01, κ10 = 0.03, α = 1, β = 0.025}
 #' \item \code{κ01 = 0.03, κ10 = 0.01, α = 1, β = 0.025}
 #' }
-#' @example inst/models/gene1.R 
+#' @example inst/models/geneK.R 
 #' @format 
-#'   \code{genePdmp1} is an object of class \code{\link[pdmpsim]{pdmpModel}}, \cr 
-#'   \code{genePoly1} is an object of class \code{\link{polyPdmpModel}}.
+#'   \code{genePdmpK} is an object of class \code{\link[pdmpsim]{pdmpModel}}, \cr 
+#'   \code{genePolyK} is an object of class \code{\link{polyPdmpModel}}.
 #' @source The model, including most of the parameter sets, are described in
 #'   [RajCo2006] and [Zeiser2009]. The parameter values do not rely on real data.
-#' @name model1
-#' @aliases genePoly1 gene1
-"genePdmp1"
+#' @name modelK
+#' @aliases genePolyK geneK genePdmpK
+"genePdmpK"
 
-#' @rdname model1
-"genePoly1"
+#' @rdname modelK
+"genePolyK"
 
-#========= genePoly 2 ===============
+#========= Model K2 ===============
 
 #' Gene regulation with constant activation and translation
 #' 
@@ -93,8 +93,8 @@
 #' are modeled separately which leads to a model wit two continous
 #' variables (the first (\code{ξ1}) representing the mRNA and the
 #' second (\code{ξ2}) representing the protein arising from translation).
-#' In PROM, this model is referred to as \emph{Model 2},
-#' therefore it is named \code{genePdmp2} and \code{genePoly2} here.
+#' In PROM, this model is referred to as \emph{Model K2},
+#' therefore it is named \code{genePdmpK2} and \code{genePolyK2} here.
 #' @section Simulation:
 #' The simulations in PROM were done with slot \code{times} set to
 #' \itemize{
@@ -106,20 +106,20 @@
 #' \item \code{κ01 = 0.01, κ10 = 0.01, α1 = 1, β1 = 0.025, α2 = 0.5, β2 = 0.02}
 #' \item \code{κ01 = 0.01, κ10 = 0.03, α1 = 1, β1 = 0.025, α2 = 0.5, β2 = 0.0025}
 #' }
-#' @example inst/models/gene2.R 
+#' @example inst/models/geneK2.R 
 #' @format 
-#'   \code{genePdmp2} is an object of class \code{\link[pdmpsim]{pdmpModel}}, \cr 
-#'   \code{genePoly2} is an object of class \code{\link{polyPdmpModel}}.
+#'   \code{genePdmpK2} is an object of class \code{\link[pdmpsim]{pdmpModel}}, \cr 
+#'   \code{genePolyK2} is an object of class \code{\link{polyPdmpModel}}.
 #' @source The model, including most of the parameter sets, are described in
 #'   [RajCo2006] and [Zeiser2009]. The parameter values do not rely on real data.
-#' @name model2
-#' @aliases genePoly2 gene2
-"genePdmp2"
+#' @name modelK2
+#' @aliases genePolyK2 geneK2 genePdmpK2
+"genePdmpK2"
 
-#' @rdname model2
-"genePoly2"
+#' @rdname modelK2
+"genePolyK2"
 
-#========= genePoly 4 ===============
+#========= genePoly F₊ ===============
 
 #' Gene regulation with positive feedback
 #' 
@@ -128,8 +128,8 @@
 #' depends on the concentration of the gene product \code{ξ}, where a high
 #' concentration leads to a higher rate and vice versa. Transcription and
 #' translation are considered as one step and are not modeled separately. In
-#' PROM, this model is referred to as \emph{Model 4}, therefore it is named
-#' \code{genePdmp4} and \code{genePoly4} here.
+#' PROM, this model is referred to as \emph{Model F₊}, therefore it is named
+#' \code{genePdmpF} and \code{genePolyF} here.
 #' @section Simulation:
 #' The simulations in PROM were done with slot \code{times} set to
 #' \itemize{
@@ -140,28 +140,28 @@
 #' \item \code{κ01 = 0.02, κ10 = 0.02, α = 1, β = 0.2}
 #' \item \code{κ01 = 0.02, κ10 = 0.02, α = 7, β = 0.2}
 #' }
-#' @example inst/models/gene4.R 
+#' @example inst/models/geneF.R 
 #' @format 
-#'   \code{genePdmp4} is an object of class \code{\link[pdmpsim]{pdmpModel}}, \cr 
-#'   \code{genePoly4} is an object of class \code{\link{polyPdmpModel}}.
+#'   \code{genePdmpF} is an object of class \code{\link[pdmpsim]{pdmpModel}}, \cr 
+#'   \code{genePolyF} is an object of class \code{\link{polyPdmpModel}}.
 #' @source The model, including most of the parameter sets, are described in
 #'   [Zeiser2009] and [ZeiserFranzLiebscher2000]. The parameter values do not
 #'   rely on real data.
-#' @name model4
-#' @aliases genePoly4 gene4
-"genePdmp4"
+#' @name modelF
+#' @aliases genePolyF genePdmpF geneF
+"genePdmpF"
 
-#' @rdname model4
-"genePoly4"
+#' @rdname modelF
+"genePolyF"
 
-#========= genePoly 7 ===============
+#========= Model T ===============
 
 #' Toggle Switch with two promotors
 #' 
 #' This model is equivalent to model \code{\link{toggleSwitch}}, which is given
 #' as example in package \pkg{pdmpsim}. Model \code{toggleSwitch} is defined as
 #' a \code{\link{polyPdmpModel}} object with two discrete variables \code{dA}
-#' and \code{dB}. Models \code{genePdmp7} and \code{genePoly7} model the same
+#' and \code{dB}. Models \code{genePdmpT} and \code{genePolyT} model the same
 #' gene regulation mechanism, describing two genes \code{A} and \code{B} that
 #' mutually regulate one another. The difference is, that they are formulated
 #' with only one discrete variable \code{d} that takes values 1, 2, 3, 4, where
@@ -171,8 +171,8 @@
 #' \item \code{d = 3} stands for \code{dA = 0, dB = 1} (B is unblocked, A is blocked),
 #' \item \code{d = 4} stands for \code{dA = 1, dB = 1} (both genes are unblocked).
 #' }
-#' In PROM, the toggle switch model is referred to as \emph{Model 7}, therefore 
-#' the models here are named \code{genePdmp7} and \code{genePoly7}.
+#' In PROM, the toggle switch model is referred to as \emph{Model T}, therefore 
+#' the models here are named \code{genePdmpT} and \code{genePolyT}.
 #' @section Simulation:
 #' The simulations in PROM were done with slot \code{times} set to
 #' \itemize{
@@ -183,20 +183,20 @@
 #' \item \code{βA = 0.02, βB = 0.02, αA = 4, αB = 4,} \cr
 #' \code{κ01A = 0.05, κ10A = 0.002, κ01B = 0.05, κ10B = 0.002}
 #' }
-#' @example inst/models/gene7.R 
+#' @example inst/models/geneT.R 
 #' @format 
-#'   \code{genePdmp7} is an object of class \code{\link[pdmpsim]{pdmpModel}}, \cr 
-#'   \code{genePoly7} is an object of class \code{\link{polyPdmpModel}}.
+#'   \code{genePdmpT} is an object of class \code{\link[pdmpsim]{pdmpModel}}, \cr 
+#'   \code{genePolyT} is an object of class \code{\link{polyPdmpModel}}.
 #' @source The model, including most of the parameter sets, are described in
 #'   [Zeiser2009]. The parameter values do not rely on real data.
-#' @name model7
-#' @aliases genePoly7 gene7
-"genePdmp7"
+#' @name modelT
+#' @aliases genePolyT geneT genePdmpT
+"genePdmpT"
 
-#' @rdname model7
-"genePoly7"
+#' @rdname modelT
+"genePolyT"
 
-#========= genePoly 8 ===============
+#========= genePoly DF ===============
 
 #' Gene regulation with positive feedback and dimerization
 #' 
@@ -206,8 +206,8 @@
 #' have two continous variables \code{ξ} and \code{ξd} where \code{ξ} represents
 #' the gene product and \code{ξd} the concentration of the dimerized gene
 #' product. Transcription and translation are considered as one step and are not
-#' modeled separately. In PROM, this model is referred to as \emph{Model 8},
-#' therefore it is named \code{genePdmp8} and \code{genePoly8} here.
+#' modeled separately. In PROM, this model is referred to as \emph{Model DF},
+#' therefore it is named \code{genePdmpDF} and \code{genePolyDF} here.
 #' @section Simulation:
 #' The simulations in PROM were done with slot \code{times} set to
 #' \itemize{
@@ -220,15 +220,15 @@
 #' \item \code{κ01 = 0.02, κ10 = 0.02, α = 1, β = 0.4, γ21 = 0.1, γ12 = 0.05}
 #' \item \code{κ01 = 0.02, κ10 = 0.02, α = 1, β = 0.5, γ21 = 0.1, γ12 = 0.05}
 #' }
-#' @example inst/models/gene8.R 
+#' @example inst/models/geneDF.R 
 #' @format 
-#'   \code{genePdmp8} is an object of class \code{\link[pdmpsim]{pdmpModel}}, \cr 
-#'   \code{genePoly8} is an object of class \code{\link{polyPdmpModel}}.
+#'   \code{genePdmpDF} is an object of class \code{\link[pdmpsim]{pdmpModel}}, \cr 
+#'   \code{genePolyDF} is an object of class \code{\link{polyPdmpModel}}.
 #' @source The model, including most of the parameter sets, are described in
 #'   [Zeiser2009]. The parameter values do not rely on real data.
-#' @name model8
-#' @aliases genePoly8 gene8
-"genePdmp8"
+#' @name modelDF
+#' @aliases genePolyDF genePdmpDF geneDF
+"genePdmpDF"
 
-#' @rdname model8
-"genePoly8"
+#' @rdname modelDF
+"genePolyDF"

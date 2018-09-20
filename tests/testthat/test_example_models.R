@@ -2,70 +2,70 @@
 
 context("example models")
 
-test_that("definitons for model 1 coincide", {
-  data("genePdmp1")
-  data("genePoly1")
+test_that("definitons for model K coincide", {
+  data("genePdmpK")
+  data("genePolyK")
   
   t <- c(from = 0, to = 10, by = 0.2)
-  times(genePdmp1) <- t
-  times(genePoly1) <- t
+  times(genePdmpK) <- t
+  times(genePolyK) <- t
   
-  expect_identical(sim(genePdmp1, outSlot = FALSE, seed = 30),
-                   sim(genePoly1, outSlot = FALSE, seed = 30))
+  expect_identical(sim(genePdmpK, outSlot = FALSE, seed = 30),
+                   sim(genePolyK, outSlot = FALSE, seed = 30))
   })
 
-test_that("definitons for model 2 coincide", {
-  data("genePdmp2")
-  data("genePoly2")
+test_that("definitons for model K2 coincide", {
+  data("genePdmpK2")
+  data("genePolyK2")
   
   t <- c(from = 0, to = 10, by = 0.2)
-  times(genePdmp2) <- t
-  times(genePoly2) <- t
+  times(genePdmpK2) <- t
+  times(genePolyK2) <- t
   
-  expect_identical(sim(genePdmp2, outSlot = FALSE, seed = 50),
-                   sim(genePoly2, outSlot = FALSE, seed = 50))
+  expect_identical(sim(genePdmpK2, outSlot = FALSE, seed = 50),
+                   sim(genePolyK2, outSlot = FALSE, seed = 50))
 })
 
-test_that("definitons for model 4 coincide", {
-  data("genePdmp4")
-  data("genePoly4")
+test_that("definitons for model F coincide", {
+  data("genePdmpF")
+  data("genePolyF")
   
   t <- c(from = 0, to = 10, by = 0.2)
-  times(genePdmp4) <- t
-  times(genePoly4) <- t
+  times(genePdmpF) <- t
+  times(genePolyF) <- t
   
-  expect_identical(sim(genePdmp4, outSlot = FALSE, seed = 40),
-                   sim(genePoly4, outSlot = FALSE, seed = 40))
+  expect_identical(sim(genePdmpF, outSlot = FALSE, seed = 40),
+                   sim(genePolyF, outSlot = FALSE, seed = 40))
 })
 
-test_that("definitons for model 7 coincide", {
+test_that("definitons for model T coincide", {
 
-  data("genePdmp7")
-  data("genePoly7")
+  data("genePdmpT")
+  data("genePolyT")
   data("toggleSwitch")
   
   t <- c(from = 0, to = 10, by = 0.2)
-  times(genePdmp7) <- t
-  times(genePoly7) <- t
+  times(genePdmpT) <- t
+  times(genePolyT) <- t
   times(toggleSwitch) <- t
   
-  expect_identical(sim(genePdmp7, outSlot = FALSE, seed = 10),
-                   sim(genePoly7, outSlot = FALSE, seed = 10))
-  expect_equal(sim(genePdmp7, outSlot = FALSE, seed = 20)[, c("ξA", "ξB")],
+  expect_identical(sim(genePdmpT, outSlot = FALSE, seed = 10),
+                   sim(genePolyT, outSlot = FALSE, seed = 10))
+  expect_equal(sim(genePdmpT, outSlot = FALSE, seed = 20)[, c("ξA", "ξB")],
             sim(toggleSwitch, outSlot = FALSE, seed = 20)[, c("fA", "fB")],
             check.attributes = FALSE)
 })
 
-test_that("definitons for model 8 coincide", {
-  data("genePdmp8")
-  data("genePoly8")
+test_that("definitons for model DF coincide", {
+  data("genePdmpDF")
+  data("genePolyDF")
   
   t <- c(from = 0, to = 10, by = 0.2)
-  times(genePdmp8) <- t
-  times(genePoly8) <- t
+  times(genePdmpDF) <- t
+  times(genePolyDF) <- t
   
-  expect_equal(sim(genePdmp8, outSlot = FALSE, seed = 80),
-               sim(genePoly8, outSlot = FALSE, seed = 80))
+  expect_equal(sim(genePdmpDF, outSlot = FALSE, seed = 80),
+               sim(genePolyDF, outSlot = FALSE, seed = 80))
 })
 
 test_that("definitons for model Benaim coincide", {

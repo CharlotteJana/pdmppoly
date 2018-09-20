@@ -94,31 +94,31 @@ test_that("polyPdmpModel can be defined as pdmpModel - two cont. variables", {
 #==============================
 
 test_that("order of variables in init doesn't matter for sim", {
-  data(genePoly7)
-  times(genePoly7) <- c(from = 0, to = 10, by = 0.1)
-  init(genePoly7) <-c(ξA = 0.5, ξB = 0.5, θ = 4)
-  sim1 <- sim(genePoly7, seed = 2, outSlot = FALSE)
+  data(genePolyT)
+  times(genePolyT) <- c(from = 0, to = 10, by = 0.1)
+  init(genePolyT) <-c(ξA = 0.5, ξB = 0.5, θ = 4)
+  sim1 <- sim(genePolyT, seed = 2, outSlot = FALSE)
   
-  model <- genePoly7 <- new("polyPdmpModel",
-                            descr = "Model 7 with different order of variables",
-                            parms = parms(genePoly7),
-                            init = c(ξA = 0.5, θ = 4, ξB = 0.5), 
-                            discStates = list(θ = 1:4),
-                            dynpolys = quote(list(
-                              list(overall = -βA*lone(1,3), specific = list(0, αA, 0, αA)),
-                              list(overall = -βB*lone(3,3), specific = list(0, 0, αB, αB))
-                            )), 
-                            ratepolys = quote(list(  
-                              list(κ01B, κ01B, κ10B*lone(1,3), κ10B*lone(1,3)),
-                              list(κ01A, κ10A*lone(3,3), κ01A, κ10A*lone(3,3))
-                            )),
-                            jumpfunc = function(t, x, parms, jtype) {
-                              c(x[1], switch(jtype, 
-                                               switch(x[2], 3, 4, 1, 2), 
-                                               switch(x[2], 2, 1, 4, 3)), x[3])
-                            }, 
-                            times = times(genePoly7), 
-                            solver = "lsodar")
+  model <- new("polyPdmpModel",
+              descr = "Model T with different order of variables",
+              parms = parms(genePolyT),
+              init = c(ξA = 0.5, θ = 4, ξB = 0.5), 
+              discStates = list(θ = 1:4),
+              dynpolys = quote(list(
+                list(overall = -βA*lone(1,3), specific = list(0, αA, 0, αA)),
+                list(overall = -βB*lone(3,3), specific = list(0, 0, αB, αB))
+              )), 
+              ratepolys = quote(list(  
+                list(κ01B, κ01B, κ10B*lone(1,3), κ10B*lone(1,3)),
+                list(κ01A, κ10A*lone(3,3), κ01A, κ10A*lone(3,3))
+              )),
+              jumpfunc = function(t, x, parms, jtype) {
+                c(x[1], switch(jtype, 
+                                 switch(x[2], 3, 4, 1, 2), 
+                                 switch(x[2], 2, 1, 4, 3)), x[3])
+              }, 
+              times = times(genePolyT), 
+              solver = "lsodar")
   
   sim2 <- sim(model, seed = 2, outSlot = FALSE)
   expect_identical(sim1[, "ξA"], sim2[, "ξA"])

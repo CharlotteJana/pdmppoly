@@ -16,12 +16,12 @@ test_that("exists.distribution works as expected", {
   expect_false(exists.distribution(-4, -5, 1:5))
 })
 
-test_that("exists.distribution returns TRUE for the gene1 model", {
+test_that("exists.distribution returns TRUE for model K", {
   
-  data("genePoly1")
-  parms <- parms(genePoly1)
+  data("genePolyK")
+  parms <- parms(genePolyK)
   
-  EWgene1 <- function(parms){
+  EWgeneK <- function(parms){
       EW <- c()
       EW["ξ"]  = with(as.list(parms),
                       (α*κ01)/(β*(κ10+κ01)))
@@ -36,7 +36,7 @@ test_that("exists.distribution returns TRUE for the gene1 model", {
       return(EW)
   }
   
-  expect_true(exists.distribution(0, parms[["α"]]/parms[["β"]], EWgene1(parms)))
+  expect_true(exists.distribution(0, parms[["α"]]/parms[["β"]], EWgeneK(parms)))
 })
 
 test_that("is.unimodal returns TRUE for simple unimodal distributions", {

@@ -1,8 +1,8 @@
 library(spray)
 #------ code to generate the pdmpModel version -----
 
-genePdmp4 <- new("pdmpModel",
-   descr = "Model 4: positive feedback",
+genePdmpF <- new("pdmpModel",
+   descr = "Model F: positive feedback",
    parms = list(β = 0.2, α = 7, κ10 = 0.02, κ01 = 0.02), 
    init = c(ξ = 1, θ = 1),
    discStates = list(θ = 0:1),
@@ -21,8 +21,8 @@ genePdmp4 <- new("pdmpModel",
 
 #------ code to generate the polyPdmpModel version -----
 
-genePoly4 <- new("polyPdmpModel",
-     descr = "Model 4: positive feedback (polynomial version)",
+genePolyF <- new("polyPdmpModel",
+     descr = "Model F: positive feedback (polynomial version)",
      parms = list(β = 0.2, α = 7, κ10 = 0.02, κ01 = 0.02), 
      init = c(ξ = 1, θ = 1), 
      discStates = list(θ = 0:1),
@@ -40,5 +40,5 @@ genePoly4 <- new("polyPdmpModel",
 
 #------- comparison of the models --------------
 
-identical(sim(genePdmp4, outSlot = FALSE, seed = 40),
-          sim(genePoly4, outSlot = FALSE, seed = 40))
+identical(sim(genePdmpF, outSlot = FALSE, seed = 40),
+          sim(genePolyF, outSlot = FALSE, seed = 40))

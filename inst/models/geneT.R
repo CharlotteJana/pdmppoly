@@ -1,8 +1,8 @@
 library(spray)
 #------ code to generate the pdmpModel version -----
 
-genePdmp7 <- new("pdmpModel", 
-   descr = "Model 7: toggleswitch with two promotors",
+genePdmpT <- new("pdmpModel", 
+   descr = "Model T: toggleswitch with two promotors",
    parms = list(βA = 0.5, βB = 0.5, αA = 2, αB = 4, 
                  κ01A = 0.5, κ10A = 2, κ01B = 0.3, κ10B = 3),
    init = c(ξA = 0.5, ξB = 0.5, θ = 4),
@@ -32,8 +32,8 @@ genePdmp7 <- new("pdmpModel",
 #------ code to generate the polyPdmpModel version -----
 
 library("spray")
-genePoly7 <- new("polyPdmpModel",
-  descr = "Model 7: toggleswitch with two promotors (polynomial version)",
+genePolyT <- new("polyPdmpModel",
+  descr = "Model T: toggleswitch with two promotors (polynomial version)",
   parms = list(βA = 0.5, βB = 0.5, αA = 2, αB = 4, 
                κ01A = 0.5, κ10A = 2, κ01B = 0.3, κ10B = 3),
   init = c(ξA = 0.5, ξB = 0.5, θ = 4), 
@@ -56,10 +56,10 @@ genePoly7 <- new("polyPdmpModel",
 
 #------- comparison of the models --------------
 
-identical(sim(genePdmp7, outSlot = FALSE, seed = 10),
-          sim(genePoly7, outSlot = FALSE, seed = 10))
+identical(sim(genePdmpT, outSlot = FALSE, seed = 10),
+          sim(genePolyT, outSlot = FALSE, seed = 10))
 
 data("toggleSwitch")
-all.equal(sim(genePdmp7, outSlot = FALSE, seed = 20)[, c("ξA", "ξB")],
+all.equal(sim(genePdmpT, outSlot = FALSE, seed = 20)[, c("ξA", "ξB")],
           sim(toggleSwitch, outSlot = FALSE, seed = 20)[, c("fA", "fB")],
           check.attributes = FALSE)
