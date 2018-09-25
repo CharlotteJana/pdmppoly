@@ -2,6 +2,8 @@
 #t1 references for inequalities
 #t1 munif?
 #t2 tests
+#t1 lower bound for 2-b-unimodal?
+#t1 documentation of parameters
 
 #' Test if moments come from a unimodal distribution with compact support
 #'
@@ -16,7 +18,7 @@
 #' \emph{4-b-unimodal}. The internal methods \code{is.2_b_unimodal} and
 #' \code{is.4_b_unimodal} test these inequalities. Method \code{is.unimodal}
 #' performs these checks, depending on the number of given distributions. A
-#' 4-b-unimodal distribution can still be nonunimodal (see examples the below).
+#' 4-b-unimodal distribution can still be nonunimodal (see the examples below).
 #' But a failure of these tests assures the distribution not to be unimodal.
 #'
 #' @inheritParams exists.distribution
@@ -28,26 +30,27 @@
 #' @example inst/examples/unimodal.R
 #' @name is.unimodal
 #' @export
-is.unimodal <- function(A, B, m, eps = 1e-10){
+is.unimodal <- function(lower, upper, moments, eps = 1e-10){
   #[A,B] = Support der ZG
   #m = sortierter Vektor mit Momenten
   
-  if(length(m) < 4){
-    is.2_b_unimodal(A, B, m, eps)
+  if(length(moments) < 4){
+    is.2_b_unimodal(lower, upper, moments, eps)
   }
   if(length(m) < 6){
-    is.2_b_unimodal(A, B, m, eps)
-    is.4_b_unimodal(A, B, m, eps)
+    is.2_b_unimodal(lower, upper, moments, eps)
+    is.4_b_unimodal(lower, upper, moments, eps)
   }
 }
 
 #' @rdname is.unimodal
 #' @export
-is.2_b_unimodal <- function(A, B, m, eps = 1e-10){
+is.2_b_unimodal <- function(lower, upper, moments, eps = 1e-10){
   
-  sd <- sqrt(m[[2]]-m[[1]]^2) # standard derivation
-  a <- (A-m[[1]])/sd # lower bound of support of the standardized distribution
-  b <- (B-m[[1]])/sd # upper bound of support of the standardized distribution
+  # [a, b] = support of the standardized distribution
+  sd <- sqrt(moments[[2]]-moments[[1]]^2) # standard derivation
+  a <- (lower-moments[[1]])/sd 
+  b <- (upper-moments[[1]])/sd
 
   if (1+a*b > 0){
     message("There is no distribution with these parameters, 
@@ -75,14 +78,16 @@ is.2_b_unimodal <- function(A, B, m, eps = 1e-10){
 
 #' @rdname is.unimodal
 #' @export
-is.4_b_unimodal <- function(A, B, m, eps = 1e-10){
+is.4_b_unimodal <- function(lower, upper, moments, eps = 1e-10){
 
-  sd <- sqrt(m[[2]]-m[[1]]^2) # strandard derivation
-  g1 <- (m[[3]]-3*sd^2*m[[1]]-m[[1]]^3)/sd^3
-  g2 <- (-3*m[[1]]^4+6*m[[2]]*m[[1]]^2-4*m[[3]]*m[[1]]+m[[4]])/sd^4-3
+  sd <- sqrt(moments[[2]]-moments[[1]]^2) # strandard derivation
+  g1 <- (moments[[3]]-3*sd^2*moments[[1]]-moments[[1]]^3)/sd^3
+  g2 <- (-3*moments[[1]]^4+6*moments[[2]]*moments[[1]]^2-
+           4*moments[[3]]*moments[[1]]+moments[[4]])/sd^4-3
 
-  a <- (A-m[[1]])/sd # lower bound of support of the standardized distribution
-  b <- (B-m[[1]])/sd # upper bound of support of the standardized distribution
+  # [a, b] = support of the standardized distribution
+  a <- (lower-moments[[1]])/sd
+  b <- (upper-moments[[1]])/sd
   
   Q <- 4*g1*(a+b)+(3-a^2)*(3-b^2)
 

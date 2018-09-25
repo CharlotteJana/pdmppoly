@@ -6,21 +6,13 @@
 \alias{is.4_b_unimodal}
 \title{Test if moments come from a unimodal distribution with compact support}
 \usage{
-is.unimodal(A, B, m, eps = 1e-10)
+is.unimodal(lower, upper, moments, eps = 1e-10)
 
-is.2_b_unimodal(A, B, m, eps = 1e-10)
+is.2_b_unimodal(lower, upper, moments, eps = 1e-10)
 
-is.4_b_unimodal(A, B, m, eps = 1e-10)
+is.4_b_unimodal(lower, upper, moments, eps = 1e-10)
 }
 \arguments{
-\item{A}{numeric. The lower bound of the support of the distribution.}
-
-\item{B}{numeric. The upper bound of the support of the distriubtion.}
-
-\item{m}{numeric vector giving the non standardized moments \eqn{m_1, m_2,
-m_3, ...}{m₁, m₂, m₃, ...}, sorted by their degree. 
-This vector should have at least two entries.}
-
 \item{eps}{numeric value. Some inequalities are of the form \code{... > 0}.
 For numerical reasons it is better to test for \code{... > eps} where
 \code{eps} is a small number.}
@@ -41,7 +33,7 @@ satisfies all inequalities that contain only moments up to order 4 is called
 \emph{4-b-unimodal}. The internal methods \code{is.2_b_unimodal} and
 \code{is.4_b_unimodal} test these inequalities. Method \code{is.unimodal}
 performs these checks, depending on the number of given distributions. A
-4-b-unimodal distribution can still be nonunimodal (see examples the below).
+4-b-unimodal distribution can still be nonunimodal (see the examples below).
 But a failure of these tests assures the distribution not to be unimodal.
 }
 \examples{
