@@ -4,6 +4,8 @@
 #t2 tests
 #t1 lower bound for 2-b-unimodal?
 #t1 documentation of parameters
+#t1  NaNs zulassen
+#t1 ausgiebig testen: vergleich mit den alten funktionen!
 
 #' Test if moments come from a unimodal distribution with compact support
 #'
@@ -81,55 +83,42 @@ is.2_b_unimodal <- function(lower, upper, moments, eps = 1e-10){
 #' @export
 is.4_b_unimodal <- function(lower, upper, moments, eps = 1e-10){
 
-  # [a, b] = support of the standardized distribution
-  sd <- sqrt(moments[[2]]-moments[[1]]^2) # strandard derivation
-  a <- (lower-moments[[1]])/sd
-  b <- (upper-moments[[1]])/sd
-  g1 <- (moments[[3]]-3*sd^2*moments[[1]]-moments[[1]]^3)/sd^3
-  g2 <- (-3*moments[[1]]^4+6*moments[[2]]*moments[[1]]^2-
-           4*moments[[3]]*moments[[1]]+moments[[4]])/sd^4-3
-
+  if(is.vector(moments))
+    moments <- t(moments)
   
-  Q <- 4*g1*(a+b)+(3-a^2)*(3-b^2)
+  # [a, b] = support of the standardized distribution
+  sd <- sqrt(moments[, 2]-moments[, 1]^2) # strandard derivation
+  a <- (lower-moments[, 1])/sd
+  b <- (upper-moments[, 1])/sd
+  g1 <- (moments[, 3]-3*sd^2*moments[, 1]-moments[, 1]^3)/sd^3
+  g2 <- (-3*moments[, 1]^4+6*moments[, 2]*moments[, 1]^2-
+           4*moments[, 3]*moments[, 1]+moments[, 4])/sd^4-3
 
-  if (1+a*b > 0 | g2 < g1^2-2 | g2 > g1^2-2-(a*b*(g1-a+1/a)*(g1-b+1/b))/(1+a*b) | g1 > b-1/b | g1 < a-1/a){
-    message("There is no distribution with these parameters, because ")
-    if(1+a*b > 0) message("1+a*b > 0.")
-    if(g2 < g1^2-2) message("γ2 < γ1²-2.")
-    if(g2 > g1^2-2-(a*b*(g1-a+1/a)*(g1-b+1/b))/(1+a*b)) 
-      message("γ2 > γ1²-2-(a*b*(γ1-a+1/a)*(γ1-b+1/b))/(1+a*b) .")
-    if(g1 > b-1/b) message("γ1 > b-1/b.")
-    if(g1 < a-1/a) message("γ1 < a-1/a.")
-    return(FALSE)
-  }
+  Q <- 4*g1*(a+b)+(3-a^2)*(3-b^2)
+  
+  # Existance of a distribution
+  eqn1 <- ifelse(1+a*b <= 0, TRUE, FALSE)
+  eqn2 <- ifelse(g2 >= g1^2-2, TRUE, FALSE)
+  eqn3 <- ifelse(g2 <= g1^2-2-(a*b*(g1-a+1/a)*(g1-b+1/b))/(1+a*b), TRUE, FALSE)
+  eqn4 <- ifelse(g1 <= b-1/b, TRUE, FALSE)
+  eqn5 <- ifelse(g1 >= a-1/a, TRUE, FALSE)
+  eqn6 <- (eqn1 & eqn2 & eqn3 & eqn4 & eqn5)
   
   ### Upper bound (Teuscher, Guiard)
-  
-  if (a + b > eps){ # Fall a < b
-    if (Q >= 0){
-      eq <- (4*g1*(a^2+b^2+a*b-3) 
-             -2*Q*(3+a*b+sqrt(Q))/(a+b))/(5*(a+b))-6/5
-      boolUpper <- (g2 <= eps + eq)
-    } else {
-      eq <- (4*g1*(a^2+b^2+a*b-3) +
-             Q*(4*g1+(a+b)*(a^2-3))/(3+2*a*b+a^2))/(5*(a+b))-6/5
-      boolUpper <- (g2 <= eps + eq)
-    }
-  } else if (a + b < -eps){ # Fall a > b
-    if (Q >= 0){
-      eq <- (4*g1*(a^2+b^2+a*b-3)
-             -2*Q*(3+a*b-sqrt(Q))/(a+b))/(5*(a+b))-6/5
-      boolUpper <- (g2 <= eps + eq)
-    } else {
-      eq <- (4*g1*(a^2+b^2+a*b-3)
-             +Q*(4*g1+(a+b)*(b^2-3))/(3+2*a*b+b^2))/(5*(a+b))-6/5
-      boolUpper <- (g2 <= eps + eq)
-    }
-  } else{  # Fall a = -b
-      eq <- 1/5*((12*g1^2)/(3-a^2)+3*a^2-15)
-      boolUpper <- (g2 <= eps + eq)
-  }
-
+  form1 <- 4*g1*(a^2+b^2+a*b-3)
+  form2 <- ifelse(a+b > eps & Q>=0, 
+                (form1-2*Q*(3+a*b+sqrt(Q))/(a+b))/(5*(a+b))-6/5, 0)
+  form3 <- ifelse(a+b > eps & Q<0,
+                (form1+Q*(4*g1+(a+b)*(a^2-3))/(3+2*a*b+a^2))/(5*(a+b))-6/5, 0)
+  form4 <- ifelse(a+b < -eps & Q>=0,
+                (form1-2*Q*(3+a*b-sqrt(Q))/(a+b))/(5*(a+b))-6/5, 0)
+  form5 <- ifelse(a+b < -eps & Q<0,
+                (form1+Q*(4*g1+(a+b)*(b^2-3))/(3+2*a*b+b^2))/(5*(a+b))-6/5, 0)
+  form6 <- ifelse(abs(a+b) < eps, 
+                1/5*((12*g1^2)/(3-a^2)+3*a^2-15), 0)
+  formula <- form2 + form3 + form4 + form5 + form6
+  eqn7 <- ifelse(g2 <= eps + formula, TRUE, FALSE)
+ 
   ### Lower bound (Johnsson, Rogers)
   
   s <- sqrt(as.complex(g2+6))
@@ -139,21 +128,39 @@ is.4_b_unimodal <- function(lower, upper, moments, eps = 1e-10){
         z*6*5^(2/3))/(9*5^(1/3)*s*t^(1/3)))
   }
   # all 3 solutions of ...
-  q <- c(calc_q(-1-sqrt(3)*1i), calc_q(-1+sqrt(3)*1i), calc_q(2)) 
-  
+  q <- cbind(calc_q(-1-sqrt(3)*1i), calc_q(-1+sqrt(3)*1i), calc_q(2)) 
+
   # only real solutions between 0 and 1:
-  q <- Re(q[Im(q) < eps & 0 <= Re(q) & Re(q) <= 1]) 
+  q[!(abs(Im(q)) <eps & 0<=Re(q) & Re(q) <=1)] <- NA
+  q <- Re(q)
   
-  if (length(q) == 1){
-    boolLower <- (g1^2 <= eps + (108*q[1]^4)/((1-q[1])*(1+3*q[1])^3))
-  } else if (length(q) == 2){
-      q <- sort(q)
-      eq1 <- (108*q[1]^4)/((1-q[1])*(1+3*q[1])^3)
-      eq2 <- (g1^2 <= eps + (108*q[2]^4)/((1-q[2])*(1+3*q[2])^3))
-      boolLower <- (g1^2 + eps >= eq1 & eq2)
-  } else {
-      message("Error during calculation of the lower bound.")
+  # kann man auch mit eqn11 machen!
+  numRoots <- rowSums(!is.na(q))
+  if(sum(!(numRoots %in% 1:2)) != 0){
+    warning("Error during calculation of the lower bound.")
   }
+  
+  # inequalities
+  t <- (108*q^4)/((1-q)*(1+3*q)^3)
+  eqn8 <- ifelse(numRoots == 1, g1^2 <= eps + apply(t, 1, max, na.rm = T), FALSE)
+  eqn9 <- ifelse(numRoots == 2, g1^2 <= eps + apply(t, 1, max, na.rm = T), FALSE)
+  eqn10 <-ifelse(numRoots == 2, g1^2 + eps >= apply(t, 1, min, na.rm = T), FALSE)
+  eqn11 <-ifelse(numRoots %in% 1:2, FALSE, NA)
+  eqn12 <- eqn8 | (eqn9 & eqn10) | eqn11
+ 
+  print(is.na(eqn11))
+  print(eqn6)
+  
+  ### Combine everything
+  print(eqn12 & eqn7)
+  results <- dplyr::case_when(
+    isTRUE(eqn12 & eqn7) ~ "4-b-unimodal",
+    !isTRUE(eqn6) ~ "not existant",
+    is.na(eqn11) ~ NA_character_,
+    TRUE ~ rep("not unimodal", length(eqn1))
+  )
+  
+  return(results)
   
 #   if (g2 < -1.3125){
 #     print("Fall g2 < -1.3125")
@@ -169,16 +176,6 @@ is.4_b_unimodal <- function(lower, upper, moments, eps = 1e-10){
 #     #q <- uniroot(f, c(-1,0.2), tol = eps)$root
 #     
 #     boolLower <- TRUE
-#   }
-
-  ### return
-  
-  if(boolUpper & boolLower){
-    message("The distribution is 4-b-unimodal.")
-  } else {    
-    message("The distribution cannot be unimodal.")
-  }
-  return(boolUpper & boolLower)
 }
 
 ##################################################################
