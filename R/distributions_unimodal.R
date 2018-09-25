@@ -47,47 +47,48 @@ is.unimodal <- function(lower, upper, moments, eps = 1e-10){
 #' @export
 is.2_b_unimodal <- function(lower, upper, moments, eps = 1e-10){
   
+  if(is.vector(moments))
+    moments <- t(moments)
+  
   # [a, b] = support of the standardized distribution
-  sd <- sqrt(moments[[2]]-moments[[1]]^2) # standard derivation
-  a <- (lower-moments[[1]])/sd 
-  b <- (upper-moments[[1]])/sd
-
-  if (1+a*b > 0){
-    message("There is no distribution with these parameters, 
-             because 1+ab > 0.")
-    return(FALSE)
-  }
+  sd <- sqrt(moments[, 2]-moments[, 1]^2) # standard derivation
+  a <- (lower-moments[, 1])/sd 
+  b <- (upper-moments[, 1])/sd
+  
+  # Existence of a distribution
+  eqn1 <- ifelse(1+a*b <= 0, TRUE, FALSE)
   
   # Lower bound ???
+  # ...
   
   # Upper bound (Teuscher, Guiard)
-  if (a + b > eps){
-      bool <- (b > sqrt(3) && a <= -b+sqrt(b^2-3))
-  } else if (a + b < -eps){
-      bool <- (a < -sqrt(3) && b >= -a-sqrt(a^2-3))
-  }else{
-      bool <- (b >= sqrt(3))
-  }
-  if(bool){
-    message("The distribution is not 2-b-unimodal.")
-  } else {    
-    message("The distripution cannot be unimodal.")
-  }
-  return(bool)
+  eqn2 <- ifelse(a + b > eps & b > sqrt(3) & a <= -b+sqrt(b^2-3), TRUE, FALSE)
+  eqn3 <- ifelse(a+b < -eps & a < -sqrt(3) & b >= -a-sqrt(a^2-3), TRUE, FALSE)
+  eqn4 <- ifelse(abs(a+b) <= eps & b >= sqrt(3), TRUE, FALSE)
+  eqn5 <- (eqn2 | eqn3 | eqn4)
+  
+  results <- dplyr::case_when(
+    isTRUE(eqn5) ~ "2-b-unimodal",
+    !isTRUE(eqn5) ~ "not unimodal",
+    !isTRUE(eqn1) ~ "not existant",
+    TRUE ~ rep(NA_character_, length(eqn1))
+  )
+  
+  return(results)
 }
 
 #' @rdname is.unimodal
 #' @export
 is.4_b_unimodal <- function(lower, upper, moments, eps = 1e-10){
 
+  # [a, b] = support of the standardized distribution
   sd <- sqrt(moments[[2]]-moments[[1]]^2) # strandard derivation
+  a <- (lower-moments[[1]])/sd
+  b <- (upper-moments[[1]])/sd
   g1 <- (moments[[3]]-3*sd^2*moments[[1]]-moments[[1]]^3)/sd^3
   g2 <- (-3*moments[[1]]^4+6*moments[[2]]*moments[[1]]^2-
            4*moments[[3]]*moments[[1]]+moments[[4]])/sd^4-3
 
-  # [a, b] = support of the standardized distribution
-  a <- (lower-moments[[1]])/sd
-  b <- (upper-moments[[1]])/sd
   
   Q <- 4*g1*(a+b)+(3-a^2)*(3-b^2)
 
