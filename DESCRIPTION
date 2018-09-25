@@ -26,6 +26,7 @@ Remotes: CharlotteJana/pdmpsim
 RoxygenNote: 6.0.1
 Collate: 
     '2_def_polyPdmp.R'
+    'analysis.R'
     'data.R'
     'distributions.R'
     'distributions_BEGG.R'
@@ -41,4 +42,4 @@ Collate:
     'momApp_outputMethods.R'
     'momentboundaries.R'
     'msCsv_moments.R'
-    'pdmp_analysis.R'
+    'supports.R'
