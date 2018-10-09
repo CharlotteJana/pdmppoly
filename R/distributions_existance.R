@@ -10,9 +10,9 @@
 #' dimensional distribution with given support \eqn{[A, B]} and raw moments
 #' \eqn{m_1, m_2, m_3, ...}{m₁, m₂, m₃, ...}. Only inequalities that include
 #' moments up to order 5 are implemented.
-#' @param A numeric. The lower bound of the support of the distribution.
-#' @param B numeric. The upper bound of the support of the distriubtion.
-#' @param m numeric vector giving the non standardized moments \eqn{m_1, m_2,
+#' @param lower numeric. The lower bound A of the support \eqn{[A, B]} of the distribution.
+#' @param upper numeric. The upper bound B of the support \eqn{[A, B]} of the distriubtion.
+#' @param moments numeric vector giving the non standardized moments \eqn{m_1, m_2,
 #'   m_3, ...}{m₁, m₂, m₃, ...}, sorted by their degree. 
 #'   This vector should have at least two entries.
 #' @examples
@@ -22,37 +22,36 @@
 #' @return boolean variable indicating if a distribution exists (TRUE) or 
 #' not (FALSE). This method does not return a suitable distribution.
 #' @export
-exists.distribution <- function(A, B, m){
+exists.distribution <- function(lower, upper, moments){
   
-  if(length(m) < 2){
+  if(length(moments) < 2){
     stop("At least two moment values are required.")
   }
   
-  if(m[[2]] < m[[1]]^2)
+  if(moments[[2]] < moments[[1]]^2)
     return(FALSE)
   
   #----- definitions ------
   
   bool <- TRUE
-  sd <- sqrt(m[[2]]-m[[1]]^2) # standard derivation
-  a <- (A-m[[1]])/sd # lower bound of support of the standardized distribution
-  b <- (B-m[[1]])/sd # upper bount of support of the standardized distribution
+  sd <- sqrt(moments[[2]]-moments[[1]]^2) # standard derivation
+  a <- (lower-moments[[1]])/sd # lower bound of support of the standardized distribution
+  b <- (upper-moments[[1]])/sd # upper bount of support of the standardized distribution
 
-  stand.moments <- NULL
-  for(j in seq_along(m)){  # standardize moments m
-    e <- m[[1]]
-    s <- sapply(1:j, function(k) choose(j,k)*m[[k]]*(-e)^(j-k))
-    stand.moments[[j]] <- (sum(s) + (-e)^j)/ sd^j
+  m <- NULL # m = standardized moments
+  for(j in seq_along(moments)){  
+    e <- moments[[1]]
+    s <- sapply(1:j, function(k) choose(j,k)*moments[[k]]*(-e)^(j-k))
+    m[[j]] <- (sum(s) + (-e)^j)/ sd^j
   }
-  m <- stand.moments
   
   #----- inequalities for support ------
   
   # Integral = 1 prüfen?
   
   if(1+a*b > 0){ # 1.1, Teuscher, Guiard: (3)
-    message("There is no distribution with lower bound ", A, 
-            " and upper bound ", B)
+    message("There is no distribution with lower bound ", lower, 
+            " and upper bound ", upper)
     bool <- FALSE
   }
   
@@ -60,13 +59,13 @@ exists.distribution <- function(A, B, m){
   
   if(length(m) >= 3){ 
     if(m[[3]] < a - 1/a){ # 1.2, Teuscher, Guiard: (3)
-      message("There is no distribution with lower bound ", A,
-              " and the 3rd moment given as ", m[[3]])
+      message("There is no distribution with lower bound ", lower,
+              " and the 3rd moment given as ", moments[[3]])
       bool <- FALSE
     }
     if(m[[3]] > b - 1/b){ # 1.3, Teuscher, Guiard: (3)
-      message("There is no distribution with upper bound ", B,
-              " and the 3rd moment given as ", m[[3]])
+      message("There is no distribution with upper bound ", upper,
+              " and the 3rd moment given as ", moments[[3]])
       bool <- FALSE
     }
   }
@@ -75,21 +74,21 @@ exists.distribution <- function(A, B, m){
   
   if(length(m) >= 4){ # 1.4, Teuscher, Guiard: (2)
     if(m[4]-m[3]^2-1 > -(a^2-a*m[3]-1)*(b^2-b*m[3]-1) / (1+a*b)){
-      message("There is no distribution with the 3rd moment being ", m[[3]],
-              " the 4rth moment being ", m[[4]], " and the standardized ",
-              "support being [", a, ",", b, "]")
+      message("There is no distribution with the 3rd moment being ", moments[[3]],
+              " the 4rth moment being ", moments[[4]], " and the support being ",
+              "suppor [", lower, ",", upper, "]")
       bool = FALSE
     }
     if(m[4]-m[3]^2-1 < 0){ # 2.6, Teuscher, Guiard: (1)
-      message("There is no distribution with the 3rd moment being ", m[[3]],
-              " and the 4rth moment being ", m[[4]])
+      message("There is no distribution with the 3rd moment being ", moments[[3]],
+              " and the 4rth moment being ", moments[[4]])
       bool = FALSE
     }
   }
   
   #------- inequalities for 5th moment ------
   
-  if(length(m) >= 5){ # 3.1
+  if(length(moments) >= 5){ # 3.1
     if(-m[5] + 
        (m[4]*(m[4]-(b+2*a)*(m[3]+a^2*b)-b^2-2*a^2))/(m[3]-(a^2+1)*b-2*a) +
        (((b+a)^2+2*a^2)*m[3]^2)/(m[3]-(a^2+1)*b-2*a) + 

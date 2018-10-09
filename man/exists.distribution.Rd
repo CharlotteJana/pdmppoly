@@ -4,14 +4,14 @@
 \alias{exists.distribution}
 \title{Check for existance of a distribution}
 \usage{
-exists.distribution(A, B, m)
+exists.distribution(lower, upper, moments)
 }
 \arguments{
-\item{A}{numeric. The lower bound of the support of the distribution.}
+\item{lower}{numeric. The lower bound A of the support \eqn{[A, B]} of the distribution.}
 
-\item{B}{numeric. The upper bound of the support of the distriubtion.}
+\item{upper}{numeric. The upper bound B of the support \eqn{[A, B]} of the distriubtion.}
 
-\item{m}{numeric vector giving the non standardized moments \eqn{m_1, m_2,
+\item{moments}{numeric vector giving the non standardized moments \eqn{m_1, m_2,
 m_3, ...}{m₁, m₂, m₃, ...}, sorted by their degree. 
 This vector should have at least two entries.}
 }

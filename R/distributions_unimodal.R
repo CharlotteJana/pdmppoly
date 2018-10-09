@@ -3,8 +3,7 @@
 #t1 munif?
 #t2 tests
 #t1 lower bound for 2-b-unimodal?
-#t1 documentation of parameters
-#t1  NaNs zulassen
+#t1 NaNs zulassen
 #t1 ausgiebig testen: vergleich mit den alten funktionen!
 #t1 4-b: Lower-Bound von Johnsson - Rogers verstehen !!!!
 
