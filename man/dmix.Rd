@@ -5,14 +5,14 @@
 \alias{mmix}
 \title{Mixtures of truncated distributions}
 \usage{
-dmix(a = -Inf, b = Inf, distrib, weights)
+dmix(lower = -Inf, upper = Inf, distrib, weights)
 
-mmix(order, a = -Inf, b = Inf, weights, distrib)
+mmix(order, lower = -Inf, upper = Inf, distrib, weights)
 }
 \arguments{
-\item{a}{numeric giving the lower bound of the support. Defaults to -Inf.}
+\item{lower}{numeric giving the lower bound of the support. Defaults to -Inf.}
 
-\item{b}{numeric giving the upper bound of the support. Defaults to Inf.}
+\item{upper}{numeric giving the upper bound of the support. Defaults to Inf.}
 
 \item{distrib}{a list. Every element is itself a list representing a distribution.
 This list should have one named element \code{spec} which describes the
@@ -24,11 +24,17 @@ additional parameters for the specfied distribution.}
 Provides weights for every distribution given in \code{distrib}.}
 }
 \description{
-Mixtures of truncated distributions
+Compute the distribution (\code{dmix}) and raw moments (\code{mmix}) of a mixture
+of different, eventually truncated distributions.
 }
 \examples{
 distributions <- list(list(spec="exp", rate = 2),
                      list(spec="norm", mean = 0, sd = 0.5),
                      list(spec="unif", min = 2, max = 3))
-curve(dmix(3, a=-1, weights = c(.1,.3,.1), distrib=distributions)(x),-2,5)
+d <- dmix(-1, 3, weights = c(.1,.3,.1), distrib = distributions)
+curve(d(x), -2, 5)
+}
+\seealso{
+\code{\link{random.distribution}} to plot a randomly created mixture
+of truncated distributions.
 }
