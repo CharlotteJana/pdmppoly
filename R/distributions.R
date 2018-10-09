@@ -171,32 +171,3 @@ random.distribution <- function(A = 0, B = 10, curve = TRUE){
 #   distributions <- lapply(1:n, function(i) list(spec = "lnorm", meanlog = means[i], sdlog = sds[i]))
 #   mmix(order, distrib = distributions, ...)
 # }
-
-
-##### gestutzte Normalverteilungennach Orjebin #####
-
-#Momente der gestutzten Normalverteilung nach Orjebin_2014
-
-#' @importFrom stats dnorm qnorm pnorm
-#' @export
-mtnorm <- function(order, mean = 0, sd = 1, lower = - Inf, upper = Inf){
-  max <- max(order)
-  moments <- 0:(max+1) # startet mit m₋₁ = 0, and m₀ = 1
-  k <- 3
-  d <- function(x) dnorm(x, mean = mean, sd = sd)
-  p <- function(x) pnorm(x, mean = mean, sd = sd)
-  uppern <- (upper-mean)/sd
-  lowern <- (lower-mean)/sd
-  while(k <= max+2){
-   moments[k] <- (k-3)*sd^2*moments[k-2]+mean*moments[k-1] - 
-                sd*(upper^(k-3)*d(upper)-lower^(k-3)*d(lower))/
-                (p(upper)-p(lower))
-   k <- k+1
-  }
-  print(d(-Inf)*(-Inf))
-  moments[order+2]
-}
-
-#seltsames Verhalten für mean, bsp:  
-#mtnorm(1:15, mean = 20, lower = -600, upper = 600)-mnorm(1:15, mean = 20)
-#gibt große Differenz, die auch bei weiteren Grenzen nicht verschwindet
