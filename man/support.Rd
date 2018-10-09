@@ -7,7 +7,6 @@
 \alias{plotSupport}
 \alias{getsupport}
 \alias{plotsupport}
-\alias{plotSupport}
 \title{Return the support for gene regulation models}
 \usage{
 getSupport(model)

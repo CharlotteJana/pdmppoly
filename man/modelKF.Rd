@@ -6,7 +6,6 @@
 \alias{genePdmpKF}
 \alias{genePolyKF}
 \alias{geneKF}
-\alias{genePolyKF}
 \title{Gene regulation with positive feedback and constant rates}
 \format{\code{genePdmpKF} is an object of class \code{\link[pdmpsim]{pdmpModel}},\cr 
   \code{genePolyKF} is an object of class \code{\link{polyPdmpModel}}.}

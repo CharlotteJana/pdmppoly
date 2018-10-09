@@ -6,7 +6,6 @@
 \alias{genePdmpK2}
 \alias{genePolyK2}
 \alias{geneK2}
-\alias{genePolyK2}
 \title{Gene regulation with constant activation and translation}
 \format{\code{genePdmpK2} is an object of class \code{\link[pdmpsim]{pdmpModel}}, \cr 
   \code{genePolyK2} is an object of class \code{\link{polyPdmpModel}}.}

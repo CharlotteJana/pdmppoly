@@ -4,8 +4,6 @@
 \alias{BEGG}
 \alias{dBEGG}
 \alias{mBEGG}
-\alias{dBEGG}
-\alias{mBEGG}
 \title{Bimodal extension of the generalized Gamma-Distribution}
 \usage{
 dBEGG(alpha, beta, delta0, delta1, eta, eps, mu = 0, sigma = 1)

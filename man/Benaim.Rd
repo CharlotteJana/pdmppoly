@@ -5,7 +5,6 @@
 \alias{Benaim}
 \alias{benaim}
 \alias{polyBenaim}
-\alias{polyBenaim}
 \title{Model \code{Benaim}}
 \format{\code{Benaim} is an object of class \code{\link[pdmpsim]{pdmpModel}}, \cr 
   \code{polyBenaim} is an object of class \code{\link{polyPdmpModel}}.}

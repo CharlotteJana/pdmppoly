@@ -6,7 +6,6 @@
 \alias{genePdmpT}
 \alias{genePolyT}
 \alias{geneT}
-\alias{genePolyT}
 \title{Toggle Switch with two promotors}
 \format{\code{genePdmpT} is an object of class \code{\link[pdmpsim]{pdmpModel}}, \cr 
   \code{genePolyT} is an object of class \code{\link{polyPdmpModel}}.}

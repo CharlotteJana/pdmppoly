@@ -6,7 +6,6 @@
 \alias{genePdmpDF}
 \alias{genePolyDF}
 \alias{geneDF}
-\alias{genePolyDF}
 \title{Gene regulation with positive feedback and dimerization}
 \format{\code{genePdmpDF} is an object of class \code{\link[pdmpsim]{pdmpModel}}, \cr 
   \code{genePolyDF} is an object of class \code{\link{polyPdmpModel}}.}

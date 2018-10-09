@@ -23,7 +23,7 @@ Imports: actuar,
     spray
 Suggests: testthat
 Remotes: CharlotteJana/pdmpsim
-RoxygenNote: 6.0.1
+RoxygenNote: 6.1.0
 Collate: 
     '2_def_polyPdmp.R'
     'analysis.R'
