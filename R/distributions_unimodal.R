@@ -6,6 +6,7 @@
 #t1 documentation of parameters
 #t1  NaNs zulassen
 #t1 ausgiebig testen: vergleich mit den alten funktionen!
+#t1 4-b: Lower-Bound von Johnsson - Rogers verstehen !!!!
 
 #' Test if moments come from a unimodal distribution with compact support
 #'
@@ -64,9 +65,9 @@ is.2_b_unimodal <- function(lower, upper, moments, eps = 1e-10){
   # ...
   
   # Upper bound (Teuscher, Guiard)
-  eqn2 <- ifelse(a + b > eps & b > sqrt(3) & a <= -b+sqrt(b^2-3), TRUE, FALSE)
-  eqn3 <- ifelse(a+b < -eps & a < -sqrt(3) & b >= -a-sqrt(a^2-3), TRUE, FALSE)
-  eqn4 <- ifelse(abs(a+b) <= eps & b >= sqrt(3), TRUE, FALSE)
+  eqn2 <- ifelse(a + b > eps  & b > sqrt(3),   a <= -b+sqrt(b^2-3), FALSE)
+  eqn3 <- ifelse(a + b < -eps & a < -sqrt(3),  b >= -a-sqrt(a^2-3), FALSE)
+  eqn4 <- ifelse(abs(a+b) <= eps, b >= sqrt(3), FALSE)
   eqn5 <- (eqn2 | eqn3 | eqn4)
   
   results <- dplyr::case_when(
@@ -129,11 +130,13 @@ is.4_b_unimodal <- function(lower, upper, moments, eps = 1e-10){
   }
   # all 3 solutions of ...
   q <- cbind(calc_q(-1-sqrt(3)*1i), calc_q(-1+sqrt(3)*1i), calc_q(2)) 
-
+  cat("g2 = ", g2, "\ns = ", s, "\nt = ", t, "\n")
+  str(q)
+  
   # only real solutions between 0 and 1:
   q[!(abs(Im(q)) <eps & 0<=Re(q) & Re(q) <=1)] <- NA
   q <- Re(q)
-  
+  str(q)
   # kann man auch mit eqn11 machen!
   numRoots <- rowSums(!is.na(q))
   if(sum(!(numRoots %in% 1:2)) != 0){
@@ -148,14 +151,11 @@ is.4_b_unimodal <- function(lower, upper, moments, eps = 1e-10){
   eqn11 <-ifelse(numRoots %in% 1:2, FALSE, NA)
   eqn12 <- eqn8 | (eqn9 & eqn10) | eqn11
  
-  print(is.na(eqn11))
-  print(eqn6)
-  
   ### Combine everything
-  print(eqn12 & eqn7)
+  
   results <- dplyr::case_when(
     isTRUE(eqn12 & eqn7) ~ "4-b-unimodal",
-    !isTRUE(eqn6) ~ "not existant",
+    isTRUE(!eqn6) ~ "not existant",
     is.na(eqn11) ~ NA_character_,
     TRUE ~ rep("not unimodal", length(eqn1))
   )
@@ -200,3 +200,112 @@ w3 <- c(1,1) # mit c(1,1.2) gehts
 B <- 4       # mit B = 3 gehts
 #curve(dmix(a=0, B, w3, distrib = d3)(x), -1, B+1)
 #is.unimodal(0, B, mmix(1:4, 0, B, w3, distrib = d3))
+
+##########################üüüü##############################
+############## Alte Versionen ##############################
+############################################################
+
+is.4_b_unimodal_old <- function(lower, upper, moments, eps = 1e-10){
+  
+  # [a, b] = support of the standardized distribution
+  sd <- sqrt(moments[[2]]-moments[[1]]^2) # strandard derivation
+  a <- (lower-moments[[1]])/sd
+  b <- (upper-moments[[1]])/sd
+  g1 <- (moments[[3]]-3*sd^2*moments[[1]]-moments[[1]]^3)/sd^3
+  g2 <- (-3*moments[[1]]^4+6*moments[[2]]*moments[[1]]^2-
+           4*moments[[3]]*moments[[1]]+moments[[4]])/sd^4-3
+  
+  
+  Q <- 4*g1*(a+b)+(3-a^2)*(3-b^2)
+  
+  if (1+a*b > 0 | g2 < g1^2-2 | g2 > g1^2-2-(a*b*(g1-a+1/a)*(g1-b+1/b))/(1+a*b) | g1 > b-1/b | g1 < a-1/a){
+    message("There is no distribution with these parameters, because ")
+    if(1+a*b > 0) message("1+a*b > 0.")
+    if(g2 < g1^2-2) message("γ2 < γ1²-2.")
+    if(g2 > g1^2-2-(a*b*(g1-a+1/a)*(g1-b+1/b))/(1+a*b)) 
+      message("γ2 > γ1²-2-(a*b*(γ1-a+1/a)*(γ1-b+1/b))/(1+a*b) .")
+    if(g1 > b-1/b) message("γ1 > b-1/b.")
+    if(g1 < a-1/a) message("γ1 < a-1/a.")
+    return(FALSE)
+  }
+  
+  ### Upper bound (Teuscher, Guiard)
+  
+  if (a + b > eps){ # Fall a < b
+    if (Q >= 0){
+      eq <- (4*g1*(a^2+b^2+a*b-3) 
+             -2*Q*(3+a*b+sqrt(Q))/(a+b))/(5*(a+b))-6/5
+      boolUpper <- (g2 <= eps + eq)
+    } else {
+      eq <- (4*g1*(a^2+b^2+a*b-3) +
+               Q*(4*g1+(a+b)*(a^2-3))/(3+2*a*b+a^2))/(5*(a+b))-6/5
+      boolUpper <- (g2 <= eps + eq)
+    }
+  } else if (a + b < -eps){ # Fall a > b
+    if (Q >= 0){
+      eq <- (4*g1*(a^2+b^2+a*b-3)
+             -2*Q*(3+a*b-sqrt(Q))/(a+b))/(5*(a+b))-6/5
+      boolUpper <- (g2 <= eps + eq)
+    } else {
+      eq <- (4*g1*(a^2+b^2+a*b-3)
+             +Q*(4*g1+(a+b)*(b^2-3))/(3+2*a*b+b^2))/(5*(a+b))-6/5
+      boolUpper <- (g2 <= eps + eq)
+    }
+  } else{  # Fall a = -b
+    eq <- 1/5*((12*g1^2)/(3-a^2)+3*a^2-15)
+    boolUpper <- (g2 <= eps + eq)
+  }
+  
+  ### Lower bound (Johnsson, Rogers)
+  
+  s <- sqrt(as.complex(g2+6))
+  t <- 9*sqrt(as.complex(5*g2+6))*sqrt(as.complex(16*g2+21)) + s*(40*g2+51)
+  calc_q <- function(z){
+    ((5^(1/3)*s*t^(1/3) + Conj(z)*t^(2/3) + z*4*5^(2/3)*g2 + 
+        z*6*5^(2/3))/(9*5^(1/3)*s*t^(1/3)))
+  }
+  # all 3 solutions of ...
+  q <- c(calc_q(-1-sqrt(3)*1i), calc_q(-1+sqrt(3)*1i), calc_q(2)) 
+  cat("g2 = ", g2, "\ns = ", s, "\nt = ", t, "\n")
+  str(q)
+  
+  # only real solutions between 0 and 1:
+  q <- Re(q[abs(Im(q)) < eps & 0 <= Re(q) & Re(q) <= 1])
+  
+  if (length(q) == 1){
+    boolLower <- (g1^2 <= eps + (108*q[1]^4)/((1-q[1])*(1+3*q[1])^3))
+  } else if (length(q) == 2){
+    q <- sort(q)
+    eq1 <- (108*q[1]^4)/((1-q[1])*(1+3*q[1])^3)
+    eq2 <- (g1^2 <= eps + (108*q[2]^4)/((1-q[2])*(1+3*q[2])^3))
+    boolLower <- (g1^2 + eps >= eq1 & eq2)
+  } else {
+    message("Error during calculation of the lower bound.")
+  }
+  
+  #   if (g2 < -1.3125){
+  #     print("Fall g2 < -1.3125")
+  #     boolLower <- FALSE
+  #   } else if (g2 > -1.2){ #in diesem Fall ist q reell und positiv!  Lieber >= statt >? Gilt auch q <= 1?
+  #       boolLower <- (g1^2 <= (108*q[1]^4)/((1-q[1])*(1+3*q[1])^3))
+  #       print("Fall g2 > -1.2")
+  #       print(length(q))
+  #   } else {
+  #     print("Fall  -1.3125 < g2 < -1.2")
+  #     print(length(q))
+  #     #f <- function(q){(72*q^2*(3*q-1))/((1-q)*(1+3*q)^2)-5*g2+6}
+  #     #q <- uniroot(f, c(-1,0.2), tol = eps)$root
+  #     
+  #     boolLower <- TRUE
+  #   }
+  
+  ### return
+  
+  if(boolUpper & boolLower){
+    message("The distribution is 4-b-unimodal.")
+  } else {    
+    message("The distribution cannot be unimodal.")
+  }
+  return(boolUpper & boolLower)
+}
+

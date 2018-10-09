@@ -1,6 +1,5 @@
 context("distributions - inequalities")
 
-
 test_that("exists.distribution works as expected", {
   
   # beta distribution:
@@ -52,12 +51,16 @@ test_that("is.unimodal returns TRUE for simple unimodal distributions", {
 test_that("is.unimodal returns FALSE for bimodal distributions", {
   
   # beta distribution:
-  expect_false(is.unimodal(0, 1, actuar::mbeta(1:4, 0.5, 0.5)))
+  expect_match(is.2_b_unimodal(0, 1, actuar::mbeta(1:2, 0.5, 0.5)), 
+               "not unimodal")
+  expect_match(is.4_b_unimodal(0, 1, actuar::mbeta(1:4, 0.5, 0.5)), 
+               "not unimodal")
   
   # arcsine on [0,20]: 
   # see http://www.randomservices.org/random/special/Arcsine.html
-  expect_false(is.unimodal(0, 20, c(20^1*1/2, 
+  expect_match(is.unimodal(0, 20, c(20^1*1/2, 
                                     20^2*(1*3)/(2*4), 
                                     20^3*(1*3*5)/(2*4*6), 
-                                    20^4*(1*3*5*7)/(2*4*6*8))))
+                                    20^4*(1*3*5*7)/(2*4*6*8))),
+               "not unimodal")
 })
