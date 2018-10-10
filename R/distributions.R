@@ -1,7 +1,5 @@
 #======== todo =================================================================
 #t1 warum brauche ich dtrunc?
-#t2 älteren Code rausnehmen -> wohin?
-#t2 testen, das Bsp aus random.distribution könnte ein Test werden.
 
 #------ dtrunc & mtrunc ----------
 
@@ -131,8 +129,10 @@ mmix <- function(order, lower = -Inf, upper = Inf, distrib, weights){
                                    b = upper, 
                                    distrib[[i]]))
   )
-  h <- ifelse(length(order > 1), rowSums(h), sum(h))
-  return(h)
+  if(length(order) > 1)
+    return(rowSums(h))
+  else
+    return(sum(h))
 }
 
 #------ random.distribution ----------
@@ -174,47 +174,3 @@ random.distribution <- function(lower = 0, upper = 10, plot = TRUE){
                  from = lower-1, to = upper+1, ylab = "distribution")
   return(distributions)
 }
-
-##### Kurzformen für Mixtures gleichen Typs #######
-
-# #Normalverteilungen
-# dmixnorm <- function(n, dist=5, means, sds, ...){
-#   if(missing(means)) means = dist*1:n
-#   if(missing(sds)) sds = rep(1, n)
-#   distributions <- lapply(1:n, function(i) list(spec = "norm", mean = means[i], sd = sds[i]))
-#   function(x) dmix(distrib = distributions, ...)(x)
-# }
-# mmixnorm <- function(n, order, dist=5, means, sds, ...){
-#   if(missing(means)) means = dist*1:n
-#   if(missing(sds)) sds = rep(1, n)
-#   distributions <- lapply(1:n, function(i) list(spec = "norm", mean = means[i], sd = sds[i]))
-#   mmix(order, distrib = distributions, ...)
-# }
-# 
-# #Gleichverteilungen
-# dmixunif <- function(n, dist = 1, length = 1, lowers, uppers, ...){
-#   if(missing(lowers)) lowers = (dist+length)*1:n
-#   if(missing(uppers)) uppers = (dist+length)*1:n + length
-#   distributions <- lapply(1:n, function(i) list(spec = "unif", min = lowers[i], max = uppers[i]))
-#   function(x) dmix(distrib = distributions, ...)(x)
-# }
-# mmixunif <- function(n, order, dist = 1, length = 1, lowers, uppers, ...){
-#   if(missing(lowers)) lowers = (dist+length)*1:n
-#   if(missing(uppers)) uppers = (dist+length)*1:n + length
-#   distributions <- lapply(1:n, function(i) list(spec = "unif", min = lowers[i], max = uppers[i]))
-#   mmix(order, distrib = distributions, ...)
-# }
-# 
-# # LogNormalverteilungen  
-# dmixlnorm <- function(n, means, sds, ...){
-#   if(missing(means)) means = 1:n
-#   if(missing(sds)) sds = rep(c(1/3, 3), n)
-#   distributions <- lapply(1:n, function(i) list(spec = "lnorm", meanlog = means[i], sdlog = sds[i]))
-#   function(x) dmix(distrib = distributions, ...)(x)
-# }
-# mmixlnorm <- function(n, order, means, sds, ...){
-#   if(missing(means)) means = 1:n
-#   if(missing(sds)) sds = rep(c(1/3, 3), n)
-#   distributions <- lapply(1:n, function(i) list(spec = "lnorm", meanlog = means[i], sdlog = sds[i]))
-#   mmix(order, distrib = distributions, ...)
-# }
