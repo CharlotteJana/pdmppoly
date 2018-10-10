@@ -1,30 +1,53 @@
 #======== todo =================================================================
-#t1 documentation für alle funktionen
-#t1 wie dtrunc zitieren?
+#t1 warum brauche ich dtrunc?
 #t2 älteren Code rausnehmen -> wohin?
 #t2 testen, das Bsp aus random.distribution könnte ein Test werden.
 
-#library(truncdist) # enthält die Funktion dtrunc
+#------ dtrunc & mtrunc ----------
 
-###### Momente für beliebige gestutzte Verteilungen ######
-
+#' Probability density function of truncated random variables
+#' 
+#' This function computes values for the probability density function of a
+#' truncated random variable. It was originally implemented in package
+#' \pkg{truncdist} and slightly modified to return zeros in case that the
+#' trunction interval [a, b] is not inside the support of the density function.
+#' @inherit truncdist::dtrunc
+#' @param ... other arguments are passed to the corresponding quantile function
+#' @examples 
+#' x <- seq(0, 3, 0.1)
+#' dtrunc(x, spec = "norm", a = 1, b = 2)
+#' curve(dtrunc(x, spec = "norm", a = -Inf, b = 1), -10, 2)
+#' 
+#' # different results for intervals outside the support of the density function:
+#' truncdist::dtrunc(x, spec = "norm", a = 20, b = 30)
+#' pdmppoly::dtrunc(x, spec = "norm", a = 20, b = 30)
 #' @importFrom utils str
 #' @export
 dtrunc <- function (x, spec, a = -Inf, b = Inf, ...) {
-  # dtrunc stammt aus truncdist und wurde nur geringfügig von mir geändert
   if (a >= b) 
     stop("argument a is greater than or equal to b")
   tt <- rep(0, length(x))
   g <- get(paste("d", spec, sep = ""), mode = "function")
   G <- get(paste("p", spec, sep = ""), mode = "function")
-  if(G(b, ...)-G(a, ...) != 0){ # zusätzlich zu dtrunc
+  if(G(b, ...)-G(a, ...) != 0){ # additional to truncdist::dtrunc
     tt[x >= a & x <= b] <- g(x[x >= a & x <= b], ...)/(G(b, ...) - G(a, ...))
   }
-  else {print(paste(spec, "a =", a, "b =", b)); str(list(...)); 
-                    stop("this is not a distribution")}
+  else  
+    warning("Truncation interval is not inside the domain of the density function")
+  
   return(tt)
 }
 
+#' Moments of truncated random variables
+#' 
+#' This function computes the raw moments of a truncated random variable.
+#' @inheritParams truncdist::dtrunc
+#' @param order numeric vector giving the order of the moments
+#' @param ... other arguments are passed to the corresponding moment function
+#' @examples
+#' mtrunc(1:6, spec = "norm")
+#' mtrunc(1:6, spec = "norm", b = 0)
+#' @seealso \code{\link{dtrunc}} for the probability distribution of a truncated variable.
 #' @importFrom actuar mnorm mlnorm mexp munif
 #' @importFrom stats integrate
 #' @export
@@ -52,7 +75,7 @@ mtrunc <- function (order, spec, a = -Inf, b = Inf , ...){
   }
 }
 
-#------ dmix ----------
+#------ dmix & mmix ----------
 
 #' Mixtures of truncated distributions
 #' 
@@ -111,6 +134,8 @@ mmix <- function(order, lower = -Inf, upper = Inf, distrib, weights){
   h <- ifelse(length(order > 1), rowSums(h), sum(h))
   return(h)
 }
+
+#------ random.distribution ----------
 
 #' Create and plot a random distribution
 #' 
@@ -180,7 +205,7 @@ random.distribution <- function(lower = 0, upper = 10, plot = TRUE){
 #   mmix(order, distrib = distributions, ...)
 # }
 # 
-# #### LogNormalverteilungen ####  
+# # LogNormalverteilungen  
 # dmixlnorm <- function(n, means, sds, ...){
 #   if(missing(means)) means = 1:n
 #   if(missing(sds)) sds = rep(c(1/3, 3), n)
