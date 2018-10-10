@@ -47,6 +47,7 @@ printGenerators <- function(polyMod, formalGen, m){
 #------------- tests --------------------------
 
 test_that("generator works for model K", {
+  skip_if_not_installed("Deriv")
   
   #### definitions
   data("genePdmpK")
@@ -114,6 +115,7 @@ test_that("generator works for model K", {
 })
 
 test_that("generator works for model K2", {
+  skip_if_not_installed("Deriv")
   
   #### definitions
   data("genePdmpK2")
@@ -179,6 +181,7 @@ test_that("generator works for model K2", {
 })
 
 test_that("generator works for the toggleSwitch model", {
+  skip_if_not_installed("Deriv")
   
   #### definitions
   data("genePdmpT")
