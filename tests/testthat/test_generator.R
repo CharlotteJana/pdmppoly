@@ -275,8 +275,8 @@ test_that("generator works for constant polynomials", {
 
 ###### alt #########
 
-test_that("old code not suited for a test", {
-  skip("")
+test_that("old code", {
+  skip("old code not suited for a test")
 
 # define generator for every polyModel (from formal definition)
 formalGenerator <- function(nr, f){

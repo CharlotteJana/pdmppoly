@@ -41,10 +41,14 @@ test_that("exists.distribution returns TRUE for model K", {
 test_that("is.unimodal returns TRUE for simple unimodal distributions", {
   
   # uniform distribution:
-  expect_true(is.unimodal(-10, 20, actuar::munif(1:4, min = -10, max = 20)))
+  expect_match(is.unimodal(-10, 20, actuar::munif(1:4, min = -10, max = 20)),
+               "4-b-unimodal")
   
   # beta distribution:
-  expect_true(is.unimodal(0, 1, actuar::mbeta(1:4, 1, 2)))
+  expect_match(is.4_b_unimodal(0, 1, actuar::mbeta(1:4, 1, 2)),
+               "4-b-unimodal")
+  expect_match(is.2_b_unimodal(0, 1, actuar::mbeta(1:2, 1, 2)),
+               "2-b-unimodal")
 })
 
 

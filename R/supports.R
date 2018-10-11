@@ -1,7 +1,7 @@
 #======== todo =================================================================
 #t1 PROM durch meine Promotion ersetzen
 #t1 plotSupport ist eher sinnlos
-#t2 tests schreiben
+#t3 tests schreiben
 
 #' Return the support for gene regulation models
 #' 
