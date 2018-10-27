@@ -23,7 +23,7 @@ test_that("moment calculation leads to same results for model K and model K2", {
 
 test_that("momApp works for a model with more than 2 discrete states", {
   data(simplePoly)
-  res <- momApp(simplePoly, l = 1)
+  res <- momApp(simplePoly, maxOrder = 1)
   zeros <- rep(0, nrow(res$moments))
   expect_equal(res$moments[["f"]], zeros)
   expect_equal(res$moments[["d"]], zeros)
@@ -67,7 +67,7 @@ test_that("moment calculation works for model 1", {
   n <- length(genePolyK@init) - 1
   
   ### moment approximation
-  momApp <- momApp(genePolyK, l)
+  momApp <- momApp(genePolyK, maxOrder = l)
   last <- nrow(momApp$contRes)
   
   ### create matrix with all moment combinations we are interested in

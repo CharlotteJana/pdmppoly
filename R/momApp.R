@@ -1,15 +1,13 @@
 #======== todo =================================================================
 #t3 contRes und discRes umbenennen
 #t3 init = dirac measure?
-#t1 Aufruf mit l=1 gibt Fehler
 #t1 test momApp: verschiedene closure methoden
 #t1 momentClosure: documentation
-#t2 Klasse momApp: degree in maxOrder umbenennen
 
 #' Moment approximation for polynomial PDMPs
 #' 
 #' @param obj object of class \code{\link{polyPdmpModel}}.
-#' @param l integer defining the highest degree of moments that are considered.
+#' @param maxOrder integer defining the highest order of moments that are considered.
 #'   Higher degrees are droped and replaced by other values. The replacement
 #'   method is specified in parameter \code{closure}.
 #' @param closure string defining the method that does the moment closure, i. e.
@@ -23,7 +21,7 @@
 #' indicator variables that replace the discrete variable (see \code{\link{blowupSpray}}
 #' for an explanation of the indicator variables)
 #' \item \code{contRes}: a matrix giving the calculated moments of the continous variables
-#' \item \code{degree}: integer defining the highest degree of moments to be calculated
+#' \item \code{maxOrder}: integer defining the highest order of moments to be calculated
 #' \item \code{closure}: string giving the closure method. See ... for more details.
 #' \item \code{contInd}: a data.frame with all moment indexes that are calculated
 #' \item \code{moments}: a data.frame with the resulting moments, of the same structure
@@ -31,7 +29,7 @@
 #' }
 #' @examples 
 #' data(genePolyK2)
-#' a <- momApp(genePolyK2, l = 4)
+#' a <- momApp(genePolyK2, maxOrder = 4)
 #' plot(a)
 #' print(a)
 #' summary(a)
@@ -51,13 +49,13 @@
 #' @importFrom dplyr %>%
 #' @export
 setGeneric("momApp",
-           function(obj, l = 4, closure = "setZero")
+           function(obj, maxOrder = 4, closure = "setZero")
              standardGeneric("momApp"))
 
 #' @rdname momApp
 #' @export
 setMethod("momApp", signature(obj = "polyPdmpModel"), 
-          function(obj, l = 4, closure = "setZero") {
+          function(obj, maxOrder = 4, closure = "setZero") {
   
   states <- obj@discStates[[1]]
   n <- length(obj@init) - length(obj@discStates) # continuous variables
@@ -69,9 +67,9 @@ setMethod("momApp", signature(obj = "polyPdmpModel"),
   ### create all moment combinations that are needed 
   
     # r = all moment combinations that are needed
-    r <- data.frame(sapply(1:n, function(i) i = 0:l))
+    r <- data.frame(sapply(1:n, function(i) i = 0:maxOrder))
     r <- expand.grid(r)
-    if(n > 1) r <- r[which(rowSums(r) >= 0 & rowSums(r[,1:n]) <= l), ]
+    if(n > 1) r <- r[which(rowSums(r) >= 0 & rowSums(r[,1:n]) <= maxOrder), ]
     dimnames(r) <- list(1:nrow(r), cnames)
     
     # create k indicator variables that indicate the state of the discrete var
@@ -165,7 +163,7 @@ setMethod("momApp", signature(obj = "polyPdmpModel"),
                              discRes = discRes, 
                              contRes = contRes, 
                              contInd = r,
-                             degree = l,
+                             maxOrder = maxOrder,
                              closure = closure
                              ), class = "momApp")
     

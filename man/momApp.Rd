@@ -9,14 +9,15 @@
 \alias{momApp,polyPdmpModel-method}
 \title{Moment approximation for polynomial PDMPs}
 \usage{
-momApp(obj, l = 4, closure = "setZero")
+momApp(obj, maxOrder = 4, closure = "setZero")
 
-\S4method{momApp}{polyPdmpModel}(obj, l = 4, closure = "setZero")
+\S4method{momApp}{polyPdmpModel}(obj, maxOrder = 4,
+  closure = "setZero")
 }
 \arguments{
 \item{obj}{object of class \code{\link{polyPdmpModel}}.}
 
-\item{l}{integer defining the highest degree of moments that are considered.
+\item{maxOrder}{integer defining the highest order of moments that are considered.
 Higher degrees are droped and replaced by other values. The replacement
 method is specified in parameter \code{closure}.}
 
@@ -38,7 +39,7 @@ The returned s3 class \code{momApp} contains 6 different elements:
 indicator variables that replace the discrete variable (see \code{\link{blowupSpray}}
 for an explanation of the indicator variables)
 \item \code{contRes}: a matrix giving the calculated moments of the continous variables
-\item \code{degree}: integer defining the highest degree of moments to be calculated
+\item \code{maxOrder}: integer defining the highest order of moments to be calculated
 \item \code{closure}: string giving the closure method. See ... for more details.
 \item \code{contInd}: a data.frame with all moment indexes that are calculated
 \item \code{moments}: a data.frame with the resulting moments, of the same structure
@@ -50,7 +51,7 @@ This method works only for PDMPs with one discrete variable.
 }
 \examples{
 data(genePolyK2)
-a <- momApp(genePolyK2, l = 4)
+a <- momApp(genePolyK2, maxOrder = 4)
 plot(a)
 print(a)
 summary(a)

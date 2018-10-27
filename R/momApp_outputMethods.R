@@ -1,5 +1,6 @@
 #======== todo =================================================================
 #t3 in print-methode auf $moments zurückgreifen, den rest als test verwenden
+#t3 in plot-methode auf $moments zurückgreifen, evtl ggplot machen
 #s1 plot: Text in Legende an meine Notation anpassen
 
 #' Methods for objects of class \code{\link{momApp}}
@@ -22,7 +23,7 @@ NULL
 #' @export
 plot.momApp <- function(x, ...){
   
-  l <- x$degree
+  l <- x$maxOrder
   k <- ncol(x$discRes) - 1
   n <- length(x$model@init) - length(x$model@discStates)
   
@@ -46,9 +47,11 @@ plot.momApp <- function(x, ...){
     matplot(plotRes[,1], plotRes[,((i-1)*l+2):(i*l+1)], 
             lty = 1, col = colors, adj = 0, type = "l",
             xlab = "time", ylab = paste("moments of", names(x$model@init)[i]), ...)
+    if(l > 1){
     legend("bottomright", inset = c(0, -0.4), 
            fill = colors, ncol = l/2, cex = 0.75,
            legend = parse(text = colnames(plotRes[,((i-1)*l+2):(i*l+1)])))
+    }
   }
   mtext(paste0("moment approximation with method \"", x$closure,"\""), 
         outer = TRUE, cex = 1.2, font = 2)
@@ -62,7 +65,7 @@ print.momApp <- function(x, ...){
   cat(format(x$model, short = FALSE, collapse = "\n",
              slots = c("descr", "parms", "init")))
   
-  l <- x$degree
+  l <- x$maxOrder
   k <- ncol(x$discRes) - 1
   n <- length(x$model@init) - length(x$model@discStates)
   
@@ -83,7 +86,7 @@ print.momApp <- function(x, ...){
   for(i in 1:l){ # fill the moments of the discrete variable
     s[n*l+i, n+2] <- x$model@discStates[[1]]^i %*% x$discRes[nrow(x$discRes), 2:ncol(x$discRes)]
   }
-  cat("\n\nMoment approximation up to degree ", l, " \nwith moment closure method \"", x$closure, "\" results in \n", sep = "")
+  cat("\n\nMoment approximation up to order ", l, " \nwith moment closure method \"", x$closure, "\" results in \n", sep = "")
   print(s, ...)
   #write.table(format(s, justify="right"), sep = "\t", row.names=F, quote=F)
 }
@@ -91,12 +94,12 @@ print.momApp <- function(x, ...){
 #' @rdname momApp-methods
 #' @export
 summary.momApp <- function(x, ...){
-  cat(noquote("\n$degree \t"), x$degree)
+  cat(noquote("\n$maxOrder \t"), x$maxOrder)
   cat(noquote("\n$closure \t"), x$closure)
   cat(noquote("\n$model \n"))
   cat(format(x$model, short = FALSE, collapse = "\n",
              slots = c("descr", "parms", "init")))
-  for(i in 1:x$degree){
+  for(i in 1:x$maxOrder){
     cat(noquote("\n\n$moments, order = "), i, "\n")
     print(summary(x$moments[which(x$moments$order == i), -(1:2)], ...))
   }
