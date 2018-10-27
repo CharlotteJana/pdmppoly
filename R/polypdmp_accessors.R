@@ -1,6 +1,6 @@
 #======== todo =================================================================
 #t1 documentation schreiben
-
+#t3 Warum @importFrom simecol "out<-" statt @importFrom pdmpsim "out<-"? Warum überhaupt?
 
 #' Accessor functions for Class polyPdmpModel
 #' 

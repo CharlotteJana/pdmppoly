@@ -2,6 +2,7 @@
 #t1: documentation
 #t1: useCsv = multSimCsv implementieren
 #t2: model und polyModel aus data auslesen
+#t2: analysis: simulierte Daten übergeben können
 # install_github("CharlotteJana/pdmpsim@charlotte")
 
 #' Analysis of models used in thesis ...

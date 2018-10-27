@@ -1,6 +1,8 @@
 #======== todo =================================================================
 #t1 simulation sollte auch gehen, wenn d nicht an letzter stelle steht -> testen!
 #t1 schreiben, dass die simulation mit polyPdmps viiiiel länger dauert.
+#t2 hier Dokumentation nicht doppelt. Geht das auch?
+#t3 Bei polyPdmpModel<- wird .cache = new.env() gesetzt, bei pdmpModel<- nicht. Warum?
 
 #' Class polyPdmpModel
 #' 
