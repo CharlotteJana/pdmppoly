@@ -1,17 +1,30 @@
 #======== todo =================================================================
-#t1 Klasse momApp kommentieren
+#t3 in print-methode auf $moments zurückgreifen, den rest als test verwenden
+#s1 plot: Text in Legende an meine Notation anpassen
+
+#' Methods for objects of class \code{\link{momApp}}
+#' 
+#' Objects of class momApp occur as results of function \code{\link{momApp}}.
+#' Their structure is described in the \code{Details} section of the documentation
+#' of \code{\link{momApp}}. There are several methods to examine such objects,
+#' namely \code{print}, \code{summary}, \code{plot}, \code{tail} and \code{head}.
+#' @param x object of class \code{momApp}
+#' @param ... further arguments to the default method
+#' @name momApp-methods
+NULL
 
 #------- output methods -----------
 
 #' @importFrom prodlim row.match
 #' @importFrom graphics par matplot legend mtext
 #' @importFrom grDevices graphics.off rainbow
+#' @rdname momApp-methods
 #' @export
 plot.momApp <- function(x, ...){
   
   l <- x$degree
   k <- ncol(x$discRes) - 1
-  n <- length(x$init) - 1
+  n <- length(x$model@init) - length(x$model@discStates)
   
   # s = matrix with all moment combinations we are interested in
   s <- NULL
@@ -32,24 +45,26 @@ plot.momApp <- function(x, ...){
   for(i in 1:n){
     matplot(plotRes[,1], plotRes[,((i-1)*l+2):(i*l+1)], 
             lty = 1, col = colors, adj = 0, type = "l",
-            xlab = "time", ylab = paste("moments of", names(x$init)[i]), ...)
+            xlab = "time", ylab = paste("moments of", names(x$model@init)[i]), ...)
     legend("bottomright", inset = c(0, -0.4), 
            fill = colors, ncol = l/2, cex = 0.75,
            legend = parse(text = colnames(plotRes[,((i-1)*l+2):(i*l+1)])))
   }
-  #mtext(paste0("moment approximation for ", x$polyPdmpName), 
-  #      outer = TRUE, cex = 1.2, font = 2)
   mtext(paste0("moment approximation with method \"", x$closure,"\""), 
         outer = TRUE, cex = 1.2, font = 2)
 }
 
 #' @importFrom prodlim row.match
+#' @rdname momApp-methods
 #' @export
 print.momApp <- function(x, ...){
-  model <- eval(parse(text = x$polyPdmpName))
+  cat(noquote("model: \n"))
+  cat(format(x$model, short = FALSE, collapse = "\n",
+             slots = c("descr", "parms", "init")))
+  
   l <- x$degree
   k <- ncol(x$discRes) - 1
-  n <- length(x$init) - 1
+  n <- length(x$model@init) - length(x$model@discStates)
   
   # create matrix with all moment combinations we are interested in
   s <- NULL
@@ -58,7 +73,7 @@ print.momApp <- function(x, ...){
     m[,i] <- 1:l
     s <- rbind(s, m)
   }
-  colnames(s) <- c(names(x$init), "moment")
+  colnames(s) <- c(names(x$model@init), "moment")
   s <- as.data.frame(s)
   
   for(i in 1:(n*l)){ # fill the moments of continuous variables
@@ -66,39 +81,50 @@ print.momApp <- function(x, ...){
                           prodlim::row.match(as.vector(s[i,1:n]), as.matrix(x$contInd))]
   }
   for(i in 1:l){ # fill the moments of the discrete variable
-    s[n*l+i, n+2] <- model@discStates[[1]]^i %*% x$discRes[nrow(x$discRes), 2:ncol(x$discRes)]
+    s[n*l+i, n+2] <- x$model@discStates[[1]]^i %*% x$discRes[nrow(x$discRes), 2:ncol(x$discRes)]
   }
-  cat("Moment approximation of ", x$polyPdmpName, " up to degree ", l, " \nwith moment closure method \"", x$closure, "\" results in \n", sep = "")
-  print(s[1:l,], ...)
+  cat("\n\nMoment approximation up to degree ", l, " \nwith moment closure method \"", x$closure, "\" results in \n", sep = "")
+  print(s, ...)
   #write.table(format(s, justify="right"), sep = "\t", row.names=F, quote=F)
 }
 
+#' @rdname momApp-methods
 #' @export
-summary.momApp <- function(object, ...){
-  cat(noquote("$polyPdmpName \t"), object$polyPdmpName)
-  cat(noquote("\n$degree \t"), object$degree)
-  cat(noquote("\n$closure \t"), object$closure)
-  cat(noquote("\n\n$init \n"))
-  print(object$init)
+summary.momApp <- function(x, ...){
+  cat(noquote("\n$degree \t"), x$degree)
+  cat(noquote("\n$closure \t"), x$closure)
+  cat(noquote("\n$model \n"))
+  cat(format(x$model, short = FALSE, collapse = "\n",
+             slots = c("descr", "parms", "init")))
+  for(i in 1:x$degree){
+    cat(noquote("\n\n$moments, order = "), i, "\n")
+    print(summary(x$moments[which(x$moments$order == i), -(1:2)], ...))
+  }
   cat(noquote("\n$discRes\n"))
-  print(summary(object$discRes[,-1], ...))
+  print(summary(x$discRes[,-1], ...))
   cat(noquote("\n$contRes\n"))
-  print(summary(object$contRes[,-1], ...))
+  print(summary(x$contRes[,-1], ...))
 }
 
+#' @rdname momApp-methods
 #' @importFrom utils tail
 #' @export
 tail.momApp <- function(x, ...){
-  cat(noquote("$discRes\n"))
+  cat(noquote("$moments\n"))
+  print(tail(x$moments, ...))
+  cat(noquote("\n$discRes\n"))
   print(tail(x$discRes, ...))
   cat(noquote("\n$contRes\n"))
   print(tail(x$contRes, ...))
 }
 
+#' @rdname momApp-methods
 #' @importFrom utils head
 #' @export
 head.momApp <- function(x, ...){
-  cat(noquote("$discRes\n"))
+  cat(noquote("$moments\n"))
+  print(head(x$moments, ...))
+  cat(noquote("$\ndiscRes\n"))
   print(head(x$discRes, ...))
   cat(noquote("\n$contRes\n"))
   print(head(x$contRes, ...))

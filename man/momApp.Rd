@@ -25,7 +25,7 @@ that changes the system of ODEs into a closed form that is solvable.
 Possible values are \code{setZero} (the default) and reduceDegree.}
 }
 \value{
-an object of class \code{\link{momApp}}.
+an object of class \code{momApp} (see details).
 }
 \description{
 Moment approximation for polynomial PDMPs
@@ -42,13 +42,21 @@ for an explanation of the indicator variables)
 \item \code{closure}: string giving the closure method. See ... for more details.
 \item \code{contInd}: a data.frame with all moment indexes that are calculated
 \item \code{moments}: a data.frame with the resulting moments, of the same structure
- as \code{\link[pdmpsim]moments}.
+ as the result of function \code{\link[pdmpsim]{moments}} in package \pkg{pdmpsim}.
 }
 }
 \note{
 This method works only for PDMPs with one discrete variable.
 }
+\examples{
+data(genePolyK2)
+a <- momApp(genePolyK2, l = 4)
+plot(a)
+print(a)
+summary(a)
+}
 \seealso{
 \code{\link{momentClosure}} for the internal method that performs
-  the moment closure.
+  the moment closure, \code{\link{momApp-methods}} for further analysing
+  the result.
 }

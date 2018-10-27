@@ -2,9 +2,9 @@
 #t3 contRes und discRes umbenennen
 #t3 init = dirac measure?
 #t1 Aufruf mit l=1 gibt Fehler
-#t1 MomApp: description schreiben
 #t1 test momApp: verschiedene closure methoden
 #t1 momentClosure: documentation
+#t2 Klasse momApp: degree in maxOrder umbenennen
 
 #' Moment approximation for polynomial PDMPs
 #' 
@@ -27,14 +27,21 @@
 #' \item \code{closure}: string giving the closure method. See ... for more details.
 #' \item \code{contInd}: a data.frame with all moment indexes that are calculated
 #' \item \code{moments}: a data.frame with the resulting moments, of the same structure
-#'  as \code{\link[pdmpsim]moments}.
+#'  as the result of function \code{\link[pdmpsim]{moments}} in package \pkg{pdmpsim}.
 #' }
+#' @examples 
+#' data(genePolyK2)
+#' a <- momApp(genePolyK2, l = 4)
+#' plot(a)
+#' print(a)
+#' summary(a)
 #' @name momApp
 #' @aliases momentApproximation momentapproximation momapp
 #' @include polypdmp_class.R polypdmp_accessors.R polypdmp_generator.R
 #' @seealso \code{\link{momentClosure}} for the internal method that performs
-#'   the moment closure.
-#' @return an object of class \code{\link{momApp}}.
+#'   the moment closure, \code{\link{momApp-methods}} for further analysing
+#'   the result.
+#' @return an object of class \code{momApp} (see details).
 #' @note This method works only for PDMPs with one discrete variable.
 #' @importFrom prodlim row.match
 #' @importFrom spray index
