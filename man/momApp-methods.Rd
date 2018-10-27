@@ -9,7 +9,7 @@
 \alias{head.momApp}
 \title{Methods for objects of class \code{\link{momApp}}}
 \usage{
-plot.momApp(x, ...)
+plot.momApp(x)
 
 \method{print}{momApp}(x, ...)
 

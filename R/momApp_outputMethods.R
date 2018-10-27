@@ -1,6 +1,5 @@
 #======== todo =================================================================
 #t3 in print-methode auf $moments zurückgreifen, den rest als test verwenden
-#t3 in plot-methode auf $moments zurückgreifen, evtl ggplot machen
 #s1 plot: Text in Legende an meine Notation anpassen
 
 #' Methods for objects of class \code{\link{momApp}}
@@ -16,45 +15,30 @@ NULL
 
 #------- output methods -----------
 
-#' @importFrom prodlim row.match
-#' @importFrom graphics par matplot legend mtext
-#' @importFrom grDevices graphics.off rainbow
+#' @importFrom tidyr gather
+#' @importFrom ggplot2 ggplot aes geom_line facet_grid labs scale_color_discrete
 #' @rdname momApp-methods
 #' @export
-plot.momApp <- function(x, ...){
+plot.momApp <- function(x){
   
-  l <- x$maxOrder
-  k <- ncol(x$discRes) - 1
-  n <- length(x$model@init) - length(x$model@discStates)
+  data <- tidyr::gather(x$moments, key = "variable", value = "value", 
+                        names(init(x$model)))
+  data$order <- factor(data$order)
   
-  # s = matrix with all moment combinations we are interested in
-  s <- NULL
-  for(i in 1:n){ 
-    m <-  matrix(data = 0, nrow = l, ncol = n)
-    m[,i] <- 1:l
-    s <- rbind(s, m)
-  }
+  plot <- ggplot(data = data, aes(x = time, y = value)) + 
+    geom_line(aes(group = order, color = order)) +
+    facet_grid(rows = ggplot2::vars(variable), scales = "free") +
+    scale_color_discrete(name = "order of\nmoments") +
+    labs(subtitle = paste0(descr(x$model), "\n",
+                          format(x$model, short = FALSE, 
+                                 slots = c("parms", "init"), collapse = "\n")),
+         title = "Moment approximation",
+         caption = paste("Method for moment closure:", x$closure),
+         y = "")
   
-  # plotRes = contRes[s]
-  t <- sapply(1:nrow(s), function(i) prodlim::row.match(s[i,], x$contInd))
-  plotRes <- x$contRes[,c(1, t)]
-  
-  # plot
-  graphics.off()
-  par(mar=c(6, 5, 1.5, 2), xpd=TRUE, mfrow=c(1, n), oma = c(0, 0, 2.5, 0))
-  colors = rainbow(l, v = 0.85) #rainbow(nrow(s)-1, v = 0.85)
-  for(i in 1:n){
-    matplot(plotRes[,1], plotRes[,((i-1)*l+2):(i*l+1)], 
-            lty = 1, col = colors, adj = 0, type = "l",
-            xlab = "time", ylab = paste("moments of", names(x$model@init)[i]), ...)
-    if(l > 1){
-    legend("bottomright", inset = c(0, -0.4), 
-           fill = colors, ncol = l/2, cex = 0.75,
-           legend = parse(text = colnames(plotRes[,((i-1)*l+2):(i*l+1)])))
-    }
-  }
-  mtext(paste0("moment approximation with method \"", x$closure,"\""), 
-        outer = TRUE, cex = 1.2, font = 2)
+  print(plot)
+  invisible(plot)
+  return(plot)
 }
 
 #' @importFrom prodlim row.match
