@@ -1,5 +1,4 @@
 #======== todo =================================================================
-#t2 langen test als demo und dann vereinfachen
 #t2 tests mit verschiedenen closure methoden
 
 context("moment approximation")
@@ -19,6 +18,36 @@ test_that("moment calculation leads to same results for model K and model K2", {
                check.names = FALSE, check.attributes = FALSE)
   expect_equal(res1$moments, res2$moments[, -4], check.names = FALSE)
   
+})
+
+test_that("elements contRes, discRes and moments contain the same results", {
+  data(genePolyK2)
+  x <- momApp(genePolyK2, maxOrder = 6, closure = "reduceDegree")
+  
+  # calculate moments out of contRes and discRes
+  l <- x$maxOrder
+  k <- ncol(x$discRes) - 1
+  n <- length(x$model@init) - length(x$model@discStates)
+  names <- c("ξ1", "ξ2")
+  dname <- "θ"
+  
+  r <- data.frame(time = rep(100, l), order = 1:l)
+  
+  for(i in 1:n){ # fill the moments of continuous variables
+    r[, names[i]] <- rep(0, l)
+    for(j in 1:l){
+      ind <- rep(0, n)
+      ind[i] <- j
+      r[j, names[i]] <- x$contRes[nrow(x$contRes),
+                                  prodlim::row.match(ind, as.matrix(x$contInd))]
+    }
+  }
+  for(j in 1:l){ # fill the moments of the discrete variable
+    r[j, dname] <- as.vector(x$model@discStates[[1]]^j %*% x$discRes[nrow(x$discRes), 2:ncol(x$discRes)])
+  }
+  
+  expect_equal(r, x$moments[which(x$moments$time == 100), ],
+               check.attributes = FALSE)
 })
 
 test_that("momApp works for a model with more than 2 discrete states", {

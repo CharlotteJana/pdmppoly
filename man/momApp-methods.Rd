@@ -26,7 +26,8 @@ plot.momApp(x)
 }
 \description{
 Objects of class momApp occur as results of function \code{\link{momApp}}.
-Their structure is described in the \code{Details} section of the documentation
-of \code{\link{momApp}}. There are several methods to examine such objects,
-namely \code{print}, \code{summary}, \code{plot}, \code{tail} and \code{head}.
+Their structure is described in the \code{Details} section of the
+documentation of \code{\link{momApp}}. There are several methods to examine
+such objects, namely \code{print}, \code{summary}, \code{plot}, \code{tail}
+and \code{head}.
 }
