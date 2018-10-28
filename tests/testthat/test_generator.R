@@ -1,5 +1,5 @@
 #======== todo =================================================================
-#t3 delete old code
+#s3 delete old code
 
 library(spray)
 context("generator")

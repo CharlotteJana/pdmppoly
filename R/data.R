@@ -1,8 +1,8 @@
 #======== todo =================================================================
-#t1 references for every model
-#t3 benaim: detailed description
-#t1 PROM durch meine Promotion ersetzen
-#t1 Raten berichtigen
+#s1 references for every model
+#s3 benaim: detailed description
+#s1 PROM durch meine Promotion ersetzen
+#s1 Raten berichtigen
 
 #========== simplePoly =====================
 

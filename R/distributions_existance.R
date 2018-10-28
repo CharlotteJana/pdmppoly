@@ -1,5 +1,5 @@
 #======== todo =================================================================
-#t1 references for inequalities
+#s1 references for inequalities
 #t3 exists.distribution -> integral = 1 prüfen?
 #t3 messages umformulieren?
 #t2 warum wurden nicht alle ungl aus Simpson_Welch_amNeuesten.wxm implementiert?

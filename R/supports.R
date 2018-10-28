@@ -1,5 +1,5 @@
 #======== todo =================================================================
-#t1 PROM durch meine Promotion ersetzen
+#s1 PROM durch meine Promotion ersetzen
 #t1 plotSupport ist eher sinnlos
 #t3 tests schreiben
 

@@ -1,5 +1,5 @@
 #======== todo =================================================================
-#t1 references for inequalities
+#s1 references for inequalities
 #t1 munif?
 #t2 tests
 #t1 lower bound for 2-b-unimodal?
@@ -39,7 +39,7 @@ is.unimodal <- function(lower, upper, moments, eps = 1e-10){
   if(length(moments) < 4){
     is.2_b_unimodal(lower, upper, moments, eps)
   }
-  if(length(m) < 6){
+  if(length(moments) >= 4){
     is.2_b_unimodal(lower, upper, moments, eps)
     is.4_b_unimodal(lower, upper, moments, eps)
   }
