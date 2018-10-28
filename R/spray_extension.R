@@ -1,5 +1,5 @@
-#======== todo =================================================================
-#t3 options(polyform = TRUE) setzen?
+#======== note =================================================================
+# set options(polyform = TRUE) to view polynomials instead of spray matrices
 
 #' Increase arity of a spray object
 #'
@@ -15,7 +15,7 @@
 #' can increase the arity of a polynomial/spray object by adding new variables.
 #' This means essentially inserting new columns with zeros in the index matrix
 #' of the spray object. Parameter \code{additionalCols} defines the columnindex
-#' of the these additinoal columns.
+#' of these additinoal columns.
 #' @param S spray object that shall have a new arity
 #' @param position column indexes where to add new variables
 #' @examples

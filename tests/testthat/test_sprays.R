@@ -1,5 +1,4 @@
 #======== todo =================================================================
-#t2 tests mit Modell mit zwei stetigen variablen
 
 library(spray)
 context("helper functions")
@@ -53,4 +52,13 @@ test_that("blowupSpray works as expected", {
   s1 <- 5*product(3:2) + lone(2, 2)
   s2 <- -5*product(c(2,1,0,0)) + 5*product(c(2,0,0,1)) + lone(1, 4)
   expect_true(blowupSpray(simplePoly, s1) == s2)
+})
+
+test_that("blowupSpray works for model with 2 continous variables", {
+  
+  data("genePolyT")
+  s1 <- 2*product(1:3) + lone(2, 3) + 3*lone(3,3)
+  s2 <- 2*product(c(1,2,0,0,0,0))*(lone(3,6) + 2^3*lone(4,6) + 3^3*lone(5,6) + 4^3*lone(6,6)) + 
+    lone(2,6) + 3*lone(3,6) + 6*lone(4,6) + 9*lone(5,6) + 12*lone(6,6)
+  expect_true(blowupSpray(genePolyT, s1) == s2)
 })

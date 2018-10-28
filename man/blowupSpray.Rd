@@ -32,9 +32,9 @@ stands for \code{d}) is replaced by three indicator variables
 value of the original \code{d}. If we take for example the polynomial
  \eqn{5f^2d^3 + f}{5f²d³ + f}, method \code{blowupSpray} changes it into
 \deqn{
-5f^3\cdot(-1)\cdot d1 + 5f^3\cdot 0 \cdot d2 + 5f³\cdot 1\cdot d3 + f 
-= -5f^3d1 + 5f^3d3 + f.}{
-5f³⋅(-1)⋅d1 + 5f³⋅0⋅d2 + 5f³⋅1⋅d3 + f = -5f³d1 + 5f³d3 + f.}
+5f^2\cdot(-1)^3\cdot d1 + 5f^2\cdot 0^3 \cdot d2 + 5f^2\cdot 1^3\cdot d3 + f 
+= -5f^2d1 + 5f^2d3 + f.}{
+5f²⋅(-1)³⋅d1 + 5f²⋅0³⋅d2 + 5f²⋅1³⋅d3 + f = -5f²d1 + 5f²d3 + f.}
 If the order of \code{f} and \code{d} are reversed (i.e. \code{init(obj) =
 c(d = ..., f = ...)}), the additional variables \code{d1, d2, d3} would 
 still be added at the end, leaving \code{f} to be the first variable.
@@ -43,7 +43,7 @@ still be added at the end, leaving \code{f} to be the first variable.
 This method only works for one discrete variable
 }
 \examples{
-# the examples discussed in section details:
+# the example discussed in section details:
 library(spray)
 data("simplePoly") 
 blowupSpray(simplePoly, 5*product(2:3) + lone(1, 2))

@@ -25,7 +25,7 @@ same arity. This is where function \code{increase_arity} comes into play. It
 can increase the arity of a polynomial/spray object by adding new variables.
 This means essentially inserting new columns with zeros in the index matrix
 of the spray object. Parameter \code{additionalCols} defines the columnindex
-of the these additinoal columns.
+of these additinoal columns.
 }
 \note{
 If \code{S} is the NULL polynomial without a given arity (this can
