@@ -1,5 +1,4 @@
 #======== todo =================================================================
-#t1 examples schreiben
 #t2 hier Dokumentation nicht doppelt. Geht das auch?
 #s3 Bei polyPdmpModel<- wird .cache = new.env() gesetzt, bei pdmpModel<- nicht. 
 #   Warum? Im Internet habe ich bisher nicht viel dazu gefunden. Vllt wegen initialize?
@@ -97,6 +96,7 @@
 #' The last variant is only possible, because in this example we have the
 #' possiblity to write both ODEs in one formula: \eqn{\frac{df}{dt} = -3f +
 #' d}{df/dt = -3f + d}.
+#' @example /inst/examples/polyPdmpModel.R
 #' @aliases polyPdmpModel polypdmpmodel polypdmp polyPdmp
 #' @importFrom pdmpsim pdmpModel
 #' @importFrom methods new
