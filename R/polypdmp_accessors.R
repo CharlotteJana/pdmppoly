@@ -1,13 +1,11 @@
 #======== todo =================================================================
 #t1 documentation schreiben
-#t3 Warum @importFrom simecol "out<-" statt @importFrom pdmpsim "out<-"? Warum überhaupt?
 
 #' Accessor functions for Class polyPdmpModel
 #' 
 #' @param obj an object of class \code{\link{polyPdmpModel}}
 #' @param value the value that shall be set
 #' @include polypdmp_class.R polypdmp_methods.R
-#' @importFrom simecol "out<-"
 #' @name polypdmp-accessors
 NULL
 
@@ -144,7 +142,7 @@ setMethod("parms<-", "polyPdmpModel", function(obj, value){
   obj@parms <- value
   obj@dynsprays <- with(as.list(value), eval(redefineDynpolys(obj@dynpolys, obj)))
   obj@ratesprays <- with(as.list(value), eval(redefineRatepolys(obj@ratepolys, obj)))
-  out(obj) <- NULL
+  obj@out <- NULL
   invisible(obj)
 })
 

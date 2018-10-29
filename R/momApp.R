@@ -1,6 +1,6 @@
 #======== todo =================================================================
-#t3 contRes und discRes umbenennen
-#t3 init = dirac measure?
+#v3 contRes und discRes umbenennen
+#v3 init = dirac measure?
 #t1 test momApp: verschiedene closure methoden
 #t1 momentClosure: documentation
 
