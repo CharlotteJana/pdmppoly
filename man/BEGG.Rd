@@ -73,7 +73,7 @@ curve(ex3(x), -2.5, 1.5)
 curve(ex4(x), -2, 2)
 }
 \references{
-Bulut, Y. M.; Arslan, O.; Çankaya, M. N. & Dogru, F. Z. (2015). A
+Çankaya, M. N.; Bulut, Y. M.;  Doğru, F. Z. & Arslan, O.(2015). A
 bimodal extension of the generalized gamma distribution. \emph{Revista
 Colombiana de Estadística}, 38(2), 371-384.
 }

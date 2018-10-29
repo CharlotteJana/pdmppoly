@@ -1,5 +1,4 @@
 #======== todo =================================================================
-#t2 CankayaCo_2015 <- welche Reihenfolge der Autoren (siehe GoogleScholar)?
 
 #' Bimodal extension of the generalized Gamma-Distribution
 #' 
@@ -41,7 +40,7 @@
 #' curve(ex2(x), -2, 3)
 #' curve(ex3(x), -2.5, 1.5)
 #' curve(ex4(x), -2, 2)
-#' @references Bulut, Y. M.; Arslan, O.; Çankaya, M. N. & Dogru, F. Z. (2015). A
+#' @references Çankaya, M. N.; Bulut, Y. M.;  Doğru, F. Z. & Arslan, O.(2015). A
 #' bimodal extension of the generalized gamma distribution. \emph{Revista
 #' Colombiana de Estadística}, 38(2), 371-384.
 #' @name BEGG
