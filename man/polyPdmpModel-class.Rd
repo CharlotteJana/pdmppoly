@@ -11,16 +11,18 @@
 \description{
 An S4 class to represent polynomial piecewisc deterministic markov processes
 (polynomial PDMPs). These processes are PDMPs with polynomial rate functions
-and polynomial dynamics. To represent polynomials in \code{R}, package
-\pkg{spray} is used, which stores the coefficient matrices of polynomials as
-sparse arrays. \cr 
+and polynomial dynamics. This makes it possible to approximate the moments of
+the process without the need of simulation, see \code{\link{momApp}}. On the
+downside, simulations take much longer than simulations of the same PDMP 
+represented as \code{pdmpModel}. \cr  
 The class is based on the \code{\link[pdmpsim]{pdmpModel}} class of package
 \pkg{pdmpsim} but introduces additional slots that replace the slots
 \code{dynfunc} and \code{ratefunc}, namely \code{dynpolys}, \code{dynsprays},
 \code{ratepolys} and \code{ratesprays}. Only slots \code{dynpolys} and
 \code{ratepolys} have to be defined by the user. The other slots (including
 the still existing \code{dynfunc} and \code{ratefunc}) will be set
-automatically.
+automatically. To represent polynomials in \code{R}, package \pkg{spray} is
+used, which stores the coefficient matrices of polynomials as sparse arrays.
 }
 \section{Slots}{
 
