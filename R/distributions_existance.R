@@ -1,6 +1,5 @@
 #======== todo =================================================================
 #s1 references for inequalities
-#t3 exists.distribution -> integral = 1 prüfen?
 #t3 messages umformulieren?
 #t2 warum wurden nicht alle ungl aus Simpson_Welch_amNeuesten.wxm implementiert?
 
@@ -46,8 +45,6 @@ exists.distribution <- function(lower, upper, moments){
   }
   
   #----- inequalities for support ------
-  
-  # Integral = 1 prüfen?
   
   if(1+a*b > 0){ # 1.1, Teuscher, Guiard: (3)
     message("There is no distribution with lower bound ", lower, 

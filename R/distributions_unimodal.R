@@ -1,11 +1,6 @@
 #======== todo =================================================================
 #s1 references for inequalities
-#t1 munif?
-#t2 tests
-#t1 lower bound for 2-b-unimodal?
 #t1 NaNs zulassen
-#t1 ausgiebig testen: vergleich mit den alten funktionen!
-#t1 4-b: Lower-Bound von Johnsson - Rogers verstehen !!!!
 
 #' Test if moments come from a unimodal distribution with compact support
 #'
@@ -59,11 +54,8 @@ is.2_b_unimodal <- function(lower, upper, moments, eps = 1e-10){
   
   # Existence of a distribution
   eqn1 <- ifelse(1+a*b <= 0, TRUE, FALSE)
-  
-  # Lower bound ???
-  # ...
-  
-  # Upper bound (Teuscher, Guiard)
+
+  # Unimodality (Teuscher, Guiard)
   eqn2 <- ifelse(a + b > eps  & b > sqrt(3),   a <= -b+sqrt(b^2-3), FALSE)
   eqn3 <- ifelse(a + b < -eps & a < -sqrt(3),  b >= -a-sqrt(a^2-3), FALSE)
   eqn4 <- ifelse(abs(a+b) <= eps, b >= sqrt(3), FALSE)
@@ -120,42 +112,53 @@ is.4_b_unimodal <- function(lower, upper, moments, eps = 1e-10){
   eqn7 <- ifelse(g2 <= eps + formula, TRUE, FALSE)
  
   ### Lower bound (Johnsson, Rogers)
+  r <- 2048*g1^2*(g1^2+sqrt(g1^2*(g1^2+4)))
+  s <- sqrt(r^(1/3) - 256*g1^2*r^(-1/3))
+  C <- 3 + s/2 - sqrt(128*g1^2/s - s^2)/2
   
-  s <- sqrt(as.complex(g2+6))
-  t <- 9*sqrt(as.complex(5*g2+6))*sqrt(as.complex(16*g2+21)) + s*(40*g2+51)
-  calc_q <- function(z){
-    ((5^(1/3)*s*t^(1/3) + Conj(z)*t^(2/3) + z*4*5^(2/3)*g2 + 
-        z*6*5^(2/3))/(9*5^(1/3)*s*t^(1/3)))
-  }
-  # all 3 solutions of ...
-  q <- cbind(calc_q(-1-sqrt(3)*1i), calc_q(-1+sqrt(3)*1i), calc_q(2)) 
-  cat("g2 = ", g2, "\ns = ", s, "\nt = ", t, "\n")
-  str(q)
+  formula <- NULL
+  if(g1 > eps) formula <- 6/5*(g1*(-sqrt(C)+1/sqrt(C))-1)
+  if(g1 < -eps) formula <- 6/5*(g1*(sqrt(C)-1/sqrt(C))-1)
+  if(abs(g1) < eps) formula <- -6/5
   
-  # only real solutions between 0 and 1:
-  q[!(abs(Im(q)) <eps & 0<=Re(q) & Re(q) <=1)] <- NA
-  q <- Re(q)
-  str(q)
-  # kann man auch mit eqn11 machen!
-  numRoots <- rowSums(!is.na(q))
-  if(sum(!(numRoots %in% 1:2)) != 0){
-    warning("Error during calculation of the lower bound.")
-  }
+  eqn8 <- ifelse(g2 + eps >= formula, TRUE, FALSE)
   
-  # inequalities
-  t <- (108*q^4)/((1-q)*(1+3*q)^3)
-  eqn8 <- ifelse(numRoots == 1, g1^2 <= eps + apply(t, 1, max, na.rm = T), FALSE)
-  eqn9 <- ifelse(numRoots == 2, g1^2 <= eps + apply(t, 1, max, na.rm = T), FALSE)
-  eqn10 <-ifelse(numRoots == 2, g1^2 + eps >= apply(t, 1, min, na.rm = T), FALSE)
-  eqn11 <-ifelse(numRoots %in% 1:2, FALSE, NA)
-  eqn12 <- eqn8 | (eqn9 & eqn10) | eqn11
+  ## old code:
+  
+  # s <- sqrt(as.complex(g2+6))
+  # t <- 9*sqrt(as.complex(5*g2+6))*sqrt(as.complex(16*g2+21)) + s*(40*g2+51)
+  # calc_q <- function(z){
+  #   ((5^(1/3)*s*t^(1/3) + Conj(z)*t^(2/3) + z*4*5^(2/3)*g2 + 
+  #       z*6*5^(2/3))/(9*5^(1/3)*s*t^(1/3)))
+  # }
+  # # all 3 solutions of ...
+  # q <- cbind(calc_q(-1-sqrt(3)*1i), calc_q(-1+sqrt(3)*1i), calc_q(2)) 
+  # #cat("g2 = ", g2, "\ns = ", s, "\nt = ", t, "\n")
+  # #str(q)
+  # 
+  # # only real solutions between 0 and 1:
+  # q[!(abs(Im(q)) <eps & 0<=Re(q) & Re(q) <=1)] <- NA
+  # q <- Re(q)
+  # 
+  # # kann man auch mit eqn11 machen!
+  # numRoots <- rowSums(!is.na(q))
+  # if(sum(!(numRoots %in% 1:2)) != 0){
+  #   warning("Error during calculation of the lower bound.")
+  # }
+  # 
+  # # inequalities
+  # t <- (108*q^4)/((1-q)*(1+3*q)^3)
+  # eqn8 <- ifelse(numRoots == 1, g1^2 <= eps + apply(t, 1, max, na.rm = T), FALSE)
+  # eqn9 <- ifelse(numRoots == 2, g1^2 <= eps + apply(t, 1, max, na.rm = T), FALSE)
+  # eqn10 <-ifelse(numRoots == 2, g1^2 + eps >= apply(t, 1, min, na.rm = T), FALSE)
+  # eqn11 <-ifelse(numRoots %in% 1:2, FALSE, NA)
+  # eqn12 <- eqn8 | (eqn9 & eqn10) | eqn11
  
   ### Combine everything
   
   results <- dplyr::case_when(
-    isTRUE(eqn12 & eqn7) ~ "4-b-unimodal",
+    isTRUE(eqn8 & eqn7) ~ "4-b-unimodal",
     isTRUE(!eqn6) ~ "not existant",
-    is.na(eqn11) ~ NA_character_,
     TRUE ~ rep("not unimodal", length(eqn1))
   )
   
@@ -181,24 +184,11 @@ is.4_b_unimodal <- function(lower, upper, moments, eps = 1e-10){
 ########  Beispiele, bei denen es nicht gut funktioniert #########
 ##################################################################
 
-d1 <- list(list(spec = "unif", min = 3, max = 4),
-           list(spec = "lnorm", meanlog = 4))
-w1 <- c(10,1)
-#curve(dmix(a=0, b=10, w1, distrib = d1)(x), 0, 11)
-#is.unimodal(0, 10, mmix(1:4, 0, 10, w1, distrib = d1))
-
-d2 <- list(list(spec = "unif", min = 6, max = 7),
-           list(spec = "norm", mean = 3))
-w2 <- c(1,2)
-#curve(dmix(a=0, b=8, w2, distrib = d2)(x), 0, 8)
-#is.unimodal(0, 8, mmix(1:4, 0, 8, w2, distrib = d2))
-
-d3 <- list(list(spec = "unif", min = 0, max = 1),
-           list(spec = "unif", min = 2, max = 3))
-w3 <- c(1,1) # mit c(1,1.2) gehts
-B <- 4       # mit B = 3 gehts
-#curve(dmix(a=0, B, w3, distrib = d3)(x), -1, B+1)
-#is.unimodal(0, B, mmix(1:4, 0, B, w3, distrib = d3))
+# d1 <- list(list(spec = "unif", min = 3, max = 4),
+#            list(spec = "lnorm", meanlog = 4))
+# w1 <- c(10,1)
+# curve(dmix(0, 10, weights = w1, distrib = d1)(x), 0, 11)
+# is.unimodal(0, 10, mmix(1:4, 0, 10, weights = w1, distrib = d1))
 
 ##########################üüüü##############################
 ############## Alte Versionen ##############################
