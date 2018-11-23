@@ -14,8 +14,9 @@ random.distribution(lower = 0, upper = 10, plot = TRUE)
 \item{plot}{boolean variable. Should the distribution be plotted?}
 }
 \value{
-A list with the distributions that are components of the mixture distribution.
-It has the same structure as parameter \code{distrib} in function \code{\link{dmix}}.
+A list with the distributions that are components of the mixture
+  distribution. It has the same structure as parameter \code{distrib} in
+  function \code{\link{dmix}}.
 }
 \description{
 This function computes a random truncated distribution which is a mixture of
@@ -26,5 +27,5 @@ of function \code{\link{is.unimodal}}.
 \examples{
 par(mfrow = c(1, 2))
 d <- random.distribution(plot = TRUE)
-curve(dmix(distrib = d, lower = 0, upper = 10)(x), -1, 10, type = "l", col = "red")
+curve(dmix(0, 10, distrib = d)(x), -1, 10, type = "l", col = "red")
 }

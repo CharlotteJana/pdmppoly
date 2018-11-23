@@ -1,5 +1,4 @@
-#======== todo =================================================================
-#t1 warum brauche ich dtrunc?
+#===============================================================================
 
 #------ dtrunc & mtrunc ----------
 
@@ -31,7 +30,7 @@ dtrunc <- function (x, spec, a = -Inf, b = Inf, ...) {
     tt[x >= a & x <= b] <- g(x[x >= a & x <= b], ...)/(G(b, ...) - G(a, ...))
   }
   else  
-    warning("Truncation interval is not inside the domain of the density function")
+   warning("Truncation interval is outside the support of the density function")
   
   return(tt)
 }
@@ -77,16 +76,16 @@ mtrunc <- function (order, spec, a = -Inf, b = Inf , ...){
 
 #' Mixtures of truncated distributions
 #' 
-#' Compute the distribution (\code{dmix}) and raw moments (\code{mmix}) of a mixture
-#' of different, eventually truncated distributions.
+#' Compute the distribution (\code{dmix}) and raw moments (\code{mmix}) of a
+#' mixture of different, eventually truncated distributions.
 #' 
 #' @param lower numeric giving the lower bound of the support. Defaults to -Inf.
 #' @param upper numeric giving the upper bound of the support. Defaults to Inf.
-#' @param distrib a list. Every element is itself a list representing a distribution.
-#' This list should have one named element \code{spec} which describes the
-#' distribution, i. e. "exp" for the exponential distribution or
-#' "norm" for the normal distribution. The other elements are optional
-#' additional parameters for the specfied distribution.
+#' @param distrib a list. Every element is itself a list representing a
+#'   distribution. This list should have one named element \code{spec} which
+#'   describes the distribution, i. e. "exp" for the exponential distribution or
+#'   "norm" for the normal distribution. The other elements are optional
+#'   additional parameters for the specfied distribution.
 #' @param weights numeric vector with the same length as \code{distrib}.
 #' Provides weights for every distribution given in \code{distrib}.
 #' @examples 
@@ -108,7 +107,8 @@ dmix <- function(lower = -Inf, upper = Inf, distrib, weights){
   weights <- weights/sum(weights)
   function(x){
     h <- sapply(1:n, function(i) 
-      weights[i]*do.call("dtrunc", c(x=list(x), a = lower, b = upper, distrib[[i]]))
+      weights[i]*do.call("dtrunc", c(x=list(x), distrib[[i]]), 
+                                     a = lower, b = upper)
     )
     rowSums(h)
   }
@@ -146,12 +146,13 @@ mmix <- function(order, lower = -Inf, upper = Inf, distrib, weights){
 #' @param lower lower bound of the support of the distribution. Defaults to 0.
 #' @param upper upper bound of the support of the distribution. Defaults to 10.
 #' @param plot boolean variable. Should the distribution be plotted?
-#' @return A list with the distributions that are components of the mixture distribution.
-#' It has the same structure as parameter \code{distrib} in function \code{\link{dmix}}.
+#' @return A list with the distributions that are components of the mixture
+#'   distribution. It has the same structure as parameter \code{distrib} in
+#'   function \code{\link{dmix}}.
 #' @examples
 #' par(mfrow = c(1, 2))
 #' d <- random.distribution(plot = TRUE)
-#' curve(dmix(distrib = d, lower = 0, upper = 10)(x), -1, 10, type = "l", col = "red")
+#' curve(dmix(0, 10, distrib = d)(x), -1, 10, type = "l", col = "red")
 #' @importFrom stats runif
 #' @export
 random.distribution <- function(lower = 0, upper = 10, plot = TRUE){

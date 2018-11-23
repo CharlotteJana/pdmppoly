@@ -14,9 +14,9 @@ mmix(order, lower = -Inf, upper = Inf, distrib, weights)
 
 \item{upper}{numeric giving the upper bound of the support. Defaults to Inf.}
 
-\item{distrib}{a list. Every element is itself a list representing a distribution.
-This list should have one named element \code{spec} which describes the
-distribution, i. e. "exp" for the exponential distribution or
+\item{distrib}{a list. Every element is itself a list representing a
+distribution. This list should have one named element \code{spec} which
+describes the distribution, i. e. "exp" for the exponential distribution or
 "norm" for the normal distribution. The other elements are optional
 additional parameters for the specfied distribution.}
 
@@ -24,8 +24,8 @@ additional parameters for the specfied distribution.}
 Provides weights for every distribution given in \code{distrib}.}
 }
 \description{
-Compute the distribution (\code{dmix}) and raw moments (\code{mmix}) of a mixture
-of different, eventually truncated distributions.
+Compute the distribution (\code{dmix}) and raw moments (\code{mmix}) of a
+mixture of different, eventually truncated distributions.
 }
 \examples{
 distributions <- list(list(spec="exp", rate = 2),
