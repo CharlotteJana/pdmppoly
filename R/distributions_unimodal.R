@@ -45,7 +45,7 @@ is.unimodal <- function(lower, upper, moments, eps = 1e-10){
     
     index <- which(r1 != "2-b-unimodal")
     if(any(r1[index] != r2[index]))
-      stop("Results of is.2_b_unimodal and is.4_b_unimodal differ.")
+      warning("Results of is.2_b_unimodal and is.4_b_unimodal differ.")
     
     return(r2)
   }

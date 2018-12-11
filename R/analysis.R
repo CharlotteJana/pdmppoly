@@ -5,7 +5,9 @@
 #t2: model und polyModel aus data auslesen
 #t2: analysis: simulierte Daten übergeben können
 #s1: Prom durch meine Promotion ersetzen
-#t1: analysis: modality fertig machen
+#t2: analysis: plot für modality
+#t2: modality for every method (simulation, setZero, ...)
+#t1: lower und upper müssen vektoren sein!
 
 #' Analysis of models used in PROM
 #' 
@@ -40,6 +42,7 @@ analysis <- function(data, model, polyModel, seeds = 1:50, useCsv = FALSE,
   initNames <- names(init(model))
   parmsNames <- names(parms(model))
   discVars <- names(discStates(model))
+  contVars <- setdiff(initNames, discVars)
   
   for(i in seq_len(nrow(data))){
     ### set new values for init, parms, times ###
@@ -154,7 +157,7 @@ analysis <- function(data, model, polyModel, seeds = 1:50, useCsv = FALSE,
                       dpi = 300, width = 20.4, height = 11, units = "cm")
     }
 
-    statistics <- summarise_at(msData,
+    statistics <- pdmpsim::summarise_at(msData,
                                .vars = initNames,
                                .funs = c("min", "max", "mean", "median", "sd"))
     saveRDS(statistics, paste0(fname,"__statistics.rda"))
@@ -188,7 +191,6 @@ analysis <- function(data, model, polyModel, seeds = 1:50, useCsv = FALSE,
       mcalc <- momApp(polyModel, max(momentorders), closure = s)$moments
       moments[[s]] <- mcalc
     }
-    summary(moments)
     moments <- dplyr::bind_rows(moments, .id = "method")
     saveRDS(moments, file = paste0(fname, "__moments.rda"))
     
@@ -221,38 +223,36 @@ analysis <- function(data, model, polyModel, seeds = 1:50, useCsv = FALSE,
     
     #### modality ####
 
-    if(is.null(lower) | is.null(upper)){ # für beliebige variablen machen!
-      values <- subset(msData, variable == "ξ", select = value)
-      if(is.null(lower)) lower <- min(values)
-      if(is.null(upper)) upper <- max(values)
-    }
-
-    m <- subset(moments, method == "Simulation" & order <= 4, 
-                select = c("time", "order", "ξ"))
-    m <- tidyr::spread(m, order, ξ)
-    m <- m[order(m$time),]
-    
-    return(m)
-    
-    lastmoments <- moments[which(moments$time == max(moments$time) & moments$method == "setZero"), "ξ"]
-
-    #print(tail(moments))
-    #print(lastmoments)
-    modality <- is.unimodal(lower = with(as.list(parms(model)), eval(lower)), 
+    modality <- data.frame(time = fromtoby(times(model)))
+    for(name in contVars){
+      
+      if(is.null(lower) | is.null(upper)){ # set values if no support is given
+        values <- subset(msData, variable == name, select = value)
+        if(is.null(lower)) lower <- min(values)
+        if(is.null(upper)) upper <- max(values)
+      }
+      
+      # select moments
+      m <- subset(moments, method == "Simulation" & order <= 4, 
+                  select = c("time", "order", name))
+      m <- tidyr::spread(m, order, name)
+      m <- m[order(m$time),]
+      
+      m2 <- apply(within(m, rm("time")), 1, 
+                        function(row){
+                          is.unimodal(
+                            lower = with(as.list(parms(model)), eval(lower)), 
                             upper = with(as.list(parms(model)), eval(upper)), 
-                            moments = lastmoments[1:4])
+                            moments = row)
+                        })
+      
+      colname <- paste("modality of", name)
+      modality[, colname] <- as.factor(m2)
+      
+    }
+    saveRDS(modality, file = paste0(fname, "__modality.rda"))
     
-    modality2 <- apply(within(m, rm("time")), 1, 
-                       function(row){
-                         is.unimodal(
-                           lower = with(as.list(parms(model)), eval(lower)), 
-                           upper = with(as.list(parms(model)), eval(upper)), 
-                           moments = row)
-      })
-    
-    print(modality)
-    print(modality2)
-    
+    #### end  ####
     message("All files are stored in ",ifelse(subDirs, 
                                               file.path(dir, data[i, "prefix"]), 
                                               dir))
