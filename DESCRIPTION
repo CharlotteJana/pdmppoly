@@ -34,6 +34,7 @@ Collate:
     'distributions_BEGG.R'
     'distributions_existance.R'
     'distributions_unimodal.R'
+    'manipulate.R'
     'spray_extension.R'
     'polypdmp_class.R'
     'polypdmp_methods.R'

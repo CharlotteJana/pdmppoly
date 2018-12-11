@@ -36,11 +36,7 @@ analysis <- function(data, model, polyModel, seeds = 1:50, useCsv = FALSE,
                      dir = file.path(getwd(), "simulations"), subDirs = FALSE, 
                      momentorders = 1:10, plotorder = 1:4, plot = TRUE,
                      sim = TRUE, lower = NULL, upper = NULL){
-  
-  #workingdir <- getwd()
-  #setwd(dir)
-  #on.exit(setwd(workingdir))
-  
+
   initNames <- names(init(model))
   parmsNames <- names(parms(model))
   discVars <- names(discStates(model))
@@ -79,15 +75,13 @@ analysis <- function(data, model, polyModel, seeds = 1:50, useCsv = FALSE,
     if(subDirs)
       dir.create(file.path(dir, data[i, "prefix"]), 
                  showWarnings = FALSE, recursive = TRUE)
+    
     fname <- ifelse(subDirs, 
                     file.path(dir, data[i, "prefix"], data[i, "prefix"]),
                     file.path(dir, data[i, "prefix"]))
-            #paste0(data[i,"prefix"], "_", 
-            #pdmpsim::format(model, short = T, slots = "parms"))
 
     message("\n", pdmpsim::format(model, short = F, collapse = "\n",
                                   slots = c("descr", "parms", "init", "times")))
-    
     
     #### simulation ####
     if(useCsv){
@@ -108,34 +102,75 @@ analysis <- function(data, model, polyModel, seeds = 1:50, useCsv = FALSE,
 
       }
       else{
+        ### simulation
         ms <- multSim(model, seeds)
         saveRDS(ms, file = paste0(fname, ".rda"))
         msData <- getMultSimData(ms)
         
+        ### statistics
+        statistics <- pdmpsim::summarise_at(msData,
+                                            .vars = initNames,
+                                            .funs = c("min", "max", "mean", "median", "sd"))
+        saveRDS(statistics, paste0(fname,"__statistics.rda"))
+        
         ### moments
+        message("Approximate Moments")
+        
         moments <- list()
         msim <- NULL
         for(m in momentorders){
           msim <- dplyr::bind_rows(msim, moments(ms, m))
         }
         moments[["Simulation"]] <- msim
-      }
-      
-      if(plot){
-        ### plot (histogram over all simulations and times)
-        message("Plots: overview, ", appendLF = FALSE)
-        suppressWarnings(plot(ms))
-        ggplot2::ggsave(paste0(fname,"__plot.png"), dpi = 300, 
-                        width = 20.4, height = 11, units = "cm")
+        
+        for(s in c("reduceDegree", "setZero")){
+          mcalc <- momApp(polyModel, max(momentorders), closure = s)$moments
+          moments[[s]] <- mcalc
+        }
+        moments <- dplyr::bind_rows(moments, .id = "method")
+        saveRDS(moments, file = paste0(fname, "__moments.rda"))
+        
       }
      
     }
     
+    #### modality ####
+    
+    modality <- data.frame(time = fromtoby(times(model)))
+    for(name in contVars){
+      
+      if(is.null(lower) | is.null(upper)){ # set values if no support is given
+        values <- subset(msData, variable == name, select = value)
+        if(is.null(lower)) lower <- min(values)
+        if(is.null(upper)) upper <- max(values)
+      }
+      
+      # select moments
+      m <- subset(moments, method == "Simulation" & order <= 4, 
+                  select = c("time", "order", name))
+      m <- tidyr::spread(m, order, name)
+      m <- m[order(m$time),]
+      
+      m2 <- apply(within(m, rm("time")), 1, 
+                  function(row){
+                    is.unimodal(
+                      lower = with(as.list(parms(model)), eval(lower)), 
+                      upper = with(as.list(parms(model)), eval(upper)), 
+                      moments = row)
+                  })
+      
+      colname <- paste("modality of", name)
+      modality[, colname] <- as.factor(m2)
+      
+    }
+    saveRDS(modality, file = paste0(fname, "__modality.rda"))
+    
     ##### plots #####
     
     if(plot){
+      
       # violin plot
-      message("violin plot, ", appendLF = FALSE)
+      message("Plots: violin plot, ", appendLF = FALSE)
       plotTimes(msData,
                 vars = initNames,
                 plottype = "violin") +
@@ -165,21 +200,13 @@ analysis <- function(data, model, polyModel, seeds = 1:50, useCsv = FALSE,
                       width = 20.4, height = 11, units = "cm")
   
       # statistics (min, max, mean, median)
-      #png(paste0(dir,"/", fname,"__statistics.png"), width = 1200, res = 140)
       message("statistics, ", appendLF = FALSE)
       plotStats(msData,
                 vars = initNames[!(initNames %in% discVars)],
                 funs = c("min", "mean", "median", "max"))
       ggplot2::ggsave(filename = paste0(fname,"__statistics.png"), 
                       dpi = 300, width = 20.4, height = 11, units = "cm")
-    }
 
-    statistics <- pdmpsim::summarise_at(msData,
-                               .vars = initNames,
-                               .funs = c("min", "max", "mean", "median", "sd"))
-    saveRDS(statistics, paste0(fname,"__statistics.rda"))
-    
-    if(plot){
       # histogram for last simulated time value
       message("histogram, ", appendLF = FALSE)
       h <- hist(msData, t = times(model)["to"],
@@ -189,7 +216,7 @@ analysis <- function(data, model, polyModel, seeds = 1:50, useCsv = FALSE,
                       dpi = 300, width = 20.4, height = 11, units = "cm")
   
       # densities for different time values
-      message("densities")
+      message("densities, ", appendLF = FALSE)
       times <- unique(msData$time)
       times <- times[seq(1, length(times), length.out = 6)]
       times <- times[2:6]
@@ -200,22 +227,9 @@ analysis <- function(data, model, polyModel, seeds = 1:50, useCsv = FALSE,
       dev.print(png, filename = paste0(fname, "__densities.png"),
                 width = 20.4, height = 11, units = "cm", res = 140)
       dev.off()
-    }
     
-    #### moments ####
-    
-    if(sim){
-      message("Approximate Moments")
-      for(s in c("reduceDegree", "setZero")){
-        mcalc <- momApp(polyModel, max(momentorders), closure = s)$moments
-        moments[[s]] <- mcalc
-      }
-      moments <- dplyr::bind_rows(moments, .id = "method")
-      saveRDS(moments, file = paste0(fname, "__moments.rda"))
-    }
-    
-    if(plot){
-      message("Plot Moments")
+      # moments
+      message("moments, ")
       plotdata <- reshape2::melt(moments, 1:3, stringsAsFactors = TRUE)
       plotdata$method <- factor(plotdata$method, levels = c("Simulation", 
                                                             "reduceDegree", 
@@ -239,38 +253,15 @@ analysis <- function(data, model, polyModel, seeds = 1:50, useCsv = FALSE,
       ggplot2::ggsave(filename = paste0(fname,"__moments.png"), plot = mplot, 
                       dpi = 300, width = 20.4, height = length(model@init)*5.5, 
                       units = "cm")
-    }
-    
-    #### modality ####
-
-    modality <- data.frame(time = fromtoby(times(model)))
-    for(name in contVars){
       
-      if(is.null(lower) | is.null(upper)){ # set values if no support is given
-        values <- subset(msData, variable == name, select = value)
-        if(is.null(lower)) lower <- min(values)
-        if(is.null(upper)) upper <- max(values)
+      # plot (histogram over all simulations and times)
+      if(!useCsv){
+        message("overview ", appendLF = FALSE)
+        suppressMessages(suppressWarnings(plot(ms)))
+        ggplot2::ggsave(paste0(fname,"__plot.png"), dpi = 300, 
+                        width = 20.4, height = 11, units = "cm")
       }
-      
-      # select moments
-      m <- subset(moments, method == "Simulation" & order <= 4, 
-                  select = c("time", "order", name))
-      m <- tidyr::spread(m, order, name)
-      m <- m[order(m$time),]
-      
-      m2 <- apply(within(m, rm("time")), 1, 
-                        function(row){
-                          is.unimodal(
-                            lower = with(as.list(parms(model)), eval(lower)), 
-                            upper = with(as.list(parms(model)), eval(upper)), 
-                            moments = row)
-                        })
-      
-      colname <- paste("modality of", name)
-      modality[, colname] <- as.factor(m2)
-      
     }
-    saveRDS(modality, file = paste0(fname, "__modality.rda"))
     
     #### end  ####
     message("All files are stored in ",ifelse(subDirs, 
@@ -278,60 +269,3 @@ analysis <- function(data, model, polyModel, seeds = 1:50, useCsv = FALSE,
                                               dir))
   }
 }
-
-checkParms <- function(model, parms = NULL, init = NULL, 
-                       seeds = 5, data = NULL){
-  if(!is.null(init)){
-    for(name in names(init)){
-      model@init[name] <- init[name]
-    }
-  }
-  if(!is.null(parms)){
-    for(name in names(parms)){
-      model@parms[name] <- parms[name]
-    }
-  }
-  #plot(sim(model, seed = seeds))
-  ms <- multSim(model, seeds)
-  plot <- plotSeeds(ms)
-  # if(!is.null(data)){
-  #   plot <- plot + 
-  #     ggplot2::geom_line(data = data, ggplot2::aes(x = times, y = lower), color = "red") +
-  #     ggplot2::geom_line(data = data, ggplot2::aes(x = times, y = upper))
-  # }
-  if(!is.null(data)){
-    plot <- plotSupport(plot, data)
-  }
-  return(plot)
-}
-
-# library(manipulate)
-# library(ggplot2)
-# manipulate(checkParms(genePdmpKF, init = c(ξ = ξ), seeds = seeds,
-#              parms = c(β = β, α = α, κ10 = κ10, κ01 = κ01, μ01 = μ01, μ10 = μ10)),
-#            ξ = slider(0, 30),
-#            β = slider(0.2, 10, step = 0.2),
-#            α = slider(0.2, 10, step = 0.2),
-#            κ10 = slider(0.2, 10, step = 0.2),
-#            κ01 = slider(0.2, 10, step = 0.2),
-#            μ10 = slider(0.2, 10, step = 0.2),
-#            μ01 = slider(0.2, 10, step = 0.2),
-#            seeds = slider(1,20))
-
-
-
-# manipulate({
-#   data <- data.frame(times = fromtoby(genePdmpBF@times))
-#   data[, "lower"] <- ξ*exp(-β*data$times) + α0/β*(1-exp(-β*data$times))
-#   data[, "upper"] <- ξ*exp(-β*data$times) + α1/β*(1-exp(-β*data$times))
-#   plot <- checkParms(genePdmpBF, init = c(ξ = ξ), seeds = seeds,
-#                       parms = c(β = β, α0 = α0, α1 = α1, κ10 = κ10, κ01 = κ01),
-#                      data = data)
-#   },
-#            ξ = slider(0, 30),
-#            β = slider(0.2, 10, step = 0.2),
-#            α0 = slider(0.2, 10, step = 0.2),
-#            α1 = slider(0.2, 10, step = 0.2),
-#            κ10 = slider(0.2, 10, step = 0.2),
-#            κ01 = slider(0.2, 10, step = 0.2),
-#            seeds = slider(1,20))
