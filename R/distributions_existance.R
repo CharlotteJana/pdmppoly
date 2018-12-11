@@ -1,7 +1,9 @@
 #======== todo =================================================================
-#s1 references for inequalities
+#t1 references for inequalities
 #t3 messages umformulieren?
 #t2 warum wurden nicht alle ungl aus Simpson_Welch_amNeuesten.wxm implementiert?
+#t1 vektorisieren und dokumentation anpassen
+
 
 #' Check for existance of a distribution
 #' 
@@ -32,10 +34,16 @@ exists.distribution <- function(lower, upper, moments){
   
   #----- definitions ------
   
+  
+  if(is.vector(moments))
+    moments <- t(moments)
+  
   bool <- TRUE
-  sd <- sqrt(moments[[2]]-moments[[1]]^2) # standard derivation
-  a <- (lower-moments[[1]])/sd # lower bound of support of the standardized distribution
-  b <- (upper-moments[[1]])/sd # upper bount of support of the standardized distribution
+  
+  # [a, b] = support of the standardized distribution
+  sd <- sqrt(moments[, 2]-moments[, 1]^2) # standard derivation
+  a <- (lower-moments[, 1])/sd
+  b <- (upper-moments[, 1])/sd
 
   m <- NULL # m = standardized moments
   for(j in seq_along(moments)){  

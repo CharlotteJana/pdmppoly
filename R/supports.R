@@ -80,9 +80,8 @@ plotSupport <- function(ggplot = NULL, support){
     ggplot <- ggplot2::ggplot(data = NULL)
   
   plot <- ggplot + 
-    ggplot2::geom_line(data = data, ggplot2::aes(x = times, y = lower), color = "red") +
-    ggplot2::geom_line(data = data, ggplot2::aes(x = times, y = upper), color = "red")
+    ggplot2::geom_line(data = data, ggplot2::aes(x = times, y = lower), color = "blue") +
+    ggplot2::geom_line(data = data, ggplot2::aes(x = times, y = upper), color = "blue")
   
-  print(plot)
-  return(invisible(plot))
+  return(plot)
 }

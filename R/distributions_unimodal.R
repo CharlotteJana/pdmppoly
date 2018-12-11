@@ -1,6 +1,9 @@
 #======== todo =================================================================
-#s1 references for inequalities
-#t2 NaNs zulassen
+#t1 references for inequalities
+#v1 bei unterschiedlichen ergebnissen wie reagieren?
+#   bsp: 2-b-unimodal + not existant?
+#t3 tests für vektorisierte version
+#t2 wie sieht der zusammenhang zu exists.distribution aus? struktur verbessern!
 
 #' Test if moments come from a unimodal distribution with compact support
 #'
@@ -22,8 +25,9 @@
 #' @param eps numeric value. Some inequalities are of the form \code{... > 0}.
 #'   For numerical reasons it is better to test for \code{... > eps} where
 #'   \code{eps} is a small number.
-#' @return boolean value indicating if the corresponding distribution
-#' is 2-/4-b-unimodal (TRUE) or not (FALSE).
+#' @return Character vector giving the results of the test. Possible values are
+#' "not unimodal", "not existant", NA_character_ and "2-b-unimodal" or 
+#' "4-b-unimodal".
 #' @example inst/examples/unimodal.R
 #' @name is.unimodal
 #' @export
@@ -34,9 +38,16 @@ is.unimodal <- function(lower, upper, moments, eps = 1e-10){
   if(length(moments) < 4){
     is.2_b_unimodal(lower, upper, moments, eps)
   }
+  
   if(length(moments) >= 4){
-    is.2_b_unimodal(lower, upper, moments, eps)
-    is.4_b_unimodal(lower, upper, moments, eps)
+    r1 <- is.2_b_unimodal(lower, upper, moments, eps)
+    r2 <- is.4_b_unimodal(lower, upper, moments, eps)
+    
+    index <- which(r1 != "2-b-unimodal")
+    if(any(r1[index] != r2[index]))
+      stop("Results of is.2_b_unimodal and is.4_b_unimodal differ.")
+    
+    return(r2)
   }
 }
 
@@ -62,10 +73,10 @@ is.2_b_unimodal <- function(lower, upper, moments, eps = 1e-10){
   eqn5 <- (eqn2 | eqn3 | eqn4)
   
   results <- dplyr::case_when(
-    isTRUE(eqn5) ~ "2-b-unimodal",
-    !isTRUE(eqn5) ~ "not unimodal",
-    !isTRUE(eqn1) ~ "not existant",
-    TRUE ~ rep(NA_character_, length(eqn1))
+    is.na(eqn1 & eqn5) ~ NA_character_,
+    !eqn1 ~ "not existant",
+    eqn5 ~ "2-b-unimodal",
+    TRUE ~ rep("not unimodal", length(eqn1))
   )
   
   return(results)
@@ -79,13 +90,13 @@ is.4_b_unimodal <- function(lower, upper, moments, eps = 1e-10){
     moments <- t(moments)
   
   # [a, b] = support of the standardized distribution
-  sd <- sqrt(moments[, 2]-moments[, 1]^2) # strandard derivation
+  sd <- sqrt(moments[, 2]-moments[, 1]^2) # standard derivation
   a <- (lower-moments[, 1])/sd
   b <- (upper-moments[, 1])/sd
   g1 <- (moments[, 3]-3*sd^2*moments[, 1]-moments[, 1]^3)/sd^3
   g2 <- (-3*moments[, 1]^4+6*moments[, 2]*moments[, 1]^2-
            4*moments[, 3]*moments[, 1]+moments[, 4])/sd^4-3
-
+  
   Q <- 4*g1*(a+b)+(3-a^2)*(3-b^2)
   
   # Existance of a distribution
@@ -116,18 +127,18 @@ is.4_b_unimodal <- function(lower, upper, moments, eps = 1e-10){
   s <- sqrt(r^(1/3) - 256*g1^2*r^(-1/3))
   C <- 3 + s/2 - sqrt(128*g1^2/s - s^2)/2
   
-  formula <- NULL
-  if(g1 > eps) formula <- 6/5*(g1*(-sqrt(C)+1/sqrt(C))-1)
-  if(g1 < -eps) formula <- 6/5*(g1*(sqrt(C)-1/sqrt(C))-1)
-  if(abs(g1) < eps) formula <- -6/5
+  form1 <- ifelse(g1 > eps & !is.na(g1), 6/5*(g1*(-sqrt(C)+1/sqrt(C))-1), 0)
+  form2 <- ifelse(g1 < -eps & !is.na(g1), 6/5*(g1*(sqrt(C)-1/sqrt(C))-1), 0)
+  form3 <- ifelse(abs(g1) < eps & !is.na(g1), -6/5, 0)
   
-  eqn8 <- ifelse(g2 + eps >= formula, TRUE, FALSE)
+  eqn8 <- ifelse(!is.na(g2) & g2 + eps >= form1 + form2 + form3, TRUE, FALSE)
+  eqn8[is.na(g1) | is.na(g2)] <- NA
 
   ### Combine everything
-  
   results <- dplyr::case_when(
-    isTRUE(eqn8 & eqn7) ~ "4-b-unimodal",
-    isTRUE(!eqn6) ~ "not existant",
+    is.na(eqn8 & eqn7 & eqn6) ~ NA_character_,
+    !eqn6 ~ "not existant",
+    eqn8 & eqn7 ~ "4-b-unimodal",
     TRUE ~ rep("not unimodal", length(eqn1))
   )
   

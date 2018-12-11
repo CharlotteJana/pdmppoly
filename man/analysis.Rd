@@ -2,7 +2,7 @@
 % Please edit documentation in R/analysis.R
 \name{analysis}
 \alias{analysis}
-\title{Analysis of models used in thesis ...}
+\title{Analysis of models used in PROM}
 \usage{
 analysis(data, model, polyModel, seeds = 1:50, useCsv = FALSE,
   dir = file.path(getwd(), "simulations"), subDirs = FALSE,
@@ -14,10 +14,12 @@ analysis(data, model, polyModel, seeds = 1:50, useCsv = FALSE,
 
 \item{model}{an object of class \code{\link{pdmpModel}}}
 
+\item{polyModel}{the corresponding object of class \code{\link{polyPdmpModel}}}
+
 \item{seeds}{number of seeds to be simulated}
 
-\item{useCsv}{boolean variable indicating if \code{\link{multSim}} (FALSE)
-or \code{\link{multSimCsv}} should be used for simulation. Defaults to FALSE.}
+\item{useCsv}{boolean variable indicating if \code{\link{multSim}} (if FALSE)
+or \code{\link{multSimCsv}} (if TRUE) should be used for simulation.}
 
 \item{dir}{string giving the directory where files will be stored.}
 
@@ -37,5 +39,5 @@ Defaults to 1:4.}
 \item{upper}{integer. Upper bound of the compact support of the distribution.}
 }
 \description{
-Analysis of models used in thesis ...
+Analysis of models used in PROM
 }

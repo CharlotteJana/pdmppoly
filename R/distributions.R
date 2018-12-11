@@ -107,8 +107,8 @@ dmix <- function(lower = -Inf, upper = Inf, distrib, weights){
   weights <- weights/sum(weights)
   function(x){
     h <- sapply(1:n, function(i) 
-      weights[i]*do.call("dtrunc", c(x=list(x), distrib[[i]]), 
-                                     a = lower, b = upper)
+      weights[i]*do.call("dtrunc", c(x = list(x), distrib[[i]], 
+                                     a = lower, b = upper))
     )
     rowSums(h)
   }

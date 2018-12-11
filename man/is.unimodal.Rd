@@ -26,8 +26,9 @@ For numerical reasons it is better to test for \code{... > eps} where
 \code{eps} is a small number.}
 }
 \value{
-boolean value indicating if the corresponding distribution
-is 2-/4-b-unimodal (TRUE) or not (FALSE).
+Character vector giving the results of the test. Possible values are
+"not unimodal", "not existant", NA_character_ and "2-b-unimodal" or 
+"4-b-unimodal".
 }
 \description{
 Given a compact support \code{[A, B]} and moments \code{m1, m2, ...} of a 
@@ -47,12 +48,11 @@ But a failure of these tests assures the distribution not to be unimodal.
 \examples{
 ### random example ###
 
-  unimodal.example <- function(A = 0, B = 10){
-    dis <- random.distribution(A, B)
-    is.unimodal(A, B, mmix(1:4, A, B, distrib = dis))
+  unimodal.example <- function(lower = 0, upper = 10){
+    dis <- random.distribution(lower, upper)
+    is.unimodal(lower, upper, mmix(1:4, lower, upper, distrib = dis))
   }
   unimodal.example()
-
 
 ### mixture of two normal distributions ###
 

@@ -1,11 +1,10 @@
 ### random example ###
 
-  unimodal.example <- function(A = 0, B = 10){
-    dis <- random.distribution(A, B)
-    is.unimodal(A, B, mmix(1:4, A, B, distrib = dis))
+  unimodal.example <- function(lower = 0, upper = 10){
+    dis <- random.distribution(lower, upper)
+    is.unimodal(lower, upper, mmix(1:4, lower, upper, distrib = dis))
   }
   unimodal.example()
-
 
 ### mixture of two normal distributions ###
 

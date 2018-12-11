@@ -1,17 +1,20 @@
 #======== todo =================================================================
 #t1: documentation
 #t1: useCsv = multSimCsv implementieren
+#t1: auskommentierten code mit manipulate bearbeiten
 #t2: model und polyModel aus data auslesen
 #t2: analysis: simulierte Daten übergeben können
-# install_github("CharlotteJana/pdmpsim@charlotte")
+#s1: Prom durch meine Promotion ersetzen
+#t1: analysis: modality fertig machen
 
-#' Analysis of models used in thesis ...
+#' Analysis of models used in PROM
 #' 
 #' @param data a data.frame, see Details below
 #' @param model an object of class \code{\link{pdmpModel}}
+#' @param polyModel the corresponding object of class \code{\link{polyPdmpModel}}
 #' @param seeds number of seeds to be simulated
-#' @param useCsv boolean variable indicating if \code{\link{multSim}} (FALSE)
-#' or \code{\link{multSimCsv}} should be used for simulation. Defaults to FALSE.
+#' @param useCsv boolean variable indicating if \code{\link{multSim}} (if FALSE)
+#' or \code{\link{multSimCsv}} (if TRUE) should be used for simulation. 
 #' @param dir string giving the directory where files will be stored.
 #' @param subDirs boolean variable indicating if subdirectories for every
 #' simulation shall be created. Defaults to FALSE.
@@ -69,13 +72,14 @@ analysis <- function(data, model, polyModel, seeds = 1:50, useCsv = FALSE,
   
     # filenames
     if(subDirs)
-      dir.create(file.path(dir, data[i, "prefix"]), showWarnings = FALSE, recursive = TRUE)
+      dir.create(file.path(dir, data[i, "prefix"]), 
+                 showWarnings = FALSE, recursive = TRUE)
     fname <- ifelse(subDirs, 
                     file.path(dir, data[i, "prefix"], data[i, "prefix"]),
                     file.path(dir, data[i, "prefix"]))
             #paste0(data[i,"prefix"], "_", 
             #pdmpsim::format(model, short = T, slots = "parms"))
-    
+
     message("\n", pdmpsim::format(model, short = F, collapse = "\n",
                                   slots = c("descr", "parms", "init", "times")))
     ### simulate ###
@@ -149,6 +153,7 @@ analysis <- function(data, model, polyModel, seeds = 1:50, useCsv = FALSE,
       ggplot2::ggsave(filename = paste0(fname,"__statistics.png"), 
                       dpi = 300, width = 20.4, height = 11, units = "cm")
     }
+
     statistics <- summarise_at(msData,
                                .vars = initNames,
                                .funs = c("min", "max", "mean", "median", "sd"))
@@ -180,7 +185,7 @@ analysis <- function(data, model, polyModel, seeds = 1:50, useCsv = FALSE,
     
     message("Approximate Moments")
     for(s in c("reduceDegree", "setZero")){
-      mcalc <- momApp(polyModel, l = max(momentorders), closure = s)$moments
+      mcalc <- momApp(polyModel, max(momentorders), closure = s)$moments
       moments[[s]] <- mcalc
     }
     summary(moments)
@@ -215,17 +220,42 @@ analysis <- function(data, model, polyModel, seeds = 1:50, useCsv = FALSE,
     }
     
     #### modality ####
-    
+
     if(is.null(lower) | is.null(upper)){ # für beliebige variablen machen!
       values <- subset(msData, variable == "ξ", select = value)
       if(is.null(lower)) lower <- min(values)
       if(is.null(upper)) upper <- max(values)
     }
 
-    lastmoments <- moments[which(moments$time == max(moments$time) & moments$method == "setZero"), "ξ"]
-    is.unimodal(A = eval(lower), B = eval(upper), m = lastmoments[1:4])
+    m <- subset(moments, method == "Simulation" & order <= 4, 
+                select = c("time", "order", "ξ"))
+    m <- tidyr::spread(m, order, ξ)
+    m <- m[order(m$time),]
     
-    message("All files are stored in ",ifelse(subDirs, file.path(dir, data[i, "prefix"]), dir))
+    return(m)
+    
+    lastmoments <- moments[which(moments$time == max(moments$time) & moments$method == "setZero"), "ξ"]
+
+    #print(tail(moments))
+    #print(lastmoments)
+    modality <- is.unimodal(lower = with(as.list(parms(model)), eval(lower)), 
+                            upper = with(as.list(parms(model)), eval(upper)), 
+                            moments = lastmoments[1:4])
+    
+    modality2 <- apply(within(m, rm("time")), 1, 
+                       function(row){
+                         is.unimodal(
+                           lower = with(as.list(parms(model)), eval(lower)), 
+                           upper = with(as.list(parms(model)), eval(upper)), 
+                           moments = row)
+      })
+    
+    print(modality)
+    print(modality2)
+    
+    message("All files are stored in ",ifelse(subDirs, 
+                                              file.path(dir, data[i, "prefix"]), 
+                                              dir))
   }
 }
 
@@ -254,9 +284,10 @@ checkParms <- function(model, parms = NULL, init = NULL,
   }
   return(plot)
 }
-library(manipulate)
-library(ggplot2)
-# manipulate(checkParms(genePdmpKF, init = c(ξ = ξ), seeds = seeds, 
+
+# library(manipulate)
+# library(ggplot2)
+# manipulate(checkParms(genePdmpKF, init = c(ξ = ξ), seeds = seeds,
 #              parms = c(β = β, α = α, κ10 = κ10, κ01 = κ01, μ01 = μ01, μ10 = μ10)),
 #            ξ = slider(0, 30),
 #            β = slider(0.2, 10, step = 0.2),
@@ -269,17 +300,18 @@ library(ggplot2)
 
 
 
-manipulate({
-  data <- data.frame(times = fromtoby(genePdmpBF@times))
-  data[, "lower"] <- ξ*exp(-β*data$times) + α0/β*(1-exp(-β*data$times))
-  data[, "upper"] <- ξ*exp(-β*data$times) + α1/β*(1-exp(-β*data$times))
-  plot <- checkParms(genePdmpBF, init = c(ξ = ξ), seeds = seeds,
-                      parms = c(β = β, α0 = α0, α1 = α1, κ10 = κ10, κ01 = κ01),
-                     data = data)
-  },
-           ξ = slider(0, 30),
-           β = slider(0.2, 10, step = 0.2),
-           α0 = slider(0.2, 10, step = 0.2),
-           κ10 = slider(0.2, 10, step = 0.2),
-           κ01 = slider(0.2, 10, step = 0.2),
-           seeds = slider(1,20))
+# manipulate({
+#   data <- data.frame(times = fromtoby(genePdmpBF@times))
+#   data[, "lower"] <- ξ*exp(-β*data$times) + α0/β*(1-exp(-β*data$times))
+#   data[, "upper"] <- ξ*exp(-β*data$times) + α1/β*(1-exp(-β*data$times))
+#   plot <- checkParms(genePdmpBF, init = c(ξ = ξ), seeds = seeds,
+#                       parms = c(β = β, α0 = α0, α1 = α1, κ10 = κ10, κ01 = κ01),
+#                      data = data)
+#   },
+#            ξ = slider(0, 30),
+#            β = slider(0.2, 10, step = 0.2),
+#            α0 = slider(0.2, 10, step = 0.2),
+#            α1 = slider(0.2, 10, step = 0.2),
+#            κ10 = slider(0.2, 10, step = 0.2),
+#            κ01 = slider(0.2, 10, step = 0.2),
+#            seeds = slider(1,20))
