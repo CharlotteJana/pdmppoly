@@ -136,34 +136,46 @@ analysis <- function(data, model, polyModel, seeds = 1:50, useCsv = FALSE,
     
     #### modality ####
     
-    modality <- data.frame(time = fromtoby(times(model)))
-    for(name in contVars){
+    modality <- data.frame()
+    
+    for(method in c("Simulation", "setZero", "reduceDegree")){
+      modalityMethod <- data.frame(time = fromtoby(times(model)))
       
-      if(is.null(lower) | is.null(upper)){ # set values if no support is given
-        values <- subset(msData, variable == name, select = value)
-        if(is.null(lower)) lower <- min(values)
-        if(is.null(upper)) upper <- max(values)
+      for(name in contVars){
+        
+        if(is.null(lower) | is.null(upper)){ # set values if no support is given
+          values <- subset(msData, variable == name, select = value)
+          if(is.null(lower)) lower <- min(values)
+          if(is.null(upper)) upper <- max(values)
+        }
+        
+        # select moments
+        m <- subset(moments, method == "Simulation" & order <= 4, 
+                    select = c("time", "order", name))
+        m <- tidyr::spread(m, order, name)
+        m <- m[order(m$time),]
+        
+        m2 <- apply(within(m, rm("time")), 1, 
+                    function(row){
+                      is.unimodal(
+                        lower = with(as.list(parms(model)), eval(lower)), 
+                        upper = with(as.list(parms(model)), eval(upper)), 
+                        moments = row)
+                    })
+        
+        colname <- paste("modality of", name)
+        modalityMethod[, colname] <- as.factor(m2)
+        modalityMethod[, "method"] <- method
       }
-      
-      # select moments
-      m <- subset(moments, method == "Simulation" & order <= 4, 
-                  select = c("time", "order", name))
-      m <- tidyr::spread(m, order, name)
-      m <- m[order(m$time),]
-      
-      m2 <- apply(within(m, rm("time")), 1, 
-                  function(row){
-                    is.unimodal(
-                      lower = with(as.list(parms(model)), eval(lower)), 
-                      upper = with(as.list(parms(model)), eval(upper)), 
-                      moments = row)
-                  })
-      
-      colname <- paste("modality of", name)
-      modality[, colname] <- as.factor(m2)
-      
+
+      modality <- dplyr::bind_rows(modality, modalityMethod)
+      str(modality)
+      print(tail(modality))
     }
+    modality$method <- as.factor(modality$method)
     saveRDS(modality, file = paste0(fname, "__modality.rda"))
+    
+    ggplot(data = mod, aes(x = time, fill = `modality of ξ`)) + geom_bar(position = "stack") + facet_wrap(. ~ method)
     
     ##### plots #####
     
