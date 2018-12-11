@@ -6,8 +6,8 @@
 \usage{
 analysis(data, model, polyModel, seeds = 1:50, useCsv = FALSE,
   dir = file.path(getwd(), "simulations"), subDirs = FALSE,
-  momentorders = 1:10, plotorder = 1:4, plot = TRUE, lower = NULL,
-  upper = NULL)
+  momentorders = 1:10, plotorder = 1:4, plot = TRUE, sim = TRUE,
+  lower = NULL, upper = NULL)
 }
 \arguments{
 \item{data}{a data.frame, see Details below}
@@ -33,6 +33,10 @@ be calculated. Defaults to 1:10.}
 Defaults to 1:4.}
 
 \item{plot}{boolean variable. Should \code{analysis} generate plots?}
+
+\item{sim}{boolean variable. Should \code{analysis} do the simulation
+or use already simulated data? In the latter case, it will use files
+stored at the same places where \code{analysis} would store the simulations.}
 
 \item{lower}{integer. Lower bound of the compact support of the distribution.}
 

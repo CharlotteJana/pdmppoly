@@ -3,7 +3,6 @@
 #t1: useCsv = multSimCsv implementieren
 #t1: auskommentierten code mit manipulate bearbeiten
 #t2: model und polyModel aus data auslesen
-#t2: analysis: simulierte Daten übergeben können
 #s1: Prom durch meine Promotion ersetzen
 #t2: analysis: plot für modality
 #t2: modality for every method (simulation, setZero, ...)
@@ -25,6 +24,9 @@
 #' @param plotorder vector giving all the orders of moments that shall be plotted.
 #' Defaults to 1:4.
 #' @param plot boolean variable. Should \code{analysis} generate plots?
+#' @param sim boolean variable. Should \code{analysis} do the simulation
+#' or use already simulated data? In the latter case, it will use files
+#' stored at the same places where \code{analysis} would store the simulations.
 #' @param lower integer. Lower bound of the compact support of the distribution.
 #' @param upper integer. Upper bound of the compact support of the distribution.
 #' @importFrom pdmpsim format
@@ -33,7 +35,7 @@
 analysis <- function(data, model, polyModel, seeds = 1:50, useCsv = FALSE, 
                      dir = file.path(getwd(), "simulations"), subDirs = FALSE, 
                      momentorders = 1:10, plotorder = 1:4, plot = TRUE,
-                     lower = NULL, upper = NULL){
+                     sim = TRUE, lower = NULL, upper = NULL){
   
   #workingdir <- getwd()
   #setwd(dir)
@@ -44,8 +46,8 @@ analysis <- function(data, model, polyModel, seeds = 1:50, useCsv = FALSE,
   discVars <- names(discStates(model))
   contVars <- setdiff(initNames, discVars)
   
+  #### set new values for init, parms, times ####
   for(i in seq_len(nrow(data))){
-    ### set new values for init, parms, times ###
     suppressWarnings({
       for(name in initNames){
         try({
@@ -73,7 +75,7 @@ analysis <- function(data, model, polyModel, seeds = 1:50, useCsv = FALSE,
       }
     })
   
-    # filenames
+    #### filenames ####
     if(subDirs)
       dir.create(file.path(dir, data[i, "prefix"]), 
                  showWarnings = FALSE, recursive = TRUE)
@@ -85,24 +87,39 @@ analysis <- function(data, model, polyModel, seeds = 1:50, useCsv = FALSE,
 
     message("\n", pdmpsim::format(model, short = F, collapse = "\n",
                                   slots = c("descr", "parms", "init", "times")))
-    ### simulate ###
     
+    
+    #### simulation ####
     if(useCsv){
       
     }
     else{
-      ms <- multSim(model, seeds)
-      saveRDS(ms, file = paste0(fname, ".rda"))
-      msData <- getMultSimData(ms)
-      
-      ### moments
-      moments <- list()
-      msim <- NULL
-      for(m in momentorders){
-        msim <- dplyr::bind_rows(msim, moments(ms, m))
+      if(!sim){
+        ms <- readRDS(file = paste0(fname, ".rda"))
+        msData <- getMultSimData(ms)
+        moments <- readRDS(file = paste0(fname, "__moments.rda"))
+        
+        if(!identical(model, ms$model))
+          stop("Simulation stored in ", paste0(fname, "__moments.rda"),
+               "was done with other model parameters.")
+        if(!identical(seeds, ms$seeds))
+          stop("Simulation stored in ", paste0(fname, "__moments.rda"),
+               "was done with different seeds.")
+
       }
-      moments[["Simulation"]] <- msim
-      #saveRDS(moments, file = paste0(fname, "__moments.rda"))
+      else{
+        ms <- multSim(model, seeds)
+        saveRDS(ms, file = paste0(fname, ".rda"))
+        msData <- getMultSimData(ms)
+        
+        ### moments
+        moments <- list()
+        msim <- NULL
+        for(m in momentorders){
+          msim <- dplyr::bind_rows(msim, moments(ms, m))
+        }
+        moments[["Simulation"]] <- msim
+      }
       
       if(plot){
         ### plot (histogram over all simulations and times)
@@ -114,7 +131,7 @@ analysis <- function(data, model, polyModel, seeds = 1:50, useCsv = FALSE,
      
     }
     
-    ##### Plots #####
+    ##### plots #####
     
     if(plot){
       # violin plot
@@ -184,15 +201,18 @@ analysis <- function(data, model, polyModel, seeds = 1:50, useCsv = FALSE,
                 width = 20.4, height = 11, units = "cm", res = 140)
       dev.off()
     }
+    
     #### moments ####
     
-    message("Approximate Moments")
-    for(s in c("reduceDegree", "setZero")){
-      mcalc <- momApp(polyModel, max(momentorders), closure = s)$moments
-      moments[[s]] <- mcalc
+    if(sim){
+      message("Approximate Moments")
+      for(s in c("reduceDegree", "setZero")){
+        mcalc <- momApp(polyModel, max(momentorders), closure = s)$moments
+        moments[[s]] <- mcalc
+      }
+      moments <- dplyr::bind_rows(moments, .id = "method")
+      saveRDS(moments, file = paste0(fname, "__moments.rda"))
     }
-    moments <- dplyr::bind_rows(moments, .id = "method")
-    saveRDS(moments, file = paste0(fname, "__moments.rda"))
     
     if(plot){
       message("Plot Moments")
