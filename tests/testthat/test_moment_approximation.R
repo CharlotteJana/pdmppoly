@@ -85,13 +85,14 @@ test_that("order of variables in init doesn't matter", {
   expect_identical(res1$contRes, res2$contRes)
 })
 
-test_that("moment calculation works for model 1", {
+test_that("moment calculation works for model K", {
   
   ### definitions
   data(genePolyK)
+  parms(genePolyK) <- c(α = 1, β = 10, κ01 = 10, κ10 = 10)
   times(genePolyK) <- c(from = 0, to = 2000, by = 1)
   states <- discStates(genePolyK)[[1]]
-  l <- 4 # only works for l < 5. If l = 5, set times["to"] = 3000
+  l <- 6
   k <- length(states)
   n <- length(genePolyK@init) - 1
   

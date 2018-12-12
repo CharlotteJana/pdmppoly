@@ -4,8 +4,8 @@
 #t1: auskommentierten code mit manipulate bearbeiten
 #t2: model und polyModel aus data auslesen
 #s1: Prom durch meine Promotion ersetzen
-#t2: analysis: plot für modality
-#t2: modality for every method (simulation, setZero, ...)
+#t2: modality plot for every variable
+#t1: modality tests funktionieren nicht! (siehe plots)
 #t1: lower und upper müssen vektoren sein!
 
 #' Analysis of models used in PROM
@@ -41,6 +41,7 @@ analysis <- function(data, model, polyModel, seeds = 1:50, useCsv = FALSE,
   parmsNames <- names(parms(model))
   discVars <- names(discStates(model))
   contVars <- setdiff(initNames, discVars)
+  approxMethods <- c("setZero", "reduceDegree")
   
   #### set new values for init, parms, times ####
   for(i in seq_len(nrow(data))){
@@ -70,7 +71,7 @@ analysis <- function(data, model, polyModel, seeds = 1:50, useCsv = FALSE,
         }, silent = TRUE)
       }
     })
-  
+    
     #### filenames ####
     if(subDirs)
       dir.create(file.path(dir, data[i, "prefix"]), 
@@ -90,27 +91,31 @@ analysis <- function(data, model, polyModel, seeds = 1:50, useCsv = FALSE,
     else{
       if(!sim){
         ms <- readRDS(file = paste0(fname, ".rda"))
+        message("Get MultSimData")
         msData <- getMultSimData(ms)
         moments <- readRDS(file = paste0(fname, "__moments.rda"))
         
         if(!identical(model, ms$model))
           stop("Simulation stored in ", paste0(fname, "__moments.rda"),
-               "was done with other model parameters.")
+               " was done with other model parameters.")
         if(!identical(seeds, ms$seeds))
           stop("Simulation stored in ", paste0(fname, "__moments.rda"),
-               "was done with different seeds.")
+               " was done with different seeds.")
 
       }
       else{
         ### simulation
         ms <- multSim(model, seeds)
         saveRDS(ms, file = paste0(fname, ".rda"))
+        
+        message("Get MultSimData")
         msData <- getMultSimData(ms)
         
         ### statistics
-        statistics <- pdmpsim::summarise_at(msData,
-                                            .vars = initNames,
-                                            .funs = c("min", "max", "mean", "median", "sd"))
+        statistics <- pdmpsim::summarise_at(
+                              msData,
+                              .vars = initNames,
+                              .funs = c("min", "max", "mean", "median", "sd"))
         saveRDS(statistics, paste0(fname,"__statistics.rda"))
         
         ### moments
@@ -123,11 +128,12 @@ analysis <- function(data, model, polyModel, seeds = 1:50, useCsv = FALSE,
         }
         moments[["Simulation"]] <- msim
         
-        for(s in c("reduceDegree", "setZero")){
+        for(s in approxMethods){
           mcalc <- momApp(polyModel, max(momentorders), closure = s)$moments
           moments[[s]] <- mcalc
         }
         moments <- dplyr::bind_rows(moments, .id = "method")
+        moments$method <- as.factor(moments$method)
         saveRDS(moments, file = paste0(fname, "__moments.rda"))
         
       }
@@ -136,9 +142,10 @@ analysis <- function(data, model, polyModel, seeds = 1:50, useCsv = FALSE,
     
     #### modality ####
     
+    message("Modality tests")
     modality <- data.frame()
     
-    for(method in c("Simulation", "setZero", "reduceDegree")){
+    for(calcMethod in c("Simulation", approxMethods)){
       modalityMethod <- data.frame(time = fromtoby(times(model)))
       
       for(name in contVars){
@@ -150,7 +157,7 @@ analysis <- function(data, model, polyModel, seeds = 1:50, useCsv = FALSE,
         }
         
         # select moments
-        m <- subset(moments, method == "Simulation" & order <= 4, 
+        m <- subset(moments, method == calcMethod & order <= 4, 
                     select = c("time", "order", name))
         m <- tidyr::spread(m, order, name)
         m <- m[order(m$time),]
@@ -162,20 +169,18 @@ analysis <- function(data, model, polyModel, seeds = 1:50, useCsv = FALSE,
                         upper = with(as.list(parms(model)), eval(upper)), 
                         moments = row)
                     })
-        
         colname <- paste("modality of", name)
-        modalityMethod[, colname] <- as.factor(m2)
-        modalityMethod[, "method"] <- method
+        modalityMethod[, colname] <- factor(m2, levels = c( "4-b-unimodal",
+                                                            "not unimodal",
+                                                            "not existant",
+                                                            NA_character_))
+        modalityMethod[, "method"] <- calcMethod
       }
-
       modality <- dplyr::bind_rows(modality, modalityMethod)
-      str(modality)
-      print(tail(modality))
     }
     modality$method <- as.factor(modality$method)
+    modality$method
     saveRDS(modality, file = paste0(fname, "__modality.rda"))
-    
-    ggplot(data = mod, aes(x = time, fill = `modality of ξ`)) + geom_bar(position = "stack") + facet_wrap(. ~ method)
     
     ##### plots #####
     
@@ -241,15 +246,14 @@ analysis <- function(data, model, polyModel, seeds = 1:50, useCsv = FALSE,
       dev.off()
     
       # moments
-      message("moments, ")
+      message("moments, ", appendLF = FALSE)
       plotdata <- reshape2::melt(moments, 1:3, stringsAsFactors = TRUE)
       plotdata$method <- factor(plotdata$method, levels = c("Simulation", 
-                                                            "reduceDegree", 
-                                                            "setZero"))
+                                                            approxMethods))
       plotdata$variable <- as.character(plotdata$variable)
       plotdata <- subset(plotdata, order <= plotorder)
   
-      mplot <- ggplot2::ggplot(data = plotdata, ggplot2::aes(x = time, y = value))+ 
+      mplot <- ggplot(data = plotdata, ggplot2::aes(x = time, y = value))+ 
         ggplot2::geom_line(size = 1,
                            ggplot2::aes(color = method, linetype = method)) +
         ggplot2::theme(axis.title.y = ggplot2::element_blank(), 
@@ -263,6 +267,22 @@ analysis <- function(data, model, polyModel, seeds = 1:50, useCsv = FALSE,
               labeller = ggplot2::label_bquote(cols = E(.(variable)^.(order))))
       
       ggplot2::ggsave(filename = paste0(fname,"__moments.png"), plot = mplot, 
+                      dpi = 300, width = 20.4, height = length(model@init)*5.5, 
+                      units = "cm")
+      
+      # modality (für mehrere variablen anpassen!)
+      message("modality, ")
+      timedist <- times(model)["by"]
+      ggplot(data = modality, aes(x = time, y = method, color = `modality of ξ`)) + 
+        ggplot2::geom_segment(aes(xend = time + timedist, yend = method), 
+                                  size = 20, lineend = "butt") +
+        guides(colour = guide_legend(override.aes = list(size=5))) +
+        ggplot2::labs(
+          title = model@descr,
+          subtitle = format(model, slots = c("parms"), short = FALSE),
+          caption = paste("Number of Simulations:", length(seeds)))
+      
+      ggplot2::ggsave(filename = paste0(fname,"__modality.png"), 
                       dpi = 300, width = 20.4, height = length(model@init)*5.5, 
                       units = "cm")
       
