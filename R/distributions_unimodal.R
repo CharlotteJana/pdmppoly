@@ -3,7 +3,7 @@
 #v1 bei unterschiedlichen ergebnissen wie reagieren?
 #   bsp: 2-b-unimodal + not existant?
 #t3 tests für vektorisierte version
-#t2 wie sieht der zusammenhang zu exists.distribution aus? struktur verbessern!
+#t1 documentation für param moments
 
 #' Test if moments come from a unimodal distribution with compact support
 #'
@@ -21,7 +21,12 @@
 #' 4-b-unimodal distribution can still be nonunimodal (see the examples below).
 #' But a failure of these tests assures the distribution not to be unimodal.
 #'
-#' @inheritParams exists.distribution
+#' @param lower numeric. The lower bound A of the support \eqn{[A, B]} of the distribution.
+#' @param upper numeric. The upper bound A of the support \eqn{[A, B]} of the distribution.
+#' @param moments numeric vector giving the non standardized moments 
+#' \eqn{m_1, m_2, m_3, ...}{m₁, m₂, m₃, ...}, sorted by their degree. 
+#' This vector should have at least two entries.
+#' 
 #' @param eps numeric value. Some inequalities are of the form \code{... > 0}.
 #'   For numerical reasons it is better to test for \code{... > eps} where
 #'   \code{eps} is a small number.

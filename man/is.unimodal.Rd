@@ -15,10 +15,10 @@ is.4_b_unimodal(lower, upper, moments, eps = 1e-10)
 \arguments{
 \item{lower}{numeric. The lower bound A of the support \eqn{[A, B]} of the distribution.}
 
-\item{upper}{numeric. The upper bound B of the support \eqn{[A, B]} of the distriubtion.}
+\item{upper}{numeric. The upper bound A of the support \eqn{[A, B]} of the distribution.}
 
-\item{moments}{numeric vector giving the non standardized moments \eqn{m_1, m_2,
-m_3, ...}{m₁, m₂, m₃, ...}, sorted by their degree. 
+\item{moments}{numeric vector giving the non standardized moments 
+\eqn{m_1, m_2, m_3, ...}{m₁, m₂, m₃, ...}, sorted by their degree. 
 This vector should have at least two entries.}
 
 \item{eps}{numeric value. Some inequalities are of the form \code{... > 0}.
