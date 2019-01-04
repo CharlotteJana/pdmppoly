@@ -68,7 +68,19 @@ dynsprays(obj) <- value
 \item{value}{the value that shall be set}
 }
 \description{
-Accessor functions for Class polyPdmpModel
+Get or set the slot values for an object of class
+\code{\link{polyPdmpModel}}. There are no methods for setting new values of
+the slots \code{dynsprays}, \code{dynfunc}, \code{ratesprays} and 
+\code{ratefunc}. Their value can be changed by setting a new value to
+\code{dynpolys}, \code{ratepolys} or \code{parms}. Only these slots
+should be accessed by the user. Slot \code{out} will be set to NULL, if
+new values for the other slots are provided.
+}
+\details{
+It is also possible to modify the slots directly,
+e.g. slot \code{dynsprays} of a model \code{model} with \code{model@dynsprays}, 
+but this is not recommended! The slots have to fit together and there is
+no method warning you of possible misleading results.
 }
 \note{
 only works for one discrete variable
