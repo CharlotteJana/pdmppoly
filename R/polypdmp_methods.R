@@ -1,5 +1,4 @@
 #======== todo =================================================================
-#t3 länge der liste mit anzahl von jtypes vergleichen (if(is.null(where)) ...)
 
 #' @include polypdmp_class.R spray_extension.R
 NULL
