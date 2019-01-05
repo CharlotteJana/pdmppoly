@@ -13,13 +13,16 @@ is.2_b_unimodal(lower, upper, moments, eps = 1e-10)
 is.4_b_unimodal(lower, upper, moments, eps = 1e-10)
 }
 \arguments{
-\item{lower}{numeric. The lower bound A of the support \eqn{[A, B]} of the distribution.}
+\item{lower}{numeric or vector. The lower bound(s) A of the support \eqn{[A,
+B]} of the distribution.}
 
-\item{upper}{numeric. The upper bound A of the support \eqn{[A, B]} of the distribution.}
+\item{upper}{numeric or vector. The upper bound(s) B of the support \eqn{[A,
+B]} of the distribution.}
 
-\item{moments}{numeric vector giving the non standardized moments 
-\eqn{m_1, m_2, m_3, ...}{m₁, m₂, m₃, ...}, sorted by their degree. 
-This vector should have at least two entries.}
+\item{moments}{numeric vector giving the non standardized moments \eqn{m_1,
+m_2, m_3, ...}{m₁, m₂, m₃, ...}, sorted by their degree. This vector should
+have at least two entries. It is also possible to enter a matrix, where
+every row contains the moments \eqn{m_1, m_2, m_3, ...}{m₁, m₂, m₃, ...}.}
 
 \item{eps}{numeric value. Some inequalities are of the form \code{... > 0}.
 For numerical reasons it is better to test for \code{... > eps} where

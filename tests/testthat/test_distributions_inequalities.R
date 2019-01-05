@@ -36,8 +36,28 @@ test_that("is.unimodal returns `not unimodal` for bimodal distributions", {
 })
 
 test_that("is.unimodal returns `not existant` in appropriate cases", {
+  
   expect_error(is.unimodal(-1, 2, -10))
-  expect_equal(is.unimodal(-1, 2, c(2, 0)), "not existant")
   expect_equal(is.unimodal(-1, 2, c(2, 5)), "not existant")
   expect_equal(is.unimodal(-4, -5, 1:5), "not existant")
+})
+
+test_that("is.unimodal works with vectorized input", {
+  
+  # moments given as matrix
+  moments <- rbind(actuar::munif(1:2, min = -10, max = 10), actuar::mnorm(1:2))
+  result <- is.unimodal(-10, 10, moments)
+  expect_equal(result, c("2-b-unimodal", "2-b-unimodal"))
+  
+  # lower and upper given as vectors
+  result <- is.unimodal(c(0, -10), c(1, -5), actuar::munif(1:4))
+  expect_equal(result, c("4-b-unimodal", "not existant"))
+  
+  # moments as matrix, lower/upper as vectors with length = nrow(moments)
+  moments <- rbind(actuar::mbeta(1:4, 0.5, 0.5), actuar::munif(1:4, min = -10, max = 10))
+  result <- is.unimodal(c(0,-10), c(1,10), moments)
+  expect_equal(result, c("not unimodal", "4-b-unimodal"))  
+  
+  # moments as matrix, lower/upper as vectors with length != nrow(moments)
+  expect_error(is.unimodal(c(0,-10, 1), 10, moments))
 })

@@ -1,8 +1,6 @@
 #======== todo =================================================================
 #v1 bei unterschiedlichen ergebnissen wie reagieren?
 #   bsp: 2-b-unimodal + not existant?
-#t3 tests für vektorisierte version
-#t1 documentation für param moments
 
 #' Test if moments come from a unimodal distribution with compact support
 #'
@@ -20,12 +18,14 @@
 #' 4-b-unimodal distribution can still be nonunimodal (see the examples below).
 #' But a failure of these tests assures the distribution not to be unimodal.
 #'
-#' @param lower numeric. The lower bound A of the support \eqn{[A, B]} of the distribution.
-#' @param upper numeric. The upper bound A of the support \eqn{[A, B]} of the distribution.
-#' @param moments numeric vector giving the non standardized moments 
-#' \eqn{m_1, m_2, m_3, ...}{m₁, m₂, m₃, ...}, sorted by their degree. 
-#' This vector should have at least two entries.
-#' 
+#' @param lower numeric or vector. The lower bound(s) A of the support \eqn{[A,
+#'   B]} of the distribution.
+#' @param upper numeric or vector. The upper bound(s) B of the support \eqn{[A,
+#'   B]} of the distribution.
+#' @param moments numeric vector giving the non standardized moments \eqn{m_1,
+#'   m_2, m_3, ...}{m₁, m₂, m₃, ...}, sorted by their degree. This vector should
+#'   have at least two entries. It is also possible to enter a matrix, where
+#'   every row contains the moments \eqn{m_1, m_2, m_3, ...}{m₁, m₂, m₃, ...}. 
 #' @param eps numeric value. Some inequalities are of the form \code{... > 0}.
 #'   For numerical reasons it is better to test for \code{... > eps} where
 #'   \code{eps} is a small number.
@@ -46,20 +46,25 @@ is.unimodal <- function(lower, upper, moments, eps = 1e-10){
   #[A,B] = Support der ZG
   #m = sortierter Vektor mit Momenten
   
-  if(length(moments) < 4){
-    is.2_b_unimodal(lower, upper, moments, eps)
+  l <- c(length(lower), length(upper), nrow(rbind(moments)))
+  l <- l[! l %in% 1] # remove all values that are 1
+  if(length(unique(l)) > 1){
+    stop("length of input vectors and matrix do not fit")
   }
   
-  if(length(moments) >= 4){
+  if(ncol(rbind(moments)) < 4){
+    r2 <- is.2_b_unimodal(lower, upper, moments, eps)
+  }
+  
+  if(ncol(rbind(moments)) >= 4){
     r1 <- is.2_b_unimodal(lower, upper, moments, eps)
     r2 <- is.4_b_unimodal(lower, upper, moments, eps)
     
     index <- which(r1 != "2-b-unimodal")
     if(any(r1[index] != r2[index]))
       warning("Results of is.2_b_unimodal and is.4_b_unimodal differ.")
-    
-    return(r2)
-  }
+  } 
+  return(r2)
 }
 
 #' @rdname is.unimodal
