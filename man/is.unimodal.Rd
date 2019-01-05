@@ -34,8 +34,8 @@ Character vector giving the results of the test. Possible values are
 Given a compact support \code{[A, B]} and moments \code{m1, m2, ...} of a 
 one dimensional distribution, this method checks if the (unknown) 
 distribution can be unimodal. \cr 
-There exist several inequalities that test for nonunimodality in the
-literature. Depending on the inequality, moments up to order 2 or 4 are
+There exist several inequalities that test for nonunimodality (see References). 
+Depending on the inequality, moments up to order 2 or 4 are
 required. A distribution that satisfies all inequalities that contain only
 moments up to order 2 is called \emph{2-b-unimodal}. A distribution that
 satisfies all inequalities that contain only moments up to order 4 is called
@@ -83,4 +83,11 @@ But a failure of these tests assures the distribution not to be unimodal.
   curve(dmix(lower = 0, upper = 10, distrib = d)(x), -1, 11)
   is.unimodal(0,10, mmix(1:4, 0, 10, distrib = d))
 
+}
+\references{
+\insertRef{TeuscherGuiard1994}{pdmppoly}
+
+\insertRef{JohnsonRogers1951}{pdmppoly}
+
+\insertRef{SimpsonWelch1960}{pdmppoly}
 }

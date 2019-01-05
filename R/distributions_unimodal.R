@@ -1,5 +1,4 @@
 #======== todo =================================================================
-#t1 references for inequalities
 #v1 bei unterschiedlichen ergebnissen wie reagieren?
 #   bsp: 2-b-unimodal + not existant?
 #t3 tests für vektorisierte version
@@ -10,8 +9,8 @@
 #' Given a compact support \code{[A, B]} and moments \code{m1, m2, ...} of a 
 #' one dimensional distribution, this method checks if the (unknown) 
 #' distribution can be unimodal. \cr 
-#' There exist several inequalities that test for nonunimodality in the
-#' literature. Depending on the inequality, moments up to order 2 or 4 are
+#' There exist several inequalities that test for nonunimodality (see References). 
+#' Depending on the inequality, moments up to order 2 or 4 are
 #' required. A distribution that satisfies all inequalities that contain only
 #' moments up to order 2 is called \emph{2-b-unimodal}. A distribution that
 #' satisfies all inequalities that contain only moments up to order 4 is called
@@ -34,7 +33,14 @@
 #' "not unimodal", "not existant", NA_character_ and "2-b-unimodal" or 
 #' "4-b-unimodal".
 #' @example inst/examples/unimodal.R
+#' @references 
+#' \insertRef{TeuscherGuiard1994}{pdmppoly}
+#' 
+#' \insertRef{JohnsonRogers1951}{pdmppoly}
+#' 
+#' \insertRef{SimpsonWelch1960}{pdmppoly}
 #' @name is.unimodal
+#' @importFrom Rdpack reprompt
 #' @export
 is.unimodal <- function(lower, upper, moments, eps = 1e-10){
   #[A,B] = Support der ZG

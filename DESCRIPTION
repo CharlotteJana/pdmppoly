@@ -20,10 +20,12 @@ Imports: actuar,
     ggplot2,
     LaF,
     prodlim,
+    Rdpack,
     simecol,
     stringr,
     spray
 Suggests: testthat
+RdMacros: Rdpack
 Remotes: CharlotteJana/pdmpsim
 RoxygenNote: 6.1.1
 Collate: 
