@@ -33,7 +33,7 @@ This method only works for one discrete variable. This variable has to
 be the last element of vector \code{init} of model \code{obj}.
 }
 \seealso{
-\code{\link{polyGenerator}} to compute the generator and obtain the
+\code{\link{generator}} to compute the generator and obtain the
   result as spray object with the same number of variables as
   \code{init(obj)}, \code{\link{generator}} to compute the generator and
   obtain the result as function.

@@ -18,12 +18,12 @@ printGenerators <- function(polyMod, formalGen, m){
   k <- length(states)
   
   polyGen <- function(discVar)
-    polyGenerator(polyMod)(product(c(m, 0)))(discVar)
+    generator(polyMod)(product(c(m, 0)))(discVar)
   EVGen <- function(discVar) 
     EVGenerator(polyMod, m, discVar)
   
   for(i in 1:k){
-    cat(noquote("polyGenerator    \tdiscVar ="), states[i], "\n")
+    cat(noquote("generator    \tdiscVar ="), states[i], "\n")
     print(polyGen(states[i]))
     cat(noquote("formal generator \tdiscVar ="), states[i], "\n")
     print(formalGen(product(c(m, 0)), states[i]))
@@ -37,7 +37,7 @@ printGenerators <- function(polyMod, formalGen, m){
   }))
   evg <- Reduce("+", lapply(1:k, function(i) EVGen(states[i])))
   cat("\nsum over all discVars:\n")
-  cat("polyGenerator\t")
+  cat("generator\t")
   print(pg)
   cat("EVGenerator\t")
   print(evg)
@@ -71,7 +71,7 @@ test_that("generator works for model K", {
     return(subs(gen, n+1, discVar))
   }
   
-  expect_identical(polyGenerator(genePolyK)(f)(1), 
+  expect_identical(generator(genePolyK)(f)(1), 
                    formalGen(f, 1))
   
   #------ compare with EVGenerator -----------
@@ -82,7 +82,7 @@ test_that("generator works for model K", {
   
   # sum over all discrete states
   a <- Reduce("+", lapply(1:k, function(i){
-    gen <- polyGenerator(genePolyK)(mp)(states[i])
+    gen <- generator(genePolyK)(mp)(states[i])
     lone(n+i, n+k)*increase_arity(gen, n+1:k)
   }))
   b <- Reduce("+", lapply(1:k, function(i)
@@ -137,7 +137,7 @@ test_that("generator works for model K2", {
     return(subs(gen, n+1, discVar))
   }
 
-  expect_identical(polyGenerator(genePolyK2)(f)(1), 
+  expect_identical(generator(genePolyK2)(f)(1), 
                    formalGen(f, 1))
   
   #------ compare with EVGenerator -----------
@@ -148,7 +148,7 @@ test_that("generator works for model K2", {
   
   # sum over all discrete states
   a <- Reduce("+", lapply(1:k, function(i){
-    gen <- polyGenerator(genePolyK2)(mp)(states[i])
+    gen <- generator(genePolyK2)(mp)(states[i])
     lone(n+i, n+k)*increase_arity(gen, n+1:k)
   }))
   b <- Reduce("+", lapply(1:k, function(i) 
@@ -210,7 +210,7 @@ test_that("generator works for the toggleSwitch model", {
     return(subs(gen, n+1, discVar))
   }
   
-  expect_identical(polyGenerator(genePolyT)(f)(1), 
+  expect_identical(generator(genePolyT)(f)(1), 
                    formalGen(f, 1))
   
   #------ compare with EVGenerator -----------
@@ -221,7 +221,7 @@ test_that("generator works for the toggleSwitch model", {
   
   # sum over all discrete states
   a <- Reduce("+", lapply(1:k, function(i){
-    gen <- polyGenerator(genePolyT)(mp)(states[i])
+    gen <- generator(genePolyT)(mp)(states[i])
     lone(n+i, n+k)*increase_arity(gen, n+1:k)
   }))
   b <- Reduce("+", lapply(1:k, function(i) 
@@ -265,7 +265,7 @@ test_that("generator works for constant polynomials", {
   m <- c(0, 0)
   mp <- product(c(m, 0))
   
-  expect_true(is.zero(polyGenerator(genePolyK2)(mp)(1)))
+  expect_true(is.zero(generator(genePolyK2)(mp)(1)))
   
   b <- Reduce("+", lapply(1:k, function(i){
     EVGenerator(genePolyK2, m, states[i])}
