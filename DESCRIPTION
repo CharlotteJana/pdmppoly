@@ -29,7 +29,6 @@ RdMacros: Rdpack
 Remotes: CharlotteJana/pdmpsim
 RoxygenNote: 6.1.1
 Collate: 
-    '2_def_polyPdmp.R'
     'analysis.R'
     'data.R'
     'distributions.R'

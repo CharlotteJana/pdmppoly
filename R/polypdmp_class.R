@@ -1,5 +1,7 @@
 #======== todo =================================================================
 #t2 hier Dokumentation nicht doppelt. Geht das auch?
+#t3 validity schreiben (was kommt da genau rein?, siehe validObject(.Object))
+#t2 arity(spray) == length(obj@init) für dynpolys und ratepolys
 #s3 Bei polyPdmpModel<- wird .cache = new.env() gesetzt, bei pdmpModel<- nicht. 
 #   Warum? Im Internet habe ich bisher nicht viel dazu gefunden. Vllt wegen initialize?
 

@@ -1,8 +1,5 @@
 #======== todo =================================================================
-#t2 warum ist generator eine funktion von discvar????
-#t2 EVGenerator umbenennen
-#t2 EVGenerator und Generator unabhängig von der Stelle von θ in init 
-#t3 arity sollte eigentlich n sein?
+#v1 EVGenerator umbenennen
 
 #' @include polypdmp_class.R polypdmp_accessors.R
 NULL
@@ -43,8 +40,7 @@ setMethod("generator", signature(obj = "polyPdmpModel"), function(obj) {
      nj <- length(obj@ratesprays) # number of jumptypes
      stateIndex <- getIndex(discVar, obj@discStates[[1]])
      
-     ### poly
-     if(arity(poly) != n+1) stop("arity of the polynomial has to equal ", n+1) # arity sollte eigentlich n sein?
+     if(arity(poly) != n+1) stop("arity of the polynomial has to equal ", n+1) 
      
      ### sum over continuous states
      list <- lapply(1:n, function(i){
@@ -54,7 +50,7 @@ setMethod("generator", signature(obj = "polyPdmpModel"), function(obj) {
        })
      s1 <- Reduce("+", list)
      
-     # sum over possible new discrete states
+     ### sum over possible new discrete states
      ratematrix <- ratespraysToMatrix(obj)
      list <- lapply(seq_along(obj@discStates[[1]]), function(j){
        if(!is.null(ratematrix[[stateIndex]][[j]])){
@@ -90,13 +86,13 @@ setMethod("generator", signature(obj = "polyPdmpModel"), function(obj) {
 #'   every possible state. See \code{\link{blowupSpray}} for more details.
 #' @seealso \code{\link{generator}} to compute the generator and obtain the
 #'   result as spray object with the same number of variables as
-#'   \code{init(obj)}, \code{\link{generator}} to compute the generator and
+#'   \code{init(obj)}, \code{\link[pdmpsim]{generator}} to compute the generator and
 #'   obtain the result as function.
 #' @note This method only works for one discrete variable. This variable has to
 #' be the last element of vector \code{init} of model \code{obj}.
 #' @importFrom spray product deriv subs lone
 EVGenerator <- function(obj, m, j){ 
-  # Computes EV(generator(θⱼ*spray)), where
+  # Computes E(generator(θⱼ*spray)), where
   # θⱼ is the i-th indicator variable for the discrete variable θ (j ϵ {1,...,k}),
   # spray = z₁ᵐ¹*...*zₙᵐⁿ with z = vector of all continous variables.
   # The result is a (blown up) spray of arity n+k.
