@@ -18,7 +18,10 @@ NULL
 #' @importFrom ggplot2 ggplot aes geom_line facet_grid labs scale_color_discrete
 #' @rdname momApp-methods
 #' @export
-plot.momApp <- function(x){
+plot.momApp <- function(x, ...){
+  
+  # to avoid the R CMD Check NOTE 'no visible binding for global variable ...'
+  time <- variable <- init <- descr <- NULL
   
   data <- tidyr::gather(x$moments, key = "variable", value = "value", 
                         names(init(x$model)))
@@ -58,20 +61,20 @@ print.momApp <- function(x, ...){
 
 #' @rdname momApp-methods
 #' @export
-summary.momApp <- function(x, ...){
-  cat(noquote("\n$maxOrder \t"), x$maxOrder)
-  cat(noquote("\n$closure \t"), x$closure)
+summary.momApp <- function(object, ...){
+  cat(noquote("\n$maxOrder \t"), object$maxOrder)
+  cat(noquote("\n$closure \t"), object$closure)
   cat(noquote("\n$model \n"))
-  cat(format(x$model, short = FALSE, collapse = "\n",
+  cat(format(object$model, short = FALSE, collapse = "\n",
              slots = c("descr", "parms", "init")))
-  for(i in 1:x$maxOrder){
+  for(i in 1:object$maxOrder){
     cat(noquote("\n\n$moments, order = "), i, "\n")
-    print(summary(x$moments[which(x$moments$order == i), -(1:2)], ...))
+    print(summary(object$moments[which(object$moments$order == i), -(1:2)], ...))
   }
   cat(noquote("\n$discRes\n"))
-  print(summary(x$discRes[,-1], ...))
+  print(summary(object$discRes[,-1], ...))
   cat(noquote("\n$contRes\n"))
-  print(summary(x$contRes[,-1], ...))
+  print(summary(object$contRes[,-1], ...))
 }
 
 #' @rdname momApp-methods

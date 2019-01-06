@@ -31,6 +31,7 @@
 #' @param upper integer. Upper bound of the compact support of the distribution.
 #' @importFrom pdmpsim format
 #' @importFrom ggplot2 labs
+#' @importFrom grDevices dev.off dev.print png
 #' @export
 analysis <- function(data, model, polyModel, seeds = 1:50, useCsv = FALSE, 
                      dir = file.path(getwd(), "simulations"), subDirs = FALSE, 
@@ -188,9 +189,9 @@ analysis <- function(data, model, polyModel, seeds = 1:50, useCsv = FALSE,
       
       # violin plot
       message("Plots: violin plot, ", appendLF = FALSE)
-      plotTimes(msData,
-                vars = initNames,
-                plottype = "violin") +
+      pdmpsim::plotTimes(msData,
+                         vars = initNames,
+                         plottype = "violin") +
       ggplot2::labs(title = descr(model),
                     subtitle = paste0("Number of simulations: ",
                                       length(unique(msData$seed)), "\n",
@@ -203,10 +204,10 @@ analysis <- function(data, model, polyModel, seeds = 1:50, useCsv = FALSE,
   
       # boxplot with seednumbers
       message("boxplot, ", appendLF = FALSE)
-      plotTimes(msData,
-                vars = initNames[!(initNames %in% discVars)],
-                nolo = 3,
-                plottype = "boxplot") +
+      pdmpsim::plotTimes(msData,
+                         vars = initNames[!(initNames %in% discVars)],
+                         nolo = 3,
+                         plottype = "boxplot") +
         ggplot2::labs(title = descr(model),
                       subtitle = paste0("Number of simulations: ",
                                         length(unique(msData$seed)), "\n",
@@ -218,17 +219,17 @@ analysis <- function(data, model, polyModel, seeds = 1:50, useCsv = FALSE,
   
       # statistics (min, max, mean, median)
       message("statistics, ", appendLF = FALSE)
-      plotStats(msData,
-                vars = initNames[!(initNames %in% discVars)],
-                funs = c("min", "mean", "median", "max"))
+      pdmpsim::plotStats(msData,
+                         vars = initNames[!(initNames %in% discVars)],
+                         funs = c("min", "mean", "median", "max"))
       ggplot2::ggsave(filename = paste0(fname,"__statistics.png"), 
                       dpi = 300, width = 20.4, height = 11, units = "cm")
 
       # histogram for last simulated time value
       message("histogram, ", appendLF = FALSE)
-      h <- hist(msData, t = times(model)["to"],
-                main = descr(model),
-                sub = pdmpsim::format(model, short = F, slots = "parms"))
+      h <- pdmpsim::hist(msData, t = times(model)["to"],
+                         main = descr(model),
+                         sub = pdmpsim::format(model, short = F, slots = "parms"))
       ggplot2::ggsave(filename = paste0(fname,"__histogram.png"), plot = h, 
                       dpi = 300, width = 20.4, height = 11, units = "cm")
   
@@ -238,9 +239,9 @@ analysis <- function(data, model, polyModel, seeds = 1:50, useCsv = FALSE,
       times <- times[seq(1, length(times), length.out = 6)]
       times <- times[2:6]
       dev.off()
-      density(msData, t = times,
-              main = descr(model),
-              sub = pdmpsim::format(model, short = F, slots = "parms"))
+      pdmpsim::density(msData, t = times,
+                       main = descr(model),
+                       sub = pdmpsim::format(model, short = F, slots = "parms"))
       dev.print(png, filename = paste0(fname, "__densities.png"),
                 width = 20.4, height = 11, units = "cm", res = 140)
       dev.off()

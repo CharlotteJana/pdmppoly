@@ -1,4 +1,5 @@
 #======== todo =================================================================
+#t1 überarbeiten und dokumentieren
 
 compute.central.moment <- function(j, moments){
   e <- moments[1]
@@ -20,12 +21,13 @@ test.momentboundaries <- function(n = 100){
   A <- 0                                      # untere Grenze = 0
   B <- sample(1:50,1)                         # zufällige obere Grenze ϵ {1, 2, ..., 50}
   test <- function(i){
-    m <- mmix(1:6, A, B, distrib = random.distribution(A, B, curve=FALSE))
+    m <- mmix(1:6, A, B, distrib = random.distribution(A, B, plot = FALSE))
     if(!compare.momentboundaries(A, B, m)){
       str(distributions)
       print(m)
       print(paste("B =",B))
-      print(paste("Integral:", integrate(dmix(distrib=distributions, a=A, b=B), lower = A, upper = B)$value))
+      print(paste("Integral:", integrate(dmix(distrib=distributions, lower=A, upper=B), 
+                                         lower = A, upper = B)$value))
       return(FALSE)
     }
     return(TRUE)

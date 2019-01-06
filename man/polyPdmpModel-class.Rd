@@ -47,8 +47,10 @@ automatically out of slot \code{ratepolys}. Do not edit it by hand.}
 
 \note{
 Currently, all methods only work for PDMPs with a single discrete
-  variable, but it is always possible to redefine a PDMP with multiple
-  discrete variables in a way that only one discrete variable is necessary.
+  variable. Some methods require the discrete variable to be the last
+  entry in slot \code{init}. Note that it is always possible to redefine a 
+  PDMP with multiple discrete variables in a way that only one discrete 
+  variable is necessary.
 }
 \section{Ratepolys}{
 

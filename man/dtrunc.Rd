@@ -35,9 +35,10 @@ x <- seq(0, 3, 0.1)
 dtrunc(x, spec = "norm", a = 1, b = 2)
 curve(dtrunc(x, spec = "norm", a = -Inf, b = 1), -10, 2)
 
-# different results for intervals outside the support of the density function:
-truncdist::dtrunc(x, spec = "norm", a = 20, b = 30)
-pdmppoly::dtrunc(x, spec = "norm", a = 20, b = 30)
+\dontrun{
+# different results for intervals outside the support of the density function:#' 
+truncdist::dtrunc(x, spec = "norm", a = 20, b = 30) # gives error
+pdmppoly::dtrunc(x, spec = "norm", a = 20, b = 30) # gives only a warning}
 }
 \references{
 Nadarajah, S. and S. Kotz, 2006. \code{R} Programs for Computing

@@ -63,6 +63,9 @@ setMethod("momApp", signature(obj = "polyPdmpModel"),
   names <- names(obj@init)  # names of all variables
   dnames <- names(obj@discStates)
   cnames <- names[!names %in% dnames]
+  
+  # to avoid the R CMD Check NOTE 'no visible binding for global variable ...'
+  time <- variable <- NULL
     
   ### create all moment combinations that are needed 
   

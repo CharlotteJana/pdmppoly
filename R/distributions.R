@@ -15,9 +15,10 @@
 #' dtrunc(x, spec = "norm", a = 1, b = 2)
 #' curve(dtrunc(x, spec = "norm", a = -Inf, b = 1), -10, 2)
 #' 
-#' # different results for intervals outside the support of the density function:
-#' truncdist::dtrunc(x, spec = "norm", a = 20, b = 30)
-#' pdmppoly::dtrunc(x, spec = "norm", a = 20, b = 30)
+#' \dontrun{
+#' # different results for intervals outside the support of the density function:#' 
+#' truncdist::dtrunc(x, spec = "norm", a = 20, b = 30) # gives error
+#' pdmppoly::dtrunc(x, spec = "norm", a = 20, b = 30) # gives only a warning}
 #' @importFrom utils str
 #' @export
 dtrunc <- function (x, spec, a = -Inf, b = Inf, ...) {
@@ -171,7 +172,7 @@ random.distribution <- function(lower = 0, upper = 10, plot = TRUE){
                 "lnorm" = list(spec="lnorm", meanlog = sample(i:(2*i),1)))
     distributions[[i]] <- t
   }
-  if(plot) curve(dmix(distrib=distributions, lower = lower, upper = upper)(x), 
+  if(plot) graphics::curve(dmix(distrib=distributions, lower = lower, upper = upper)(x), 
                  from = lower-1, to = upper+1, ylab = "distribution")
   return(distributions)
 }
