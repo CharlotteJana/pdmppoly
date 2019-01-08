@@ -14,8 +14,8 @@ getSupport(model)
 plotSupport(ggplot = NULL, support)
 }
 \arguments{
-\item{model}{Object of class \code{pdmpModel} or \code{polyPdmp}.
-This has to be one of the previous mentioned models.}
+\item{model}{Object of class \code{pdmpModel} or \code{polyPdmp}. This has to
+be one of the previous mentioned models.}
 
 \item{ggplot}{Object of class ggplot. The bounds will be plotted onto this 
 object. If NULL, a new plot object will be created.}
@@ -24,13 +24,13 @@ object. If NULL, a new plot object will be created.}
 returned by \code{getSupport}.}
 }
 \description{
-In PROM, the support of the following gene regualtion models has been 
-calculated: \code{\link[geneK]{Model K}}, \code{\link[geneK2]{Model K2}}, 
-\code{\link[geneF]{Model F}}, \code{\link[geneKF]{Model KF}}, 
-\code{\link[geneBF]{Model BF}} and \code{\link[geneT]{Model T}}.
-Method \code{getSupport} returns a data.frame with the lower and upper
-bounds of the support for every time value, method \code{plotSupport}
-adds these bounds as lines into a plot given as \code{ggplot} object.
+In PROM, the support of the following gene regualtion models has been
+calculated: \code{[Model K][modelK]}, \code{[Model K2][modelK2]},
+\code{[Model F][modelF]}, \code{[Model KF][modelKF]}, 
+\code{[Model BF][modelBF]} and \code{[Model T][modelT]}.
+Method \code{getSupport} returns a data.frame with the lower and upper bounds
+of the support for every time value, method \code{plotSupport} adds these
+bounds as lines into a plot given as \code{ggplot} object.
 }
 \note{
 Method \code{plotSupport} currently only works for models with one

@@ -22,6 +22,8 @@ additional parameters for the specfied distribution.}
 
 \item{weights}{numeric vector with the same length as \code{distrib}.
 Provides weights for every distribution given in \code{distrib}.}
+
+\item{order}{order of the moment}
 }
 \description{
 Compute the distribution (\code{dmix}) and raw moments (\code{mmix}) of a

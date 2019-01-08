@@ -6,7 +6,22 @@ NULL
 
 #' Generator
 #' 
-#' @inherit pdmpsim::generator description
+#' Compute the generator of a PDMP. The generator is defined as follows:
+#' Let \eqn{X_t}{Xₜ} be a PDMP with statespace \eqn{K \times D}{K x D} where 
+#' \eqn{K \subset R^k}{K ⊂ ℝᵏ} and \eqn{D} is the state space for the discrete 
+#' variable. Let furthermore \eqn{\varphi^s(t,i,z)}{φˢ(t,i,z)} be the dynamics 
+#' for the continous variables, \eqn{s = 1,...,k} and 
+#' \eqn{\Lambda_{ij}(z)}{Λᵢⱼ(z)} be the transition rates 
+#' \eqn{i \rightarrow j}{i → j} for \eqn{i,j \in D}{i,j ϵ D}. 
+#' Let \eqn{z^*}{z*} be the new continous values after a jump from 
+#' \eqn{x := (i,z)} to \eqn{j}. The generator for a function 
+#' \eqn{f: K \times D \rightarrow R^k}{f: K x D → ℝᵏ} lying in its domain is 
+#' defined as \deqn{Q(f)(t,x) = Q(f)(t,i,z) := \sum_{s = 1}^{k} \varphi^s(t,i,z) 
+#' \frac{\partial f(i,z)}{\partial z_s} + \sum_{j \in D} 
+#' \Lambda_{ij}(z)(f(j,z^*) - f(i,z)).}{Q(f)(t,x) = Q(f)(t,i,z) := Σ φˢ(t,i,z) 
+#' ∂f(i,z)/∂zₛ + Σ Λᵢⱼ(z)(f(j,z*) - f(i,z))}
+#' \ifelse{latex}{}{where the first sum goes from s = 1 to k and the second 
+#' sums over all j ϵ D.}
 #' 
 #' @param obj an object of class \code{\link{polyPdmpModel}}.
 #' @return The generator \code{Q} of \code{obj} as defined above. This is a

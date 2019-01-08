@@ -29,8 +29,9 @@
 #' stored at the same places where \code{analysis} would store the simulations.
 #' @param lower integer. Lower bound of the compact support of the distribution.
 #' @param upper integer. Upper bound of the compact support of the distribution.
-#' @importFrom pdmpsim format
+#' @importFrom pdmpsim format multSim discStates getMultSimData descr
 #' @importFrom ggplot2 labs
+#' @importFrom simecol "times<-" "init<-" "init" "parms"
 #' @importFrom grDevices dev.off dev.print png
 #' @export
 analysis <- function(data, model, polyModel, seeds = 1:50, useCsv = FALSE, 
@@ -38,6 +39,9 @@ analysis <- function(data, model, polyModel, seeds = 1:50, useCsv = FALSE,
                      momentorders = 1:10, plotorder = 1:4, plot = TRUE,
                      sim = TRUE, lower = NULL, upper = NULL){
 
+  # to avoid the R CMD Check NOTE 'no visible binding for global variable ...'
+  variable <- method <- time <- E <- . <- NULL
+  
   initNames <- names(init(model))
   parmsNames <- names(parms(model))
   discVars <- names(discStates(model))
@@ -227,7 +231,7 @@ analysis <- function(data, model, polyModel, seeds = 1:50, useCsv = FALSE,
 
       # histogram for last simulated time value
       message("histogram, ", appendLF = FALSE)
-      h <- pdmpsim::hist(msData, t = times(model)["to"],
+      h <- hist(msData, t = times(model)["to"],
                          main = descr(model),
                          sub = pdmpsim::format(model, short = F, slots = "parms"))
       ggplot2::ggsave(filename = paste0(fname,"__histogram.png"), plot = h, 
@@ -239,7 +243,7 @@ analysis <- function(data, model, polyModel, seeds = 1:50, useCsv = FALSE,
       times <- times[seq(1, length(times), length.out = 6)]
       times <- times[2:6]
       dev.off()
-      pdmpsim::density(msData, t = times,
+      density(msData, t = times,
                        main = descr(model),
                        sub = pdmpsim::format(model, short = F, slots = "parms"))
       dev.print(png, filename = paste0(fname, "__densities.png"),
@@ -277,7 +281,7 @@ analysis <- function(data, model, polyModel, seeds = 1:50, useCsv = FALSE,
       ggplot(data = modality, aes(x = time, y = method, color = `modality of f`)) + 
         ggplot2::geom_segment(aes(xend = time + timedist, yend = method), 
                                   size = 20, lineend = "butt") +
-        guides(colour = guide_legend(override.aes = list(size=5))) +
+        ggplot2::guides(colour = ggplot2::guide_legend(override.aes = list(size=5))) +
         ggplot2::labs(
           title = model@descr,
           subtitle = format(model, slots = c("parms"), short = FALSE),

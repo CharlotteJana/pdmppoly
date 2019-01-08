@@ -1,4 +1,7 @@
 #===============================================================================
+#v1 Zur Dokumentation von dtrunc: Zitat aus http://r-pkgs.had.co.nz/check.html
+# "If the licenses are compatible you can copy and paste the exported function 
+#  into your own package. If you do this, remember to update Authors@R."
 
 #------ dtrunc & mtrunc ----------
 
@@ -115,6 +118,7 @@ dmix <- function(lower = -Inf, upper = Inf, distrib, weights){
   }
 }
 
+#' @param order order of the moment
 #' @rdname dmix
 #' @export
 mmix <- function(order, lower = -Inf, upper = Inf, distrib, weights){

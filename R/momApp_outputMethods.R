@@ -8,6 +8,7 @@
 #' such objects, namely \code{print}, \code{summary}, \code{plot}, \code{tail}
 #' and \code{head}.
 #' @param x object of class \code{momApp}
+#' @param object object of class \code{momApp}
 #' @param ... further arguments to the default method
 #' @name momApp-methods
 NULL
@@ -17,6 +18,7 @@ NULL
 #' @importFrom tidyr gather
 #' @importFrom ggplot2 ggplot aes geom_line facet_grid labs scale_color_discrete
 #' @rdname momApp-methods
+#' @method plot momApp
 #' @export
 plot.momApp <- function(x, ...){
   

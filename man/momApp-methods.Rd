@@ -9,7 +9,7 @@
 \alias{head.momApp}
 \title{Methods for objects of class \code{\link{momApp}}}
 \usage{
-plot.momApp(x, ...)
+\method{plot}{momApp}(x, ...)
 
 \method{print}{momApp}(x, ...)
 
@@ -23,6 +23,8 @@ plot.momApp(x, ...)
 \item{x}{object of class \code{momApp}}
 
 \item{...}{further arguments to the default method}
+
+\item{object}{object of class \code{momApp}}
 }
 \description{
 Objects of class momApp occur as results of function \code{\link{momApp}}.

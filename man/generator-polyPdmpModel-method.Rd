@@ -36,8 +36,8 @@ defined as \deqn{Q(f)(t,x) = Q(f)(t,i,z) := \sum_{s = 1}^{k} \varphi^s(t,i,z)
 \frac{\partial f(i,z)}{\partial z_s} + \sum_{j \in D} 
 \Lambda_{ij}(z)(f(j,z^*) - f(i,z)).}{Q(f)(t,x) = Q(f)(t,i,z) := Σ φˢ(t,i,z) 
 ∂f(i,z)/∂zₛ + Σ Λᵢⱼ(z)(f(j,z*) - f(i,z))}
-\ifelse{{latex}{}{where the first sum goes from s = 1 to k and the second 
-sums over all j ϵ D.}}
+\ifelse{latex}{}{where the first sum goes from s = 1 to k and the second 
+sums over all j ϵ D.}
 }
 \note{
 Method \code{generator} only works for one discrete variable and

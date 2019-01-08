@@ -1,4 +1,4 @@
 library(testthat)
-library(pdmpsim)
+library(pdmppoly)
 
-test_check("pdmpsim")
+test_check("pdmppoly")

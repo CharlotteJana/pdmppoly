@@ -11,8 +11,8 @@ checkParms <- function(model, parms = NULL, init = NULL,
     }
   }
   #plot(sim(model, seed = seeds))
-  ms <- multSim(model, seeds)
-  plot <- plotSeeds(ms)
+  ms <- pdmpsim::multSim(model, seeds)
+  plot <- pdmpsim::plotSeeds(ms)
   # if(!is.null(data)){
   #   plot <- plot + 
   #     ggplot2::geom_line(data = data, ggplot2::aes(x = times, y = lower), color = "red") +

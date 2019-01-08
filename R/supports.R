@@ -4,15 +4,15 @@
 
 #' Return the support for gene regulation models
 #' 
-#' In PROM, the support of the following gene regualtion models has been 
-#' calculated: \code{\link[geneK]{Model K}}, \code{\link[geneK2]{Model K2}}, 
-#' \code{\link[geneF]{Model F}}, \code{\link[geneKF]{Model KF}}, 
-#' \code{\link[geneBF]{Model BF}} and \code{\link[geneT]{Model T}}.
-#' Method \code{getSupport} returns a data.frame with the lower and upper
-#' bounds of the support for every time value, method \code{plotSupport}
-#' adds these bounds as lines into a plot given as \code{ggplot} object.
-#' @param model Object of class \code{pdmpModel} or \code{polyPdmp}.
-#' This has to be one of the previous mentioned models.
+#' In PROM, the support of the following gene regualtion models has been
+#' calculated: \code{[Model K][modelK]}, \code{[Model K2][modelK2]},
+#' \code{[Model F][modelF]}, \code{[Model KF][modelKF]}, 
+#' \code{[Model BF][modelBF]} and \code{[Model T][modelT]}.
+#' Method \code{getSupport} returns a data.frame with the lower and upper bounds
+#' of the support for every time value, method \code{plotSupport} adds these
+#' bounds as lines into a plot given as \code{ggplot} object.
+#' @param model Object of class \code{pdmpModel} or \code{polyPdmp}. This has to
+#'   be one of the previous mentioned models.
 #' @examples
 #' data(genePolyT)
 #' getSupport(genePolyT) %>% head
@@ -76,6 +76,10 @@ getSupport <- function(model){
 #' @note Method \code{plotSupport} currently only works for models with one
 #' continous variable.
 plotSupport <- function(ggplot = NULL, support){
+  
+  # to avoid the R CMD Check NOTE 'no visible binding for global variable ...'
+  times <- lower <- upper <- data <- NULL
+  
   if(is.null(ggplot))
     ggplot <- ggplot2::ggplot(data = NULL)
   

@@ -66,7 +66,7 @@ genePdmpBF <- new("pdmpModel",
 #------ code to generate the polyPdmpModel version -----
 
 genePolyBF <- new("polyPdmpModel",
-                  descr = "Model BF: positive feedback with basal transcription (polynomial version)",
+                  descr = "Model BF: pos. feedback with basal transcription (polynomial version)",
                   parms = list(b = 0.2, a0 =1, a1 = 7, k10 = 0.02, k01 = 0.02), 
                   init = c(f = 1, d = 1), 
                   discStates = list(d = 0:1),

@@ -106,7 +106,7 @@ setMethod("dynpolys<-", "polyPdmpModel", function(obj, value){
     funcs <- lapply(funcs, function(list) list[[discStatesIndex]]) # pick the right sprays out of dynpolys (one for every continous variable)
     dx <- sapply(funcs, function(f) unname(do.call(f, list(x)))) # apply these functions to x
     contNames <- names(obj@init)[!names(obj@init) %in% discName]
-    dynamics <- rep(0, length(obj@init)) %>% setNames(names(obj@init))
+    dynamics <- rep(0, length(obj@init)) %>% stats::setNames(names(obj@init))
     dynamics[contNames] <- dx
     return(dynamics)
   }
