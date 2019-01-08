@@ -18,12 +18,14 @@
 #' @param obj an object of class \code{\link{polyPdmpModel}}
 #' @param value the value that shall be set
 #' 
-#' @example 
+#' @examples
 #' data("genePolyK")
-#' parms(genePolyK)["β"] <- 3 
+#' parms(genePolyK)["b"] <- 3 
 #' dynsprays(genePolyK) # different value than before
 #' 
 #' @include polypdmp_class.R polypdmp_methods.R
+#' @importMethodsFrom pdmpsim "dynfunc<-" "ratefunc<-"
+#' @importMethodsFrom simecol "parms<-"
 #' @name polypdmp-accessors
 NULL
 
@@ -53,6 +55,9 @@ setGeneric("dynsprays", function(obj) standardGeneric("dynsprays"))
 #' @rdname polypdmp-accessors
 #' @export
 setGeneric("dynsprays<-", function(obj, value) standardGeneric("dynsprays<-"))
+# #' @rdname pdmp-accessors
+# #' @export
+# setGeneric("parms<-", function(obj, value) standardGeneric("parms<-"))
 
 #======= Getters ==========
 

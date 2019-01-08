@@ -14,6 +14,7 @@ simplePdmp <- new("pdmpModel",
 )
 
 #------ polyPdmpModel version -----
+library("spray")
 simplePoly <- new("polyPdmpModel",
                   descr = "polyModel with two jumptypes",
                   init = c(f = 0, d = 0),
@@ -63,11 +64,10 @@ genePdmpT <- new("pdmpModel",
                                     switch(x[3], 3, 4, 1, 2), 
                                     switch(x[3], 2, 1, 4, 3)))
                  }, 
-                 times = c(from = 0, to = 100, by = 0.01), 
+                 times = c(from = 0, to = 20, by = 0.01), 
                  solver = "lsodar")
 
 #------ polyPdmpModel version -----
-library("spray")
 genePolyT <- new("polyPdmpModel",
                  descr = "toggleswitch with two promotors (polynomial version)",
                  parms = list(bA = 0.5, bB = 0.5, aA = 2, aB = 4, 
@@ -87,7 +87,7 @@ genePolyT <- new("polyPdmpModel",
                                     switch(x[3], 3, 4, 1, 2), 
                                     switch(x[3], 2, 1, 4, 3)))
                  }, 
-                 times = c(from = 0, to = 100, by = 0.01), 
+                 times = c(from = 0, to = 20, by = 0.01), 
                  solver = "lsodar")
 
 #------- comparison of the models --------------
@@ -95,6 +95,7 @@ identical(sim(genePdmpT, outSlot = FALSE, seed = 10),
           sim(genePolyT, outSlot = FALSE, seed = 10))
 
 data("toggleSwitch")
+times(toggleSwitch) <- c(from = 0, to = 20, by = 0.01)
 all.equal(sim(genePdmpT, outSlot = FALSE, seed = 20)[, c("fA", "fB")],
           sim(toggleSwitch, outSlot = FALSE, seed = 20)[, c("fA", "fB")],
           check.attributes = FALSE)

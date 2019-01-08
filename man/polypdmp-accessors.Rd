@@ -87,3 +87,9 @@ only works for one discrete variable
 
 only works for one discrete variable
 }
+\examples{
+data("genePolyK")
+parms(genePolyK)["b"] <- 3 
+dynsprays(genePolyK) # different value than before
+
+}

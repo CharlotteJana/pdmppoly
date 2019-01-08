@@ -1,4 +1,4 @@
-library(spray)
+library("spray")
 #------ code to generate this model -----
 
 simplePoly <- new("polyPdmpModel",

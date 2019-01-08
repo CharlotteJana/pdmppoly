@@ -16,7 +16,7 @@ same mechanism as \code{simplePdmp}. It is included to the package for
 demonstration purposes and is used in some unit tests and function examples.
 }
 \examples{
-library(spray)
+library("spray")
 #------ code to generate this model -----
 
 simplePoly <- new("polyPdmpModel",

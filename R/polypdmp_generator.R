@@ -7,6 +7,7 @@ NULL
 #' Generator
 #' 
 #' @inherit pdmpsim::generator description
+#' 
 #' @param obj an object of class \code{\link{polyPdmpModel}}.
 #' @return The generator \code{Q} of \code{obj} as defined above. This is a
 #'   function which takes as argument a single polynomial \code{f} (represented
@@ -29,6 +30,7 @@ NULL
 #' @note Method \code{generator} only works for one discrete variable and
 #' this variable should be the last entry in slot \code{init}.
 #' @importFrom spray arity deriv subs lone 
+#' @importMethodsFrom pdmpsim generator
 #' @export
 setMethod("generator", signature(obj = "polyPdmpModel"), function(obj) {
  function(poly){
