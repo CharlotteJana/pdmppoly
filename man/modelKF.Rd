@@ -21,10 +21,10 @@ genePolyKF
 This PDMP models a gene regulation mechanism similar to
 \code{\link{genePolyF}}, where we have one gene and a positive feedback loop.
 The rate to unblock the gene depends on the concentration of the gene product
-\code{ξ}, but it is never zero because there is an additional rate that is
-independet of \code{ξ}. Transcription and translation are considered as one
+\code{f}, but it is never zero because there is an additional rate that is
+independet of \code{f}. Transcription and translation are considered as one
 step and are not modeled separately. In PROM, this model is referred to as
-\emph{Model F₊}, therefore it is named \code{genePdmpKF} and
+\emph{Model F+}, therefore it is named \code{genePdmpKF} and
 \code{genePolyKF} here.
 }
 \section{Simulation}{
@@ -35,8 +35,8 @@ The simulations in PROM were done with slot \code{times} set to
 }
 The following parameter sets were simulated:
 \itemize{
-\item \code{κ01 = 0.02, κ10 = 0.02, α = 1, β = 0.2}
-\item \code{κ01 = 0.02, κ10 = 0.02, α = 7, β = 0.2}
+\item \code{k01 = 0.02, k10 = 0.02, a = 1, b = 0.2}
+\item \code{k01 = 0.02, k10 = 0.02, a = 7, b = 0.2}
 }
 }
 
@@ -46,17 +46,17 @@ library(spray)
 
 genePdmpKF <- new("pdmpModel",
                  descr = "Model KF: positive feedback with constant rate",
-                 parms = list(β = 0.2, α = 7, κ10 = 0.02, κ01 = 0.02,
-                               μ01 = 0.01, μ10 = 0.01), 
-                 init = c(ξ = 1, θ = 1),
-                 discStates = list(θ = 0:1),
+                 parms = list(b = 0.2, a = 7, k10 = 0.02, k01 = 0.02,
+                               m01 = 0.01, m10 = 0.01), 
+                 init = c(f = 1, d = 1),
+                 discStates = list(d = 0:1),
                  dynfunc = function(t, x, parms) {
-                   dξ <- with(as.list(c(x, parms)), {α*θ - β*ξ})
-                   return(c(dξ, 0))
+                   df <- with(as.list(c(x, parms)), {a*d - b*f})
+                   return(c(df, 0))
                  }, 
                  ratefunc = function(t, x, parms) {
                    return(with(as.list(c(x, parms)), 
-                               switch(θ + 1, κ01*ξ + μ01, κ10 + μ10)))
+                               switch(d + 1, k01*f + m01, k10 + m10)))
                  }, 
                  jumpfunc = function(t, x, parms, jtype) {
                    c(x[1], 1 - x[2])
@@ -68,15 +68,15 @@ genePdmpKF <- new("pdmpModel",
 
 genePolyKF <- new("polyPdmpModel",
                  descr = "Model KF: positive feedback with constant rate (polynomial version)",
-                 parms = list(β = 0.2, α = 7, κ10 = 0.02, κ01 = 0.02,
-                               μ01 = 0.01, μ10 = 0.01), 
-                 init = c(ξ = 1, θ = 1), 
-                 discStates = list(θ = 0:1),
+                 parms = list(b = 0.2, a = 7, k10 = 0.02, k01 = 0.02,
+                               m01 = 0.01, m10 = 0.01), 
+                 init = c(f = 1, d = 1), 
+                 discStates = list(d = 0:1),
                  dynpolys = quote(list(
-                   list(overall = linear(c(-β,α)))
+                   list(overall = linear(c(-b,a)))
                  )),
                  ratepolys = quote(list(  
-                   list(κ01*lone(1,2) + μ01, κ10 + μ10)
+                   list(k01*lone(1,2) + m01, k10 + m10)
                  )),
                  jumpfunc = function(t, x, parms, jtype) {
                    c(x[1], 1 - x[2])

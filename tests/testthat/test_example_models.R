@@ -75,7 +75,7 @@ test_that("definitons for model T coincide", {
   
   expect_identical(sim(genePdmpT, outSlot = FALSE, seed = 10),
                    sim(genePolyT, outSlot = FALSE, seed = 10))
-  expect_equal(sim(genePdmpT, outSlot = FALSE, seed = 20)[, c("ξA", "ξB")],
+  expect_equal(sim(genePdmpT, outSlot = FALSE, seed = 20)[, c("fA", "fB")],
             sim(toggleSwitch, outSlot = FALSE, seed = 20)[, c("fA", "fB")],
             check.attributes = FALSE)
 })

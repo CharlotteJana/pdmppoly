@@ -96,21 +96,21 @@ test_that("polyPdmpModel can be defined as pdmpModel - two cont. variables", {
 test_that("order of variables in init doesn't matter for sim", {
   data(genePolyT)
   times(genePolyT) <- c(from = 0, to = 10, by = 0.1)
-  init(genePolyT) <-c(ξA = 0.5, ξB = 0.5, θ = 4)
+  init(genePolyT) <-c(fA = 0.5, fB = 0.5, d = 4)
   sim1 <- sim(genePolyT, seed = 2, outSlot = FALSE)
   
   model <- new("polyPdmpModel",
               descr = "Model T with different order of variables",
               parms = parms(genePolyT),
-              init = c(ξA = 0.5, θ = 4, ξB = 0.5), 
-              discStates = list(θ = 1:4),
+              init = c(fA = 0.5, d = 4, fB = 0.5), 
+              discStates = list(d = 1:4),
               dynpolys = quote(list(
-                list(overall = -βA*lone(1,3), specific = list(0, αA, 0, αA)),
-                list(overall = -βB*lone(3,3), specific = list(0, 0, αB, αB))
+                list(overall = -bA*lone(1,3), specific = list(0, aA, 0, aA)),
+                list(overall = -bB*lone(3,3), specific = list(0, 0, aB, aB))
               )), 
               ratepolys = quote(list(  
-                list(κ01B, κ01B, κ10B*lone(1,3), κ10B*lone(1,3)),
-                list(κ01A, κ10A*lone(3,3), κ01A, κ10A*lone(3,3))
+                list(k01B, k01B, k10B*lone(1,3), k10B*lone(1,3)),
+                list(k01A, k10A*lone(3,3), k01A, k10A*lone(3,3))
               )),
               jumpfunc = function(t, x, parms, jtype) {
                 c(x[1], switch(jtype, 
@@ -121,7 +121,7 @@ test_that("order of variables in init doesn't matter for sim", {
               solver = "lsodar")
   
   sim2 <- sim(model, seed = 2, outSlot = FALSE)
-  expect_identical(sim1[, "ξA"], sim2[, "ξA"])
-  expect_identical(sim1[, "θ"], sim2[, "θ"])
+  expect_identical(sim1[, "fA"], sim2[, "fA"])
+  expect_identical(sim1[, "d"], sim2[, "d"])
 })
   

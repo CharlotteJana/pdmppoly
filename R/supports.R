@@ -29,37 +29,37 @@ getSupport <- function(model){
   data <- with(as.list(c(model@parms, model@init)),{
     
     if(str_detect(descr(model), "Model K:")){
-      data[, "lower"] <- ξ*exp(-β*t)
-      data[, "upper"] <- ξ*exp(-β*t) + α/β*(1-exp(-β*t))
+      data[, "lower"] <- f*exp(-b*t)
+      data[, "upper"] <- f*exp(-b*t) + a/b*(1-exp(-b*t))
       return(data)
     }
     if(str_detect(descr(model), "Model K2:")){
-      data[, "lower1"] <- ξ1*exp(-β1*t)
-      data[, "upper1"] <- ξ1*exp(-β1*t) + α1/β1*(1-exp(-β1*t))
-      data[, "lower2"] <- ξ2*exp(-β2*t) + (exp(-β2*t) - exp(-β1*t))*(ξ1*α2)/(β2-β1)
-      data[, "upper2"] <- data$lower2 + (α1*α2)/(β2-β1)*(β1*(1-exp(-β2*t))-β2*(1-exp(-β1*t)))
+      data[, "lower1"] <- f1*exp(-b1*t)
+      data[, "upper1"] <- f1*exp(-b1*t) + a1/b1*(1-exp(-b1*t))
+      data[, "lower2"] <- f2*exp(-b2*t) + (exp(-b2*t) - exp(-b1*t))*(f1*a2)/(b2-b1)
+      data[, "upper2"] <- data$lower2 + (a1*a2)/(b2-b1)*(b1*(1-exp(-b2*t))-b2*(1-exp(-b1*t)))
       return(data)
     }
     if(str_detect(descr(model), "Model F:")){
-      data[, "lower"] <- ξ*exp(-β*t)
-      data[, "upper"] <- ξ*exp(-β*t) + α/β*(1-exp(-β*t))
+      data[, "lower"] <- f*exp(-b*t)
+      data[, "upper"] <- f*exp(-b*t) + a/b*(1-exp(-b*t))
       return(data)
     }
     if(str_detect(descr(model), "Model KF:")){
-      data[, "lower"] <- ξ*exp(-β*t)
-      data[, "upper"] <- ξ*exp(-β*t) + α/β*(1-exp(-β*t))
+      data[, "lower"] <- f*exp(-b*t)
+      data[, "upper"] <- f*exp(-b*t) + a/b*(1-exp(-b*t))
       return(data)
     }
     if(str_detect(descr(model), "Model BF:")){
-      data[, "lower"] <- ξ*exp(-β*t) + α0/β*(1-exp(-β*t))
-      data[, "upper"] <- ξ*exp(-β*t) + α1/β*(1-exp(-β*t))
+      data[, "lower"] <- f*exp(-b*t) + a0/b*(1-exp(-b*t))
+      data[, "upper"] <- f*exp(-b*t) + a1/b*(1-exp(-b*t))
       return(data)
     }
     if(str_detect(descr(model), "Model T:")){
-      data[, "lower1"] <- ξA*exp(-βA*t)
-      data[, "lower2"] <- ξB*exp(-βB*t)
-      data[, "upper1"] <- ξA*exp(-βA*t) + αA/βA*(1-exp(-βA*t))
-      data[, "upper2"] <- ξB*exp(-βB*t) + αB/βB*(1-exp(-βB*t))
+      data[, "lower1"] <- fA*exp(-bA*t)
+      data[, "lower2"] <- fB*exp(-bB*t)
+      data[, "upper1"] <- fA*exp(-bA*t) + aA/bA*(1-exp(-bA*t))
+      data[, "upper2"] <- fB*exp(-bB*t) + aB/bB*(1-exp(-bB*t))
       return(data)
     }
     stop("The support for this model is not included in the package. ", 

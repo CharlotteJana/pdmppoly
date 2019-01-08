@@ -3,18 +3,18 @@ library(spray)
 
 genePdmpDF <- new("pdmpModel", 
      descr = "Model DF: dimers + positive feedback",
-     parms = list(β = 1, α = 1, κ01 = 1, κ10 = 1, γ21 = 1, γ12 = 1),
-     init = c(ξ = 1, ξd = 0.5, θ = 1), 
-     discStates = list(θ = 0:1),
+     parms = list(b = 1, a = 1, k01 = 1, k10 = 1, g21 = 1, g12 = 1),
+     init = c(f = 1, fd = 0.5, d = 1), 
+     discStates = list(d = 0:1),
      dynfunc = function(t, x, parms) {
-       dξ <- with(as.list(c(x, parms)), 
-                  c(-2*γ21*ξ^2 + 2*γ12*ξd - β*ξ + θ*α, 
-                    γ21*ξ^2 - γ12*ξd))
-       return(c(dξ, 0))
+       df <- with(as.list(c(x, parms)), 
+                  c(-2*g21*f^2 + 2*g12*fd - b*f + d*a, 
+                    g21*f^2 - g12*fd))
+       return(c(df, 0))
      }, 
      ratefunc = function(t, x, parms) {
        return(with(as.list(c(x, parms)),
-                   c(switch(θ+1, κ01*ξd, κ10))))
+                   c(switch(d+1, k01*fd, k10))))
      }, 
      jumpfunc = function(t, x, parms, jtype) {
        c(x[1:2], 1 - x[3])
@@ -27,15 +27,15 @@ genePdmpDF <- new("pdmpModel",
 library("spray")
 genePolyDF <- new("polyPdmpModel", 
     descr = "Model DF: dimers + positive feedback (polynomial version)",
-    parms = list(β = 1, α = 1, κ01 = 1, κ10 = 1, γ21 = 1, γ12 = 1), 
-    init = c(ξ = 1, ξd = 0.5, θ = 1), 
-    discStates = list(θ = 0:1),
+    parms = list(b = 1, a = 1, k01 = 1, k10 = 1, g21 = 1, g12 = 1), 
+    init = c(f = 1, fd = 0.5, d = 1), 
+    discStates = list(d = 0:1),
     dynpolys = quote(list(
-      list(overall = linear(c(-2*γ21, 0, 0), 2) + linear(c(-β, 2*γ12, α))),
-      list(overall = linear(c(γ21, 0, 0), 2) - γ12*lone(2,3))
+      list(overall = linear(c(-2*g21, 0, 0), 2) + linear(c(-b, 2*g12, a))),
+      list(overall = linear(c(g21, 0, 0), 2) - g12*lone(2,3))
     )),
     ratepolys = quote(list(
-      list(κ01*lone(2,3), κ10)
+      list(k01*lone(2,3), k10)
     )),
     jumpfunc = function(t, x, parms, jtype){
       c(x[1:2], 1 - x[3])

@@ -4,13 +4,13 @@ library(spray)
 Benaim <- new("pdmpModel",
     descr = "Model Benaim",
     parms = list(b = 2, β = 1.4),
-    init = c(ξ1 = 10, ξ2 = 10, θ = 1), 
-    discStates = list(θ = 0:1),
+    init = c(f1 = 10, f2 = 10, d = 1), 
+    discStates = list(d = 0:1),
     dynfunc = function(t, x, parms) {
-      dξ <- with(as.list(c(x, parms)), 
-                 c(-ξ1, -ξ2) + switch(θ+1, c(2*b*ξ2, 0), 
-                                       c(0, 2*b*ξ1)))
-      return(c(dξ, 0))
+      df <- with(as.list(c(x, parms)), 
+                 c(-f1, -f2) + switch(d+1, c(2*b*f2, 0), 
+                                       c(0, 2*b*f1)))
+      return(c(df, 0))
     }, 
     ratefunc = function(t, x, parms) {
       return(with(as.list(c(x, parms)), β/2))
@@ -26,8 +26,8 @@ Benaim <- new("pdmpModel",
 polyBenaim <- new("polyPdmpModel",
     descr = "Model Benaim (polynomial version)",
     parms = list(b = 2, β = 1.4),
-    init = c(ξ1 = 10, ξ2 = 10, θ = 1), 
-    discStates = list(θ = 0:1),
+    init = c(f1 = 10, f2 = 10, d = 1), 
+    discStates = list(d = 0:1),
     dynpolys = quote(list(
       list(overall = -lone(1,3), specific = list(2*b*lone(2,3), 0)),
       list(overall = -lone(2,3), specific = list(0, 2*b*lone(1,3)))

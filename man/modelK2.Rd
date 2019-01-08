@@ -23,8 +23,8 @@ This PDMP models the most simple situation of gene regulation,
 where we have one gene and a constant activation rate without
 a further regulation mechanism. Transcription and translation
 are modeled separately which leads to a model wit two continous
-variables (the first (\code{ξ1}) representing the mRNA and the
-second (\code{ξ2}) representing the protein arising from translation).
+variables (the first (\code{f1}) representing the mRNA and the
+second (\code{f2}) representing the protein arising from translation).
 In PROM, this model is referred to as \emph{Model K2},
 therefore it is named \code{genePdmpK2} and \code{genePolyK2} here.
 }
@@ -36,9 +36,9 @@ The simulations in PROM were done with slot \code{times} set to
 }
 The following parameter sets were simulated:
 \itemize{
-\item \code{κ01 = 0.01, κ10 = 0.01, α1 = 1, β1 = 0.06, α2 = 0.5, β2 = 0.02}
-\item \code{κ01 = 0.01, κ10 = 0.01, α1 = 1, β1 = 0.025, α2 = 0.5, β2 = 0.02}
-\item \code{κ01 = 0.01, κ10 = 0.03, α1 = 1, β1 = 0.025, α2 = 0.5, β2 = 0.0025}
+\item \code{k01 = 0.01, k10 = 0.01, a1 = 1, b1 = 0.06, a2 = 0.5, b2 = 0.02}
+\item \code{k01 = 0.01, k10 = 0.01, a1 = 1, b1 = 0.025, a2 = 0.5, b2 = 0.02}
+\item \code{k01 = 0.01, k10 = 0.03, a1 = 1, b1 = 0.025, a2 = 0.5, b2 = 0.0025}
 }
 }
 
@@ -48,15 +48,15 @@ library(spray)
 
 genePdmpK2 <- new("pdmpModel",
    descr = "Model K2: constant activation with translation",
-   parms = list(β1 = 0.025, α1 = 1, κ10 = 0.01, κ01 = 0.01, α2 = 0.5, β2 = 0.02),
-   init = c(ξ1 = 0.5, ξ2 = 0, θ = 1), 
-   discStates = list(θ = 0:1),
+   parms = list(b1 = 0.025, a1 = 1, k10 = 0.01, k01 = 0.01, a2 = 0.5, b2 = 0.02),
+   init = c(f1 = 0.5, f2 = 0, d = 1), 
+   discStates = list(d = 0:1),
    dynfunc = function(t, x, parms) {
-     dξ <- with(as.list(c(x, parms)), c(α1*θ - β1*ξ1, α2*ξ1-β2*ξ2))
-     return(c(dξ, 0))
+     df <- with(as.list(c(x, parms)), c(a1*d - b1*f1, a2*f1-b2*f2))
+     return(c(df, 0))
    }, 
    ratefunc = function(t, x, parms) {
-     return(with(as.list(c(x, parms)), switch(θ + 1, κ01, κ10)))
+     return(with(as.list(c(x, parms)), switch(d + 1, k01, k10)))
    }, 
    jumpfunc = function(t, x, parms, jtype) {
      c(x[1:2], 1 - x[3])
@@ -68,15 +68,15 @@ genePdmpK2 <- new("pdmpModel",
 
 genePolyK2 <- new("polyPdmpModel",
    descr = "Model K2: constant activation with translation (polynomial version)",
-   parms = list(β1 = 0.025, α1 = 1, κ10 = 0.01, κ01 = 0.01, α2 = 0.5, β2 = 0.02),
-   init = c(ξ1 = 0.5, ξ2 = 0, θ = 1), 
-   discStates = list(θ = 0:1),
+   parms = list(b1 = 0.025, a1 = 1, k10 = 0.01, k01 = 0.01, a2 = 0.5, b2 = 0.02),
+   init = c(f1 = 0.5, f2 = 0, d = 1), 
+   discStates = list(d = 0:1),
    dynpolys = quote(list(
-     list(overall = linear(c(-β1, 0, α1))), #dξ1/dt = -β1ξ1 + α1θ
-     list(overall = linear(c(α2, -β2, 0)))  #dξ2/dt = α2ξ1 - β2ξ2
+     list(overall = linear(c(-b1, 0, a1))), #df1/dt = -b1f1 + a1d
+     list(overall = linear(c(a2, -b2, 0)))  #df2/dt = a2f1 - b2f2
    )),
    ratepolys = quote(list(
-     list(κ01,κ10)
+     list(k01,k10)
    )),
    jumpfunc = function(t, x, parms, jtype) {
      c(x[1:2], 1 - x[3])

@@ -274,7 +274,7 @@ analysis <- function(data, model, polyModel, seeds = 1:50, useCsv = FALSE,
       # modality (für mehrere variablen anpassen!)
       message("modality, ")
       timedist <- times(model)["by"]
-      ggplot(data = modality, aes(x = time, y = method, color = `modality of ξ`)) + 
+      ggplot(data = modality, aes(x = time, y = method, color = `modality of f`)) + 
         ggplot2::geom_segment(aes(xend = time + timedist, yend = method), 
                                   size = 20, lineend = "butt") +
         guides(colour = guide_legend(override.aes = list(size=5))) +

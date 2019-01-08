@@ -22,8 +22,8 @@ genePolyDF
 This PDMP models the most a gene regulation mechanism where we have one gene
 and a positive feedback loop. The activator however is not the gene product
 itself but a dimer of two molecules of the genproduct. This means that we
-have two continous variables \code{ξ} and \code{ξd} where \code{ξ} represents
-the gene product and \code{ξd} the concentration of the dimerized gene
+have two continous variables \code{f} and \code{fd} where \code{f} represents
+the gene product and \code{fd} the concentration of the dimerized gene
 product. Transcription and translation are considered as one step and are not
 modeled separately. In PROM, this model is referred to as \emph{Model DF},
 therefore it is named \code{genePdmpDF} and \code{genePolyDF} here.
@@ -36,10 +36,10 @@ The simulations in PROM were done with slot \code{times} set to
 }
 The following parameter sets were simulated:
 \itemize{
-\item \code{κ01 = 0.02, κ10 = 0.02, α = 1, β = 0.2, γ21 = 0.1, γ12 = 0.05}
-\item \code{κ01 = 0.02, κ10 = 0.02, α = 1, β = 0.3, γ21 = 0.1, γ12 = 0.05}
-\item \code{κ01 = 0.02, κ10 = 0.02, α = 1, β = 0.4, γ21 = 0.1, γ12 = 0.05}
-\item \code{κ01 = 0.02, κ10 = 0.02, α = 1, β = 0.5, γ21 = 0.1, γ12 = 0.05}
+\item \code{k01 = 0.02, k10 = 0.02, a = 1, b = 0.2, g21 = 0.1, g12 = 0.05}
+\item \code{k01 = 0.02, k10 = 0.02, a = 1, b = 0.3, g21 = 0.1, g12 = 0.05}
+\item \code{k01 = 0.02, k10 = 0.02, a = 1, b = 0.4, g21 = 0.1, g12 = 0.05}
+\item \code{k01 = 0.02, k10 = 0.02, a = 1, b = 0.5, g21 = 0.1, g12 = 0.05}
 }
 }
 
@@ -49,18 +49,18 @@ library(spray)
 
 genePdmpDF <- new("pdmpModel", 
      descr = "Model DF: dimers + positive feedback",
-     parms = list(β = 1, α = 1, κ01 = 1, κ10 = 1, γ21 = 1, γ12 = 1),
-     init = c(ξ = 1, ξd = 0.5, θ = 1), 
-     discStates = list(θ = 0:1),
+     parms = list(b = 1, a = 1, k01 = 1, k10 = 1, g21 = 1, g12 = 1),
+     init = c(f = 1, fd = 0.5, d = 1), 
+     discStates = list(d = 0:1),
      dynfunc = function(t, x, parms) {
-       dξ <- with(as.list(c(x, parms)), 
-                  c(-2*γ21*ξ^2 + 2*γ12*ξd - β*ξ + θ*α, 
-                    γ21*ξ^2 - γ12*ξd))
-       return(c(dξ, 0))
+       df <- with(as.list(c(x, parms)), 
+                  c(-2*g21*f^2 + 2*g12*fd - b*f + d*a, 
+                    g21*f^2 - g12*fd))
+       return(c(df, 0))
      }, 
      ratefunc = function(t, x, parms) {
        return(with(as.list(c(x, parms)),
-                   c(switch(θ+1, κ01*ξd, κ10))))
+                   c(switch(d+1, k01*fd, k10))))
      }, 
      jumpfunc = function(t, x, parms, jtype) {
        c(x[1:2], 1 - x[3])
@@ -73,15 +73,15 @@ genePdmpDF <- new("pdmpModel",
 library("spray")
 genePolyDF <- new("polyPdmpModel", 
     descr = "Model DF: dimers + positive feedback (polynomial version)",
-    parms = list(β = 1, α = 1, κ01 = 1, κ10 = 1, γ21 = 1, γ12 = 1), 
-    init = c(ξ = 1, ξd = 0.5, θ = 1), 
-    discStates = list(θ = 0:1),
+    parms = list(b = 1, a = 1, k01 = 1, k10 = 1, g21 = 1, g12 = 1), 
+    init = c(f = 1, fd = 0.5, d = 1), 
+    discStates = list(d = 0:1),
     dynpolys = quote(list(
-      list(overall = linear(c(-2*γ21, 0, 0), 2) + linear(c(-β, 2*γ12, α))),
-      list(overall = linear(c(γ21, 0, 0), 2) - γ12*lone(2,3))
+      list(overall = linear(c(-2*g21, 0, 0), 2) + linear(c(-b, 2*g12, a))),
+      list(overall = linear(c(g21, 0, 0), 2) - g12*lone(2,3))
     )),
     ratepolys = quote(list(
-      list(κ01*lone(2,3), κ10)
+      list(k01*lone(2,3), k10)
     )),
     jumpfunc = function(t, x, parms, jtype){
       c(x[1:2], 1 - x[3])

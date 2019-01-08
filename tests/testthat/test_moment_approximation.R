@@ -6,10 +6,10 @@ context("moment approximation")
 test_that("moment calculation leads to same results for model K and model K2", {
   data(genePolyK)
   data(genePolyK2)
-  init(genePolyK) <- c("ξ" = 0.5, "θ" = 1)
-  init(genePolyK2) <- c("ξ1" = 0.5, "ξ2" = 0, "θ" = 1)
-  parms(genePolyK) <- list(β = 0.5, α = 1, κ10 = 0.1, κ01 = 0.3)
-  parms(genePolyK2) <- list(β1 = 0.5, α1 = 1, κ10 = 0.1, κ01 = 0.3, β2 = 1, α2 = 0.5)
+  init(genePolyK) <- c("f" = 0.5, "d" = 1)
+  init(genePolyK2) <- c("f1" = 0.5, "f2" = 0, "d" = 1)
+  parms(genePolyK) <- list(b = 0.5, a = 1, k10 = 0.1, k01 = 0.3)
+  parms(genePolyK2) <- list(b1 = 0.5, a1 = 1, k10 = 0.1, k01 = 0.3, b2 = 1, a2 = 0.5)
   res1 <- momApp(genePolyK)
   res2 <- momApp(genePolyK2)
   
@@ -28,8 +28,8 @@ test_that("elements contRes, discRes and moments contain the same results", {
   l <- x$maxOrder
   k <- ncol(x$discRes) - 1
   n <- length(x$model@init) - length(x$model@discStates)
-  names <- c("ξ1", "ξ2")
-  dname <- "θ"
+  names <- c("f1", "f2")
+  dname <- "d"
   
   r <- data.frame(time = rep(100, l), order = 1:l)
   
@@ -67,12 +67,12 @@ test_that("order of variables in init doesn't matter", {
                    descr = "Model F with different order of variables",
                    parms = parms(genePolyF), 
                    init = rev(init(genePolyF)), 
-                   discStates = list(θ = 0:1),
+                   discStates = list(d = 0:1),
                    dynpolys = quote(list(
-                     list(overall = linear(c(-β,α)))
+                     list(overall = linear(c(-b,a)))
                    )),
                    ratepolys = quote(list(  
-                     list(κ01*lone(2,2), κ10)
+                     list(k01*lone(2,2), k10)
                    )),
                    jumpfunc = function(t, x, parms, jtype) {
                      c(1 - x[1], x[2])
@@ -89,7 +89,7 @@ test_that("moment calculation works for model K", {
   
   ### definitions
   data(genePolyK)
-  parms(genePolyK) <- c(α = 1, β = 10, κ01 = 10, κ10 = 10)
+  parms(genePolyK) <- c(a = 1, b = 10, k01 = 10, k10 = 10)
   times(genePolyK) <- c(from = 0, to = 2000, by = 1)
   states <- discStates(genePolyK)[[1]]
   l <- 6
@@ -116,7 +116,7 @@ test_that("moment calculation works for model K", {
     m <- s[i,1]
     # theoretical values:
     s[i, n+2] <- with(as.list(genePolyK@parms),
-      (α/β)^m*Reduce("*", sapply(0:(m-1), function(j) (κ01+j*β)/(κ01+κ10+j*β))))
+      (a/b)^m*Reduce("*", sapply(0:(m-1), function(j) (k01+j*b)/(k01+k10+j*b))))
     # calculated values:
     s[i, n+3] <- momApp$contRes[last, 
                                 prodlim::row.match(as.vector(s[i,1:n]), 
@@ -125,7 +125,7 @@ test_that("moment calculation works for model K", {
   
   ### discrete variables
   # theoretical values:
-  s[n*l+1, n+2] <- with(as.list(genePolyK@parms), κ01/(κ01+κ10))
+  s[n*l+1, n+2] <- with(as.list(genePolyK@parms), k01/(k01+k10))
   # calculated values:
   s[n*l+1, n+3] <- states %*% momApp$discRes[last, 2:ncol(momApp$discRes)]
  

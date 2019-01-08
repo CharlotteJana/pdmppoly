@@ -29,12 +29,12 @@
 #' }
 #' The following parameter sets were simulated:
 #' \itemize{
-#' \item \code{b = 2, β = 1.6}
-#' \item \code{b = 2, β = 1.4}
-#' \item \code{b = 2, β = 1.3}
-#' \item \code{b = 2, β = 0.8}
-#' \item \code{b = 2, β = 0.5}
-#' \item \code{b = 2, β = 0.3}
+#' \item \code{b = 2, beta = 1.6}
+#' \item \code{b = 2, beta = 1.4}
+#' \item \code{b = 2, beta = 1.3}
+#' \item \code{b = 2, beta = 0.8}
+#' \item \code{b = 2, beta = 0.5}
+#' \item \code{b = 2, beta = 0.3}
 #' }
 #' @example inst/models/benaim.R 
 #' @format 
@@ -65,10 +65,10 @@
 #' }
 #' The following parameter sets were simulated:
 #' \itemize{
-#' \item \code{κ01 = 0.01, κ10 = 0.01, α = 1, β = 0.06}
-#' \item \code{κ01 = 0.01, κ10 = 0.01, α = 1, β = 0.005}
-#' \item \code{κ01 = 0.01, κ10 = 0.03, α = 1, β = 0.025}
-#' \item \code{κ01 = 0.03, κ10 = 0.01, α = 1, β = 0.025}
+#' \item \code{k01 = 0.01, k10 = 0.01, a = 1, b = 0.06}
+#' \item \code{k01 = 0.01, k10 = 0.01, a = 1, b = 0.005}
+#' \item \code{k01 = 0.01, k10 = 0.03, a = 1, b = 0.025}
+#' \item \code{k01 = 0.03, k10 = 0.01, a = 1, b = 0.025}
 #' }
 #' @example inst/models/geneK.R 
 #' @format 
@@ -91,8 +91,8 @@
 #' where we have one gene and a constant activation rate without
 #' a further regulation mechanism. Transcription and translation
 #' are modeled separately which leads to a model wit two continous
-#' variables (the first (\code{ξ1}) representing the mRNA and the
-#' second (\code{ξ2}) representing the protein arising from translation).
+#' variables (the first (\code{f1}) representing the mRNA and the
+#' second (\code{f2}) representing the protein arising from translation).
 #' In PROM, this model is referred to as \emph{Model K2},
 #' therefore it is named \code{genePdmpK2} and \code{genePolyK2} here.
 #' @section Simulation:
@@ -102,9 +102,9 @@
 #' }
 #' The following parameter sets were simulated:
 #' \itemize{
-#' \item \code{κ01 = 0.01, κ10 = 0.01, α1 = 1, β1 = 0.06, α2 = 0.5, β2 = 0.02}
-#' \item \code{κ01 = 0.01, κ10 = 0.01, α1 = 1, β1 = 0.025, α2 = 0.5, β2 = 0.02}
-#' \item \code{κ01 = 0.01, κ10 = 0.03, α1 = 1, β1 = 0.025, α2 = 0.5, β2 = 0.0025}
+#' \item \code{k01 = 0.01, k10 = 0.01, a1 = 1, b1 = 0.06, a2 = 0.5, b2 = 0.02}
+#' \item \code{k01 = 0.01, k10 = 0.01, a1 = 1, b1 = 0.025, a2 = 0.5, b2 = 0.02}
+#' \item \code{k01 = 0.01, k10 = 0.03, a1 = 1, b1 = 0.025, a2 = 0.5, b2 = 0.0025}
 #' }
 #' @example inst/models/geneK2.R 
 #' @format 
@@ -125,10 +125,10 @@
 #' 
 #' This PDMP models a gene regulation mechanism where we have one gene
 #' and a positive feedback loop. This means that the rate to unblock the gene
-#' depends on the concentration of the gene product \code{ξ}, where a high
+#' depends on the concentration of the gene product \code{f}, where a high
 #' concentration leads to a higher rate and vice versa. Transcription and
 #' translation are considered as one step and are not modeled separately. In
-#' PROM, this model is referred to as \emph{Model F₊}, therefore it is named
+#' PROM, this model is referred to as \emph{Model F+}, therefore it is named
 #' \code{genePdmpF} and \code{genePolyF} here.
 #' @section Simulation:
 #' The simulations in PROM were done with slot \code{times} set to
@@ -137,8 +137,8 @@
 #' }
 #' The following parameter sets were simulated:
 #' \itemize{
-#' \item \code{κ01 = 0.02, κ10 = 0.02, α = 1, β = 0.2}
-#' \item \code{κ01 = 0.02, κ10 = 0.02, α = 7, β = 0.2}
+#' \item \code{k01 = 0.02, k10 = 0.02, a = 1, b = 0.2}
+#' \item \code{k01 = 0.02, k10 = 0.02, a = 7, b = 0.2}
 #' }
 #' @example inst/models/geneF.R 
 #' @format 
@@ -161,10 +161,10 @@
 #' This PDMP models a gene regulation mechanism similar to
 #' \code{\link{genePolyF}}, where we have one gene and a positive feedback loop.
 #' The rate to unblock the gene depends on the concentration of the gene product
-#' \code{ξ}, but it is never zero because there is an additional rate that is
-#' independet of \code{ξ}. Transcription and translation are considered as one
+#' \code{f}, but it is never zero because there is an additional rate that is
+#' independet of \code{f}. Transcription and translation are considered as one
 #' step and are not modeled separately. In PROM, this model is referred to as
-#' \emph{Model F₊}, therefore it is named \code{genePdmpKF} and
+#' \emph{Model F+}, therefore it is named \code{genePdmpKF} and
 #' \code{genePolyKF} here.
 #' @section Simulation:
 #' The simulations in PROM were done with slot \code{times} set to
@@ -173,8 +173,8 @@
 #' }
 #' The following parameter sets were simulated:
 #' \itemize{
-#' \item \code{κ01 = 0.02, κ10 = 0.02, α = 1, β = 0.2}
-#' \item \code{κ01 = 0.02, κ10 = 0.02, α = 7, β = 0.2}
+#' \item \code{k01 = 0.02, k10 = 0.02, a = 1, b = 0.2}
+#' \item \code{k01 = 0.02, k10 = 0.02, a = 7, b = 0.2}
 #' }
 #' @example inst/models/geneKF.R 
 #' @format 
@@ -195,9 +195,9 @@
 #' This PDMP models a gene regulation mechanism similar to
 #' \code{\link{genePolyF}}, where we have one gene and a positive feedback loop.
 #' The difference is that in both discrete states transcription takes place, but
-#' with different rates \eqn{α_0, α_1}, where \eqn{α_0 < α_1}. Transcription and
+#' with different rates \eqn{a_0, a_1}, where \eqn{a_0 < a_1}. Transcription and
 #' translation are considered as one step and are not modeled separately. In
-#' PROM, this model is referred to as \emph{Model BF₊}, therefore it is named
+#' PROM, this model is referred to as \emph{Model BF+}, therefore it is named
 #' \code{genePdmpBF} and \code{genePolyBF} here.
 #' @section Simulation:
 #' The simulations in PROM were done with slot \code{times} set to
@@ -206,8 +206,8 @@
 #' }
 #' The following parameter sets were simulated:
 #' \itemize{
-#' \item \code{κ01 = 0.02, κ10 = 0.02, α = 1, β = 0.2}
-#' \item \code{κ01 = 0.02, κ10 = 0.02, α = 7, β = 0.2}
+#' \item \code{k01 = 0.02, k10 = 0.02, a = 1, b = 0.2}
+#' \item \code{k01 = 0.02, k10 = 0.02, a = 7, b = 0.2}
 #' }
 #' @example inst/models/geneBF.R 
 #' @format 
@@ -247,8 +247,8 @@
 #' }
 #' The following parameter sets were simulated:
 #' \itemize{
-#' \item \code{βA = 0.02, βB = 0.02, αA = 4, αB = 4,} \cr
-#' \code{κ01A = 0.05, κ10A = 0.002, κ01B = 0.05, κ10B = 0.002}
+#' \item \code{bA = 0.02, bB = 0.02, aA = 4, aB = 4,} \cr
+#' \code{k01A = 0.05, k10A = 0.002, k01B = 0.05, k10B = 0.002}
 #' }
 #' @example inst/models/geneT.R 
 #' @format 
@@ -270,8 +270,8 @@
 #' This PDMP models the most a gene regulation mechanism where we have one gene
 #' and a positive feedback loop. The activator however is not the gene product
 #' itself but a dimer of two molecules of the genproduct. This means that we
-#' have two continous variables \code{ξ} and \code{ξd} where \code{ξ} represents
-#' the gene product and \code{ξd} the concentration of the dimerized gene
+#' have two continous variables \code{f} and \code{fd} where \code{f} represents
+#' the gene product and \code{fd} the concentration of the dimerized gene
 #' product. Transcription and translation are considered as one step and are not
 #' modeled separately. In PROM, this model is referred to as \emph{Model DF},
 #' therefore it is named \code{genePdmpDF} and \code{genePolyDF} here.
@@ -282,10 +282,10 @@
 #' }
 #' The following parameter sets were simulated:
 #' \itemize{
-#' \item \code{κ01 = 0.02, κ10 = 0.02, α = 1, β = 0.2, γ21 = 0.1, γ12 = 0.05}
-#' \item \code{κ01 = 0.02, κ10 = 0.02, α = 1, β = 0.3, γ21 = 0.1, γ12 = 0.05}
-#' \item \code{κ01 = 0.02, κ10 = 0.02, α = 1, β = 0.4, γ21 = 0.1, γ12 = 0.05}
-#' \item \code{κ01 = 0.02, κ10 = 0.02, α = 1, β = 0.5, γ21 = 0.1, γ12 = 0.05}
+#' \item \code{k01 = 0.02, k10 = 0.02, a = 1, b = 0.2, g21 = 0.1, g12 = 0.05}
+#' \item \code{k01 = 0.02, k10 = 0.02, a = 1, b = 0.3, g21 = 0.1, g12 = 0.05}
+#' \item \code{k01 = 0.02, k10 = 0.02, a = 1, b = 0.4, g21 = 0.1, g12 = 0.05}
+#' \item \code{k01 = 0.02, k10 = 0.02, a = 1, b = 0.5, g21 = 0.1, g12 = 0.05}
 #' }
 #' @example inst/models/geneDF.R 
 #' @format 

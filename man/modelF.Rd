@@ -22,10 +22,10 @@ genePolyF
 \description{
 This PDMP models a gene regulation mechanism where we have one gene
 and a positive feedback loop. This means that the rate to unblock the gene
-depends on the concentration of the gene product \code{ξ}, where a high
+depends on the concentration of the gene product \code{f}, where a high
 concentration leads to a higher rate and vice versa. Transcription and
 translation are considered as one step and are not modeled separately. In
-PROM, this model is referred to as \emph{Model F₊}, therefore it is named
+PROM, this model is referred to as \emph{Model F+}, therefore it is named
 \code{genePdmpF} and \code{genePolyF} here.
 }
 \section{Simulation}{
@@ -36,8 +36,8 @@ The simulations in PROM were done with slot \code{times} set to
 }
 The following parameter sets were simulated:
 \itemize{
-\item \code{κ01 = 0.02, κ10 = 0.02, α = 1, β = 0.2}
-\item \code{κ01 = 0.02, κ10 = 0.02, α = 7, β = 0.2}
+\item \code{k01 = 0.02, k10 = 0.02, a = 1, b = 0.2}
+\item \code{k01 = 0.02, k10 = 0.02, a = 7, b = 0.2}
 }
 }
 
@@ -47,15 +47,15 @@ library(spray)
 
 genePdmpF <- new("pdmpModel",
    descr = "Model F: positive feedback",
-   parms = list(β = 0.2, α = 7, κ10 = 0.02, κ01 = 0.02), 
-   init = c(ξ = 1, θ = 1),
-   discStates = list(θ = 0:1),
+   parms = list(b = 0.2, a = 7, k10 = 0.02, k01 = 0.02), 
+   init = c(f = 1, d = 1),
+   discStates = list(d = 0:1),
    dynfunc = function(t, x, parms) {
-     dξ <- with(as.list(c(x, parms)), {α*θ - β*ξ})
-     return(c(dξ, 0))
+     df <- with(as.list(c(x, parms)), {a*d - b*f})
+     return(c(df, 0))
    }, 
    ratefunc = function(t, x, parms) {
-     return(with(as.list(c(x, parms)), switch(θ + 1, κ01*ξ, κ10)))
+     return(with(as.list(c(x, parms)), switch(d + 1, k01*f, k10)))
    }, 
    jumpfunc = function(t, x, parms, jtype) {
      c(x[1], 1 - x[2])
@@ -67,14 +67,14 @@ genePdmpF <- new("pdmpModel",
 
 genePolyF <- new("polyPdmpModel",
      descr = "Model F: positive feedback (polynomial version)",
-     parms = list(β = 0.2, α = 7, κ10 = 0.02, κ01 = 0.02), 
-     init = c(ξ = 1, θ = 1), 
-     discStates = list(θ = 0:1),
+     parms = list(b = 0.2, a = 7, k10 = 0.02, k01 = 0.02), 
+     init = c(f = 1, d = 1), 
+     discStates = list(d = 0:1),
      dynpolys = quote(list(
-       list(overall = linear(c(-β,α)))
+       list(overall = linear(c(-b,a)))
      )),
      ratepolys = quote(list(  
-       list(κ01*lone(1,2), κ10)
+       list(k01*lone(1,2), k10)
      )),
      jumpfunc = function(t, x, parms, jtype) {
        c(x[1], 1 - x[2])

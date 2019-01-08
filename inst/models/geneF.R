@@ -3,15 +3,15 @@ library(spray)
 
 genePdmpF <- new("pdmpModel",
    descr = "Model F: positive feedback",
-   parms = list(β = 0.2, α = 7, κ10 = 0.02, κ01 = 0.02), 
-   init = c(ξ = 1, θ = 1),
-   discStates = list(θ = 0:1),
+   parms = list(b = 0.2, a = 7, k10 = 0.02, k01 = 0.02), 
+   init = c(f = 1, d = 1),
+   discStates = list(d = 0:1),
    dynfunc = function(t, x, parms) {
-     dξ <- with(as.list(c(x, parms)), {α*θ - β*ξ})
-     return(c(dξ, 0))
+     df <- with(as.list(c(x, parms)), {a*d - b*f})
+     return(c(df, 0))
    }, 
    ratefunc = function(t, x, parms) {
-     return(with(as.list(c(x, parms)), switch(θ + 1, κ01*ξ, κ10)))
+     return(with(as.list(c(x, parms)), switch(d + 1, k01*f, k10)))
    }, 
    jumpfunc = function(t, x, parms, jtype) {
      c(x[1], 1 - x[2])
@@ -23,14 +23,14 @@ genePdmpF <- new("pdmpModel",
 
 genePolyF <- new("polyPdmpModel",
      descr = "Model F: positive feedback (polynomial version)",
-     parms = list(β = 0.2, α = 7, κ10 = 0.02, κ01 = 0.02), 
-     init = c(ξ = 1, θ = 1), 
-     discStates = list(θ = 0:1),
+     parms = list(b = 0.2, a = 7, k10 = 0.02, k01 = 0.02), 
+     init = c(f = 1, d = 1), 
+     discStates = list(d = 0:1),
      dynpolys = quote(list(
-       list(overall = linear(c(-β,α)))
+       list(overall = linear(c(-b,a)))
      )),
      ratepolys = quote(list(  
-       list(κ01*lone(1,2), κ10)
+       list(k01*lone(1,2), k10)
      )),
      jumpfunc = function(t, x, parms, jtype) {
        c(x[1], 1 - x[2])

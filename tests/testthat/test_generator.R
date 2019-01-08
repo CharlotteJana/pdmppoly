@@ -52,8 +52,8 @@ test_that("generator works for model K", {
   #### definitions
   data("genePdmpK")
   data("genePolyK")
-  parms(genePdmpK)["κ10"] <- 2
-  parms(genePolyK)["κ10"] <- 2
+  parms(genePdmpK)["k10"] <- 2
+  parms(genePolyK)["k10"] <- 2
   n <- length(genePolyK@init) - 1
   states <- genePolyK@discStates[[1]]
   k <- length(states)
@@ -64,8 +64,8 @@ test_that("generator works for model K", {
   
   formalGen <- function(f, discVar){ # definition of known formula
     gen <- quote(
-      deriv(f,1)*linear(c(-β,α)) + 
-        (discVar*κ10-(1-discVar)*κ01)*funcdiff(f,0,1)
+      deriv(f,1)*linear(c(-b,a)) + 
+        (discVar*k10-(1-discVar)*k01)*funcdiff(f,0,1)
     )
     gen <- with(as.list(parms(genePolyK)), eval(gen))
     return(subs(gen, n+1, discVar))
@@ -93,12 +93,12 @@ test_that("generator works for model K", {
   #------- compare with generator from pdmpsim ---------
   
   fvals <- seq(from = 0, to = 10, by = 1)
-  g <- function(ξ, θ) 5*ξ + 10*θ
+  g <- function(f, d) 5*f + 10*d
   gp <- 5*linear(1:2)
   
   pdmpGen <- function(discVar, fvals){
     sapply(fvals, function(val)
-      generator(genePdmpK)(g)(t = 1, x = c("ξ" = val, "θ" = discVar))
+      generator(genePdmpK)(g)(t = 1, x = c("f" = val, "d" = discVar))
     )
   }
   
@@ -130,8 +130,8 @@ test_that("generator works for model K2", {
   
   formalGen <- function(f, discVar){ # definition of known formula
     gen <- quote(
-      deriv(f,1)*linear(c(-β1, 0, α1)) + deriv(f,2)*linear(c(α2, -β2, 0)) + 
-        switch(discVar+1, -κ01, κ10)*funcdiff(f,0,1)
+      deriv(f,1)*linear(c(-b1, 0, a1)) + deriv(f,2)*linear(c(a2, -b2, 0)) + 
+        switch(discVar+1, -k01, k10)*funcdiff(f,0,1)
     )
     gen <- with(as.list(parms(genePolyK2)), eval(gen))
     return(subs(gen, n+1, discVar))
@@ -159,13 +159,13 @@ test_that("generator works for model K2", {
   #------- compare with generator from pdmpsim ---------
   
   gvals <- seq(from = 0, to = 10, by = 1)
-  g <- function(ξ1, ξ2, θ) 5*ξ1*ξ2^2 + θ
+  g <- function(f1, f2, d) 5*f1*f2^2 + d
   gp <- 5*product(c(1,2,0)) + lone(3,3)
   
   pdmpGen <- function(discVar, gvals){
     sapply(gvals, function(val)
       generator(genePdmpK2)(g)(t = 1, 
-                              x = c("ξ1" = val, "ξ2" = 3*val, "θ" = discVar))
+                              x = c("f1" = val, "f2" = 3*val, "d" = discVar))
     )
   }
   
@@ -197,13 +197,13 @@ test_that("generator works for the toggleSwitch model", {
   # formalGen works only for sprays with funcdiff(...) != 0
   formalGen <- function(f, discVar){ 
     gen <- quote(
-      deriv(f,1)*(-βA*lone(1,3) + switch(discVar, 0, αA, 0, αA)) + 
-      deriv(f,2)*(-βB*lone(2,3) + switch(discVar, 0, 0, αB, αB)) +
+      deriv(f,1)*(-bA*lone(1,3) + switch(discVar, 0, aA, 0, aA)) + 
+      deriv(f,2)*(-bB*lone(2,3) + switch(discVar, 0, 0, aB, aB)) +
       switch(discVar,
-               κ01B*funcdiff(f,3,1)+κ01A*funcdiff(f,2,1),
-               κ01B*funcdiff(f,4,2) + lone(2,3)*funcdiff(f,1,2),
-               κ10B*lone(1,3)*funcdiff(f,1,3)+κ01A*funcdiff(f,4,3),
-               κ10B*lone(1,3)*funcdiff(f,2,4)+κ10A*lone(2,3)*funcdiff(f,3,4)
+               k01B*funcdiff(f,3,1)+k01A*funcdiff(f,2,1),
+               k01B*funcdiff(f,4,2) + lone(2,3)*funcdiff(f,1,2),
+               k10B*lone(1,3)*funcdiff(f,1,3)+k01A*funcdiff(f,4,3),
+               k10B*lone(1,3)*funcdiff(f,2,4)+k10A*lone(2,3)*funcdiff(f,3,4)
       )
     )
     gen <- with(as.list(parms(genePolyT)), eval(gen))
@@ -232,13 +232,13 @@ test_that("generator works for the toggleSwitch model", {
   #------- compare with generator from pdmpsim ---------
   
   gvals <- seq(from = 0, to = 10, by = 1)
-  g <- function(ξA, ξB, θ) 5*ξA*ξB^2 + θ
+  g <- function(fA, fB, d) 5*fA*fB^2 + d
   gp <- 5*product(c(1,2,0)) + lone(3,3)
   
   pdmpGen <- function(discVar, gvals){
     sapply(gvals, function(val)
       generator(genePdmpT)(g)(t = 1, 
-                              x = c("ξA" = val, "ξB" = 6*val, "θ" = discVar))
+                              x = c("fA" = val, "fB" = 6*val, "d" = discVar))
     )
   }
   
@@ -290,23 +290,23 @@ formalGenerator <- function(nr, f){
     with(as.list(polyMod@parms),
          switch(nr,
                 #models 1-6:
-                deriv(f,1)*linear(c(-β,α)) + (discVar*κ10-(1-discVar)*κ01)*funcdiff(f,0,1),
-                deriv(f,1)*linear(c(-β1, 0, α1)) + deriv(f,2)*linear(c(α2, -β2, 0)) + switch(discVar+1, -κ01, κ10)*funcdiff(f,0,1), # former modell 9
-                deriv(f,1)*linear(c(-β,α)) + switch(discVar+1, -κ01, κ10*lone(1,2))*funcdiff(f,0,1),
-                deriv(f,1)*linear(c(-β,α)) + switch(discVar+1, -κ01*lone(1,2), κ10)*funcdiff(f,0,1), # former modell 2
-                deriv(f,1)*(-β*lone(1,2) + switch(discVar+1, α0, α1)) + switch(discVar+1, -κ01*lone(1,2), κ10)*funcdiff(f,0,1),
-                deriv(f,1)*linear(c(-β,α)) + switch(discVar+1, -κ01p*lone(1,2) - κ01c*one(2), κ10p+κ10c)*funcdiff(f,0,1),
+                deriv(f,1)*linear(c(-b,a)) + (discVar*k10-(1-discVar)*k01)*funcdiff(f,0,1),
+                deriv(f,1)*linear(c(-b1, 0, a1)) + deriv(f,2)*linear(c(a2, -b2, 0)) + switch(discVar+1, -k01, k10)*funcdiff(f,0,1), # former modell 9
+                deriv(f,1)*linear(c(-b,a)) + switch(discVar+1, -k01, k10*lone(1,2))*funcdiff(f,0,1),
+                deriv(f,1)*linear(c(-b,a)) + switch(discVar+1, -k01*lone(1,2), k10)*funcdiff(f,0,1), # former modell 2
+                deriv(f,1)*(-b*lone(1,2) + switch(discVar+1, a0, a1)) + switch(discVar+1, -k01*lone(1,2), k10)*funcdiff(f,0,1),
+                deriv(f,1)*linear(c(-b,a)) + switch(discVar+1, -k01p*lone(1,2) - k01c*one(2), k10p+k10c)*funcdiff(f,0,1),
                 #model 7: #(nicht mehr aktuell)
-                deriv(f,1)*(-βA*lone(1,3) + switch(discVar, 0, αA, 0, αA)) + deriv(f,2)*(-βB*lone(2,3)+switch(discVar, 0, 0, αB, αB))
+                deriv(f,1)*(-bA*lone(1,3) + switch(discVar, 0, aA, 0, aA)) + deriv(f,2)*(-bB*lone(2,3)+switch(discVar, 0, 0, aB, aB))
                 + switch(discVar, 
-                         κ01A*funcdiff(f,3,1)+κ01B*funcdiff(f,2,1),
-                         κ01A*funcdiff(f,4,2)+κ10B*lone(1,3)*funcdiff(f,1,2),
-                         κ10A*lone(2,3)*funcdiff(f,1,3)+κ01B*funcdiff(f,4,3),
-                         κ10A*lone(2,3)*funcdiff(f,2,4)+κ10B*lone(1,3)*funcdiff(f,3,4)
+                         k01A*funcdiff(f,3,1)+k01B*funcdiff(f,2,1),
+                         k01A*funcdiff(f,4,2)+k10B*lone(1,3)*funcdiff(f,1,2),
+                         k10A*lone(2,3)*funcdiff(f,1,3)+k01B*funcdiff(f,4,3),
+                         k10A*lone(2,3)*funcdiff(f,2,4)+k10B*lone(1,3)*funcdiff(f,3,4)
                 ),
                 #model 8:
-                deriv(f,1)*(linear(c(-2*κ01, 0, 0),2) + linear(c(-β,2*κ10,α))) + deriv(f,2)*(linear(c(κ01, 0, 0),2) - κ10*lone(2,3))
-                + switch(discVar+1, -κ01*lone(2,3), κ10)*funcdiff(f,0,1),
+                deriv(f,1)*(linear(c(-2*k01, 0, 0),2) + linear(c(-b,2*k10,a))) + deriv(f,2)*(linear(c(k01, 0, 0),2) - k10*lone(2,3))
+                + switch(discVar+1, -k01*lone(2,3), k10)*funcdiff(f,0,1),
          )
     )
   }

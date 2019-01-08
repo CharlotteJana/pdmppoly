@@ -34,10 +34,10 @@ The simulations in PROM were done with slot \code{times} set to
 }
 The following parameter sets were simulated:
 \itemize{
-\item \code{κ01 = 0.01, κ10 = 0.01, α = 1, β = 0.06}
-\item \code{κ01 = 0.01, κ10 = 0.01, α = 1, β = 0.005}
-\item \code{κ01 = 0.01, κ10 = 0.03, α = 1, β = 0.025}
-\item \code{κ01 = 0.03, κ10 = 0.01, α = 1, β = 0.025}
+\item \code{k01 = 0.01, k10 = 0.01, a = 1, b = 0.06}
+\item \code{k01 = 0.01, k10 = 0.01, a = 1, b = 0.005}
+\item \code{k01 = 0.01, k10 = 0.03, a = 1, b = 0.025}
+\item \code{k01 = 0.03, k10 = 0.01, a = 1, b = 0.025}
 }
 }
 
@@ -47,15 +47,15 @@ library(spray)
 
 genePdmpK <- new("pdmpModel",
    descr = "Model K: constant activation",
-   parms = list(β = 0.005, α = 1, κ10 = 0.01, κ01 = 0.01),
-   init = c(ξ = 0, θ = 1),
-   discStates = list(θ = 0:1),
+   parms = list(b = 0.005, a = 1, k10 = 0.01, k01 = 0.01),
+   init = c(f = 0, d = 1),
+   discStates = list(d = 0:1),
    dynfunc = function(t, x, parms) {
-     dξ <- with(as.list(c(x, parms)), α*θ - β*ξ)
-     return(c(dξ, 0))
+     df <- with(as.list(c(x, parms)), a*d - b*f)
+     return(c(df, 0))
    },
    ratefunc = function(t, x, parms) {
-     return(with(as.list(c(x, parms)), switch(θ + 1, κ01, κ10)))
+     return(with(as.list(c(x, parms)), switch(d + 1, k01, k10)))
    },
    jumpfunc = function(t, x, parms, jtype) {
      c(x[1], 1 - x[2])
@@ -67,14 +67,14 @@ genePdmpK <- new("pdmpModel",
 
 genePolyK <- new("polyPdmpModel",
      descr = "Model K: constant activation (polynomial version)",
-     parms = list(β = 0.005, α = 1, κ10 = 0.01, κ01 = 0.01),
-     init = c(ξ = 0, θ = 1),
-     discStates = list(θ = 0:1),
+     parms = list(b = 0.005, a = 1, k10 = 0.01, k01 = 0.01),
+     init = c(f = 0, d = 1),
+     discStates = list(d = 0:1),
      dynpolys = quote(list(
-       list(overall = linear(c(-β, α)))
+       list(overall = linear(c(-b, a)))
      )),
      ratepolys = quote(list(
-       list(κ01, κ10)
+       list(k01, k10)
      )),
      jumpfunc = function(t, x, parms, jtype) {
        c(x[1], 1 - x[2])
