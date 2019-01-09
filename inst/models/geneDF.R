@@ -47,3 +47,4 @@ genePolyDF <- new("polyPdmpModel",
 
 all.equal(sim(genePdmpDF, outSlot = FALSE, seed = 12),
           sim(genePolyDF, outSlot = FALSE, seed = 12))
+
