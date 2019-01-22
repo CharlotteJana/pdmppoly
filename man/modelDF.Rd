@@ -36,10 +36,10 @@ The simulations in PROM were done with slot \code{times} set to
 }
 The following parameter sets were simulated:
 \itemize{
-\item \code{k01 = 0.02, k10 = 0.02, a = 1, b = 0.2, g21 = 0.1, g12 = 0.05}
-\item \code{k01 = 0.02, k10 = 0.02, a = 1, b = 0.3, g21 = 0.1, g12 = 0.05}
-\item \code{k01 = 0.02, k10 = 0.02, a = 1, b = 0.4, g21 = 0.1, g12 = 0.05}
-\item \code{k01 = 0.02, k10 = 0.02, a = 1, b = 0.5, g21 = 0.1, g12 = 0.05}
+\item \code{k01 = 0.02, k10 = 0.02, a = 1, b = 0.2, m21 = 0.1, m12 = 0.05}
+\item \code{k01 = 0.02, k10 = 0.02, a = 1, b = 0.3, m21 = 0.1, m12 = 0.05}
+\item \code{k01 = 0.02, k10 = 0.02, a = 1, b = 0.4, m21 = 0.1, m12 = 0.05}
+\item \code{k01 = 0.02, k10 = 0.02, a = 1, b = 0.5, m21 = 0.1, m12 = 0.05}
 }
 }
 
@@ -49,13 +49,13 @@ library(spray)
 
 genePdmpDF <- new("pdmpModel", 
      descr = "Model DF: dimers + positive feedback",
-     parms = list(b = 1, a = 1, k01 = 1, k10 = 1, g21 = 1, g12 = 1),
+     parms = list(b = 1, a = 1, k01 = 1, k10 = 1, m21 = 1, m12 = 1),
      init = c(f = 1, fd = 0.5, d = 1), 
      discStates = list(d = 0:1),
      dynfunc = function(t, x, parms) {
        df <- with(as.list(c(x, parms)), 
-                  c(-2*g21*f^2 + 2*g12*fd - b*f + d*a, 
-                    g21*f^2 - g12*fd))
+                  c(-2*m21*f^2 + 2*m12*fd - b*f + d*a, 
+                    m21*f^2 - m12*fd))
        return(c(df, 0))
      }, 
      ratefunc = function(t, x, parms) {
@@ -73,12 +73,12 @@ genePdmpDF <- new("pdmpModel",
 library("spray")
 genePolyDF <- new("polyPdmpModel", 
     descr = "Model DF: dimers + positive feedback (polynomial version)",
-    parms = list(b = 1, a = 1, k01 = 1, k10 = 1, g21 = 1, g12 = 1), 
+    parms = list(b = 1, a = 1, k01 = 1, k10 = 1, m21 = 1, m12 = 1), 
     init = c(f = 1, fd = 0.5, d = 1), 
     discStates = list(d = 0:1),
     dynpolys = quote(list(
-      list(overall = linear(c(-2*g21, 0, 0), 2) + linear(c(-b, 2*g12, a))),
-      list(overall = linear(c(g21, 0, 0), 2) - g12*lone(2,3))
+      list(overall = linear(c(-2*m21, 0, 0), 2) + linear(c(-b, 2*m12, a))),
+      list(overall = linear(c(m21, 0, 0), 2) - m12*lone(2,3))
     )),
     ratepolys = quote(list(
       list(k01*lone(2,3), k10)
@@ -93,5 +93,6 @@ genePolyDF <- new("polyPdmpModel",
 
 all.equal(sim(genePdmpDF, outSlot = FALSE, seed = 12),
           sim(genePolyDF, outSlot = FALSE, seed = 12))
+
 }
 \keyword{datasets}

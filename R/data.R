@@ -282,10 +282,10 @@
 #' }
 #' The following parameter sets were simulated:
 #' \itemize{
-#' \item \code{k01 = 0.02, k10 = 0.02, a = 1, b = 0.2, g21 = 0.1, g12 = 0.05}
-#' \item \code{k01 = 0.02, k10 = 0.02, a = 1, b = 0.3, g21 = 0.1, g12 = 0.05}
-#' \item \code{k01 = 0.02, k10 = 0.02, a = 1, b = 0.4, g21 = 0.1, g12 = 0.05}
-#' \item \code{k01 = 0.02, k10 = 0.02, a = 1, b = 0.5, g21 = 0.1, g12 = 0.05}
+#' \item \code{k01 = 0.02, k10 = 0.02, a = 1, b = 0.2, m21 = 0.1, m12 = 0.05}
+#' \item \code{k01 = 0.02, k10 = 0.02, a = 1, b = 0.3, m21 = 0.1, m12 = 0.05}
+#' \item \code{k01 = 0.02, k10 = 0.02, a = 1, b = 0.4, m21 = 0.1, m12 = 0.05}
+#' \item \code{k01 = 0.02, k10 = 0.02, a = 1, b = 0.5, m21 = 0.1, m12 = 0.05}
 #' }
 #' @example inst/models/geneDF.R 
 #' @format 
