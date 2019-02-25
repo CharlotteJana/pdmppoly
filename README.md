@@ -1,41 +1,31 @@
----
-output: github_document
----
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-```{r, echo = FALSE}
-knitr::opts_chunk$set(
-  collapse = TRUE,
-  comment = "#>",
-  fig.path = "README-"
-)
-```
-
 # pdmppoly
 
-The goal of pdmppoly is to simulate polynomial piecewise 
-deterministic markov processes (PDMPs) within R and to provide 
-methods to calculate or approximate their moments.
+The goal of pdmppoly is to simulate polynomial piecewise deterministic
+markov processes (PDMPs) within R and to provide methods to calculate or
+approximate their moments.
 
-In additon, it contains all methods that are not part of
-package pdmpsim but are used in the (not yet published) 
-doctoral thesis of Charlotte Jana.
+In additon, it contains all methods that are not part of package pdmpsim
+but are used in the (not yet published) doctoral thesis of Charlotte
+Jana.
 
 ## Installation
 
 You can install pdmppoly from github with:
 
-```{r gh-installation, eval = FALSE}
+``` r
 # install.packages("devtools")
 devtools::install_github("CharlotteJana/pdmppoly")
 ```
 
 ## Example
 
-This is a simple example modelling gene expression with positive feedback:
+This is a simple example modelling gene expression with positive
+feedback:
 
-```{r eval = FALSE}
+``` r
 genePolyF <- new("polyPdmpModel",
      descr = "Gene regulation with positive feedback (polynomial version)",
      parms = list(b = 0.2, a = 7, k10 = 0.04, k01 = 0.02), 
@@ -52,16 +42,17 @@ genePolyF <- new("polyPdmpModel",
      }, 
      times = c(from = 0, to = 100, by = 0.1), 
      solver = "lsodar")
-
 ```
 
 Calculate the first 4 moments:
-```{r eval = FALSE}
+
+``` r
 mcalc <- momApp(genePolyF, maxOrder = 4)$moments
 ```
 
 Simulate multiple times and calculate the empirical moments:
-```{r eval = FALSE}
+
+``` r
 simulations <- multSim(genePolyF, seeds = 1:30)
 msim.list <- lapply(1:4, function(i) moments(simulations, order = i))
 msim <- do.call(rbind, msim.list)
