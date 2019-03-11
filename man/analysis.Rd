@@ -4,10 +4,10 @@
 \alias{analysis}
 \title{Analysis of models used in PROM}
 \usage{
-analysis(data, model, polyModel, seeds = 1:50, useCsv = FALSE,
+analysis(data, model, polyModel, seeds = NULL, useCsv = FALSE,
   dir = file.path(getwd(), "simulations"), subDirs = FALSE,
-  momentorders = 1:10, plotorder = 1:4, plot = TRUE, sim = TRUE,
-  lower = NULL, upper = NULL)
+  momentorders = 1:10, plotorder = 1:4, plot = TRUE,
+  modality = TRUE, sim = TRUE, lower = NULL, upper = NULL)
 }
 \arguments{
 \item{data}{a data.frame, see Details below}

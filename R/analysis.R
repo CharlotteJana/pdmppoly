@@ -34,22 +34,39 @@
 #' @importFrom simecol "times<-" "init<-" "init" "parms"
 #' @importFrom grDevices dev.off dev.print png
 #' @export
-analysis <- function(data, model, polyModel, seeds = 1:50, useCsv = FALSE, 
+analysis <- function(data, model, polyModel, seeds = NULL, useCsv = FALSE, 
                      dir = file.path(getwd(), "simulations"), subDirs = FALSE, 
-                     momentorders = 1:10, plotorder = 1:4, plot = TRUE,
+                     momentorders = 1:10, plotorder = 1:4, plot = TRUE, modality = TRUE,
                      sim = TRUE, lower = NULL, upper = NULL){
 
-  # to avoid the R CMD Check NOTE 'no visible binding for global variable ...'
-  variable <- method <- time <- E <- . <- NULL
-  
+  #### variables ####
   initNames <- names(init(model))
   parmsNames <- names(parms(model))
   discVars <- names(discStates(model))
   contVars <- setdiff(initNames, discVars)
   approxMethods <- c("setZero", "reduceDegree")
   
-  #### set new values for init, parms, times ####
+  # to avoid the R CMD Check NOTE 'no visible binding for global variable ...'
+  variable <- method <- time <- E <- . <- NULL
+  
   for(i in seq_len(nrow(data))){
+    
+    #### filenames ####
+    if(subDirs)
+      dir.create(file.path(dir, data[i, "prefix"]), 
+                 showWarnings = FALSE, recursive = TRUE)
+    
+    fname <- ifelse(subDirs, 
+                    file.path(dir, data[i, "prefix"], data[i, "prefix"]),
+                    file.path(dir, data[i, "prefix"]))
+    
+    #con <- file(paste0(fname, "_messages.txt"), open = "wt")
+    #sink(con, type = "message")
+    
+    message("\n", pdmpsim::format(model, short = F, collapse = "\n",
+                                  slots = c("descr", "parms", "init", "times")))
+    
+    #### set new values for init, parms, times ####
     suppressWarnings({
       for(name in initNames){
         try({
@@ -75,19 +92,14 @@ analysis <- function(data, model, polyModel, seeds = 1:50, useCsv = FALSE,
           }
         }, silent = TRUE)
       }
+      if(is.null(seeds)){
+        try({
+          if(!is.na(data[i, "maxSeed"])){
+            seeds <- 1:data[i, "maxSeed"]
+          }
+        })
+      }
     })
-    
-    #### filenames ####
-    if(subDirs)
-      dir.create(file.path(dir, data[i, "prefix"]), 
-                 showWarnings = FALSE, recursive = TRUE)
-    
-    fname <- ifelse(subDirs, 
-                    file.path(dir, data[i, "prefix"], data[i, "prefix"]),
-                    file.path(dir, data[i, "prefix"]))
-
-    message("\n", pdmpsim::format(model, short = F, collapse = "\n",
-                                  slots = c("descr", "parms", "init", "times")))
     
     #### simulation ####
     if(useCsv){
@@ -117,29 +129,33 @@ analysis <- function(data, model, polyModel, seeds = 1:50, useCsv = FALSE,
         msData <- getMultSimData(ms)
         
         ### statistics
-        statistics <- pdmpsim::summarise_at(
-                              msData,
-                              .vars = initNames,
-                              .funs = c("min", "max", "mean", "median", "sd"))
-        saveRDS(statistics, paste0(fname,"__statistics.rda"))
+        try({
+          statistics <- pdmpsim::summarise_at(
+                                msData,
+                                .vars = initNames,
+                                .funs = c("min", "max", "mean", "median", "sd"))
+          saveRDS(statistics, paste0(fname,"__statistics.rda"))
+        })
         
         ### moments
-        message("Approximate Moments")
-        
-        moments <- list()
-        msim <- NULL
-        for(m in momentorders){
-          msim <- dplyr::bind_rows(msim, moments(ms, m))
-        }
-        moments[["Simulation"]] <- msim
-        
-        for(s in approxMethods){
-          mcalc <- momApp(polyModel, max(momentorders), closure = s)$moments
-          moments[[s]] <- mcalc
-        }
-        moments <- dplyr::bind_rows(moments, .id = "method")
-        moments$method <- as.factor(moments$method)
-        saveRDS(moments, file = paste0(fname, "__moments.rda"))
+        try({
+          message("Approximate Moments")
+          
+          moments <- list()
+          msim <- NULL
+          for(m in momentorders){
+            msim <- dplyr::bind_rows(msim, moments(ms, m))
+          }
+          moments[["Simulation"]] <- msim
+          
+          for(s in approxMethods){
+            mcalc <- momApp(polyModel, max(momentorders), closure = s)$moments
+            moments[[s]] <- mcalc
+          }
+          moments <- dplyr::bind_rows(moments, .id = "method")
+          moments$method <- as.factor(moments$method)
+          saveRDS(moments, file = paste0(fname, "__moments.rda"))
+        })
         
       }
      
@@ -147,156 +163,177 @@ analysis <- function(data, model, polyModel, seeds = 1:50, useCsv = FALSE,
     
     #### modality ####
     
-    message("Modality tests")
-    modality <- data.frame()
-    
-    for(calcMethod in c("Simulation", approxMethods)){
-      modalityMethod <- data.frame(time = fromtoby(times(model)))
+    if(modality){
+      message("Modality tests")
+      modalities <- data.frame()
       
-      for(name in contVars){
+      for(calcMethod in c("Simulation", approxMethods)){
+        modalityMethod <- data.frame(time = fromtoby(times(model)))
         
-        if(is.null(lower) | is.null(upper)){ # set values if no support is given
-          values <- subset(msData, variable == name, select = value)
-          if(is.null(lower)) lower <- min(values)
-          if(is.null(upper)) upper <- max(values)
+        for(name in contVars){
+          
+          if(is.null(lower) | is.null(upper)){ # set values if no support is given
+            values <- subset(msData, variable == name, select = value)
+            if(is.null(lower)) lower <- min(values)
+            if(is.null(upper)) upper <- max(values)
+          }
+          
+          # select moments
+          m <- subset(moments, method == calcMethod & order <= 4, 
+                      select = c("time", "order", name))
+          m <- tidyr::spread(m, order, name)
+          m <- m[order(m$time),]
+          m2 <- apply(within(m, rm("time")), 1, 
+                      function(row){
+                        is.unimodal(
+                          lower = with(as.list(parms(model)), eval(lower)), 
+                          upper = with(as.list(parms(model)), eval(upper)), 
+                          moments = row)
+                      })
+          colname <- paste("modality of", name)
+          modalityMethod[, colname] <- factor(m2, levels = c( "4-b-unimodal",
+                                                              "not unimodal",
+                                                              "not existant",
+                                                              NA_character_))
+          modalityMethod[, "method"] <- calcMethod
         }
-        
-        # select moments
-        m <- subset(moments, method == calcMethod & order <= 4, 
-                    select = c("time", "order", name))
-        m <- tidyr::spread(m, order, name)
-        m <- m[order(m$time),]
-        
-        m2 <- apply(within(m, rm("time")), 1, 
-                    function(row){
-                      is.unimodal(
-                        lower = with(as.list(parms(model)), eval(lower)), 
-                        upper = with(as.list(parms(model)), eval(upper)), 
-                        moments = row)
-                    })
-        colname <- paste("modality of", name)
-        modalityMethod[, colname] <- factor(m2, levels = c( "4-b-unimodal",
-                                                            "not unimodal",
-                                                            "not existant",
-                                                            NA_character_))
-        modalityMethod[, "method"] <- calcMethod
+        modalities <- dplyr::bind_rows(modalities, modalityMethod)
       }
-      modality <- dplyr::bind_rows(modality, modalityMethod)
+      modalities$method <- as.factor(modalities$method)
+      modalities$method
+      saveRDS(modalities, file = paste0(fname, "__modality.rda"))
     }
-    modality$method <- as.factor(modality$method)
-    modality$method
-    saveRDS(modality, file = paste0(fname, "__modality.rda"))
     
     ##### plots #####
     
     if(plot){
       
       # violin plot
+      try({
       message("Plots: violin plot, ", appendLF = FALSE)
-      pdmpsim::plotTimes(msData,
-                         vars = initNames,
-                         plottype = "violin") +
-      ggplot2::labs(title = descr(model),
-                    subtitle = paste0("Number of simulations: ",
-                                      length(unique(msData$seed)), "\n",
-                                      pdmpsim::format(model, short = F,
-                                                      collapse = "\n",
-                                                      slots = "parms")))
-      ggplot2::ggsave(filename = paste0(fname,"__violins.png"), dpi = 300,
-                      width = 20.4, height = 11, units = "cm")
-  
-  
-      # boxplot with seednumbers
-      message("boxplot, ", appendLF = FALSE)
-      pdmpsim::plotTimes(msData,
-                         vars = initNames[!(initNames %in% discVars)],
-                         nolo = 3,
-                         plottype = "boxplot") +
+        pdmpsim::plotTimes(msData,
+                           vars = initNames,
+                           plottype = "violin") +
         ggplot2::labs(title = descr(model),
                       subtitle = paste0("Number of simulations: ",
                                         length(unique(msData$seed)), "\n",
                                         pdmpsim::format(model, short = F,
                                                         collapse = "\n",
                                                         slots = "parms")))
-      ggplot2::ggsave(filename = paste0(fname,"__boxplot.png"), dpi = 300,
-                      width = 20.4, height = 11, units = "cm")
-  
+        ggplot2::ggsave(filename = paste0(fname,"__violins.png"), dpi = 300,
+                        width = 20.4, height = 11, units = "cm")
+      })
+      
+      # boxplot with seednumbers
+      try({
+        message("boxplot, ", appendLF = FALSE)
+        pdmpsim::plotTimes(msData,
+                           vars = initNames[!(initNames %in% discVars)],
+                           nolo = 3,
+                           plottype = "boxplot") +
+          ggplot2::labs(title = descr(model),
+                        subtitle = paste0("Number of simulations: ",
+                                          length(unique(msData$seed)), "\n",
+                                          pdmpsim::format(model, short = F,
+                                                          collapse = "\n",
+                                                          slots = "parms")))
+        ggplot2::ggsave(filename = paste0(fname,"__boxplot.png"), dpi = 300,
+                        width = 20.4, height = 11, units = "cm")
+      })
+      
       # statistics (min, max, mean, median)
-      message("statistics, ", appendLF = FALSE)
-      pdmpsim::plotStats(msData,
-                         vars = initNames[!(initNames %in% discVars)],
-                         funs = c("min", "mean", "median", "max"))
-      ggplot2::ggsave(filename = paste0(fname,"__statistics.png"), 
-                      dpi = 300, width = 20.4, height = 11, units = "cm")
-
+      try({
+        message("statistics, ", appendLF = FALSE)
+        pdmpsim::plotStats(msData,
+                           vars = initNames[!(initNames %in% discVars)],
+                           funs = c("min", "mean", "median", "max"))
+        ggplot2::ggsave(filename = paste0(fname,"__statistics.png"), 
+                        dpi = 300, width = 20.4, height = 11, units = "cm")
+      })
+      
       # histogram for last simulated time value
-      message("histogram, ", appendLF = FALSE)
-      h <- hist(msData, t = times(model)["to"],
-                         main = descr(model),
-                         sub = pdmpsim::format(model, short = F, slots = "parms"))
-      ggplot2::ggsave(filename = paste0(fname,"__histogram.png"), plot = h, 
-                      dpi = 300, width = 20.4, height = 11, units = "cm")
-  
+      try({
+        message("histogram, ", appendLF = FALSE)
+        h <- hist(msData, t = times(model)["to"],
+                           main = descr(model),
+                           sub = pdmpsim::format(model, short = F, slots = "parms"))
+        ggplot2::ggsave(filename = paste0(fname,"__histogram.png"), plot = h, 
+                        dpi = 300, width = 20.4, height = 11, units = "cm")
+        
+      dev.off()
+      })
+      
       # densities for different time values
-      message("densities, ", appendLF = FALSE)
-      times <- unique(msData$time)
-      times <- times[seq(1, length(times), length.out = 6)]
-      times <- times[2:6]
+      try({
+        message("densities, ", appendLF = FALSE)
+        times <- unique(msData$time)
+        times <- times[seq(1, length(times), length.out = 6)]
+        times <- times[2:6]
+        density(msData, t = times,
+                        main = descr(model),
+                        sub = pdmpsim::format(model, short = F, slots = "parms"))
+        dev.print(png, filename = paste0(fname, "__densities.png"),
+                  width = 20.4, height = 11, units = "cm", res = 140)
       dev.off()
-      density(msData, t = times,
-                       main = descr(model),
-                       sub = pdmpsim::format(model, short = F, slots = "parms"))
-      dev.print(png, filename = paste0(fname, "__densities.png"),
-                width = 20.4, height = 11, units = "cm", res = 140)
-      dev.off()
+      })
+      
     
       # moments
-      message("moments, ", appendLF = FALSE)
-      plotdata <- reshape2::melt(moments, 1:3, stringsAsFactors = TRUE)
-      plotdata$method <- factor(plotdata$method, levels = c("Simulation", 
-                                                            approxMethods))
-      plotdata$variable <- as.character(plotdata$variable)
-      plotdata <- subset(plotdata, order <= plotorder)
-  
-      mplot <- ggplot(data = plotdata, ggplot2::aes(x = time, y = value))+ 
-        ggplot2::geom_line(size = 1,
-                           ggplot2::aes(color = method, linetype = method)) +
-        ggplot2::theme(axis.title.y = ggplot2::element_blank(), 
-                       axis.title.x = ggplot2::element_blank()) + 
-        ggplot2::labs(
-             title = model@descr,
-             subtitle = format(model, slots = c("parms"), short = FALSE),
-             caption = paste("Number of Simulations:", length(seeds))) +
-        ggplot2::facet_wrap(variable ~ order, 
-              scales = "free_y", nrow = length(model@init),
-              labeller = ggplot2::label_bquote(cols = E(.(variable)^.(order))))
-      
-      ggplot2::ggsave(filename = paste0(fname,"__moments.png"), plot = mplot, 
-                      dpi = 300, width = 20.4, height = length(model@init)*5.5, 
-                      units = "cm")
+      try({
+        message("moments, ", appendLF = FALSE)
+        plotdata <- reshape2::melt(moments, 1:3, stringsAsFactors = TRUE)
+        plotdata$method <- factor(plotdata$method, levels = c("Simulation", 
+                                                              approxMethods))
+        plotdata$variable <- as.character(plotdata$variable)
+        plotdata <- subset(plotdata, order <= plotorder)
+        
+        mplot <- ggplot(data = plotdata, ggplot2::aes(x = time, y = value))+ 
+          ggplot2::geom_line(size = 1,
+                             ggplot2::aes(color = method, linetype = method)) +
+          ggplot2::theme(axis.title.y = ggplot2::element_blank(), 
+                         axis.title.x = ggplot2::element_blank()) + 
+          ggplot2::labs(
+               title = model@descr,
+               subtitle = format(model, slots = c("parms"), short = FALSE),
+               caption = paste("Number of Simulations:", length(seeds))) +
+          ggplot2::facet_wrap(variable ~ order, 
+                scales = "free_y", nrow = length(model@init),
+                labeller = ggplot2::label_bquote(cols = E(.(variable)^.(order))))
+        
+        ggplot2::ggsave(filename = paste0(fname,"__moments.png"), plot = mplot, 
+                        dpi = 300, width = 20.4, height = length(model@init)*5.5, 
+                        units = "cm")
+      })
       
       # modality (für mehrere variablen anpassen!)
-      message("modality, ")
-      timedist <- times(model)["by"]
-      ggplot(data = modality, aes(x = time, y = method, color = `modality of f`)) + 
-        ggplot2::geom_segment(aes(xend = time + timedist, yend = method), 
-                                  size = 20, lineend = "butt") +
-        ggplot2::guides(colour = ggplot2::guide_legend(override.aes = list(size=5))) +
-        ggplot2::labs(
-          title = model@descr,
-          subtitle = format(model, slots = c("parms"), short = FALSE),
-          caption = paste("Number of Simulations:", length(seeds)))
-      
-      ggplot2::ggsave(filename = paste0(fname,"__modality.png"), 
-                      dpi = 300, width = 20.4, height = length(model@init)*5.5, 
-                      units = "cm")
+      if(modality){
+        try({
+          message("modality, ")
+          timedist <- times(model)["by"]
+          
+          ggplot(data = modalities, aes(x = time, y = method, color = `modality of f`)) + 
+            ggplot2::geom_segment(aes(xend = time + timedist, yend = method), 
+                                      size = 20, lineend = "butt") +
+            ggplot2::guides(colour = ggplot2::guide_legend(override.aes = list(size=5))) +
+            ggplot2::labs(
+              title = model@descr,
+              subtitle = format(model, slots = c("parms"), short = FALSE),
+              caption = paste("Number of Simulations:", length(seeds)))
+          
+          ggplot2::ggsave(filename = paste0(fname,"__modality.png"), 
+                          dpi = 300, width = 20.4, height = length(model@init)*5.5, 
+                          units = "cm")
+        })
+      }
       
       # plot (histogram over all simulations and times)
       if(!useCsv){
-        message("overview ", appendLF = FALSE)
-        suppressMessages(suppressWarnings(plot(ms)))
-        ggplot2::ggsave(paste0(fname,"__plot.png"), dpi = 300, 
-                        width = 20.4, height = 11, units = "cm")
+        try({
+          message("overview ", appendLF = FALSE)
+          suppressMessages(suppressWarnings(plot(ms)))
+          ggplot2::ggsave(paste0(fname,"__plot.png"), dpi = 300, 
+                          width = 20.4, height = 11, units = "cm")
+        })
       }
     }
     
@@ -304,5 +341,7 @@ analysis <- function(data, model, polyModel, seeds = 1:50, useCsv = FALSE,
     message("All files are stored in ",ifelse(subDirs, 
                                               file.path(dir, data[i, "prefix"]), 
                                               dir))
+    
+    #sink(type = "message")
   }
 }
