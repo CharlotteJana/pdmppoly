@@ -63,9 +63,6 @@ analysis <- function(data, model, polyModel, seeds = NULL, useCsv = FALSE,
     #con <- file(paste0(fname, "_messages.txt"), open = "wt")
     #sink(con, type = "message")
     
-    message("\n", pdmpsim::format(model, short = F, collapse = "\n",
-                                  slots = c("descr", "parms", "init", "times")))
-    
     #### set new values for init, parms, times ####
     suppressWarnings({
       for(name in initNames){
@@ -101,6 +98,9 @@ analysis <- function(data, model, polyModel, seeds = NULL, useCsv = FALSE,
       }
     })
     
+    message("\n", pdmpsim::format(model, short = F, collapse = "\n",
+                                  slots = c("descr", "parms", "init", "times")))
+    
     #### simulation ####
     if(useCsv){
       
@@ -108,8 +108,8 @@ analysis <- function(data, model, polyModel, seeds = NULL, useCsv = FALSE,
     else{
       if(!sim){
         ms <- readRDS(file = paste0(fname, ".rda"))
-        message("Get MultSimData")
-        msData <- getMultSimData(ms)
+        #message("Get MultSimData")
+        msData <- readRDS(file = paste0(fname, "__multSimData.rda"))
         moments <- readRDS(file = paste0(fname, "__moments.rda"))
         
         if(!identical(model, ms$model))
@@ -127,6 +127,7 @@ analysis <- function(data, model, polyModel, seeds = NULL, useCsv = FALSE,
         
         message("Get MultSimData")
         msData <- getMultSimData(ms)
+        saveRDS(msData, file = paste0(fname, "__multSimData.rda"))
         
         ### statistics
         try({
