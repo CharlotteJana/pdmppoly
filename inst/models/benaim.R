@@ -2,7 +2,7 @@ library(spray)
 #------ code to generate the pdmpModel version -----
 
 Benaim <- new("pdmpModel",
-    descr = "Model B",
+    descr = "Modell B",
     parms = list(b = 2, β = 1.4),
     init = c(f1 = 10, f2 = 10, d = 1), 
     discStates = list(d = 0:1),
@@ -24,7 +24,7 @@ Benaim <- new("pdmpModel",
 #------ code to generate the polyPdmpModel version -----
 
 polyBenaim <- new("polyPdmpModel",
-    descr = "Model B (polynomial version)",
+    descr = "Modell B",
     parms = list(b = 2, β = 1.4),
     init = c(f1 = 10, f2 = 10, d = 1), 
     discStates = list(d = 0:1),

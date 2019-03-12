@@ -129,9 +129,9 @@ analysis <- function(data, model, polyModel, seeds = NULL, useCsv = FALSE,
         msData <- getMultSimData(ms)
         saveRDS(msData, file = paste0(fname, "__multSimData.rda"))
         
-        if(length(seeds) >= 1000){
-          multSim2multSimCsv(ms, prefix = fname)
-        }
+        # if(length(seeds) >= 10000){
+        #   multSim2multSimCsv(ms, prefix = fname)
+        # }
         
         ### statistics
         try({
