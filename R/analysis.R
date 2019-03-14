@@ -126,8 +126,10 @@ analysis <- function(data, model, polyModel, seeds = NULL, useCsv = FALSE,
         saveRDS(ms, file = paste0(fname, ".rda"))
         
         message("Get MultSimData")
-        msData <- getMultSimData(ms)
-        saveRDS(msData, file = paste0(fname, "__multSimData.rda"))
+        try({
+          msData <- getMultSimData(ms)
+          saveRDS(msData, file = paste0(fname, "__multSimData.rda"))
+        })
         
         # if(length(seeds) >= 10000){
         #   multSim2multSimCsv(ms, prefix = fname)
@@ -211,7 +213,7 @@ analysis <- function(data, model, polyModel, seeds = NULL, useCsv = FALSE,
     
     ##### plots #####
     
-    if(plot){
+    if(plot & exists("msData")){
       
       # violin plot
       try({
