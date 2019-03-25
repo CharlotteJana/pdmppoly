@@ -97,8 +97,8 @@ setMethod("momApp", signature(obj = "polyPdmpModel"),
     })
     for(j in 1:length(matchingRows)){
       if(anyNA(matchingRows[[j]])){
-        h <- max(rowSums(t[matchingRows[[j]],], na.rm = TRUE)) # highest degree that has existing odes
-        newOde <- momentClosure(closure, odeList[[j]], h, n)
+        m <- max(rowSums(t[matchingRows[[j]],], na.rm = TRUE)) # highest degree that has existing odes
+        newOde <- momentClosure(closure, odeList[[j]], m, n)
         odeList[[j]] <- newOde
         matchingRows[[j]] <- sapply(1:nrow(index(newOde)), function(i) 
           prodlim::row.match(index(newOde)[i,], t))
@@ -200,21 +200,69 @@ closureCoefficient <- function(j, m, n){
   return(sum)
 }
 
-#' @importFrom spray as.spray
-#' @export
-momentClosure <- function(name, ode, l, n){
-  value <- value(ode)
-  index <- index(ode)
-  problematicRows <- which(rowSums(index) > l)
-  for(i in problematicRows){
-    switch(name,
-           setZero = {value[i] <- 0},
-           reduceDegree = {
-             index[i, 1:n] <- sapply(index[i, 1:n], function(j) max(0, j-1))
-             return(momentClosure(name, as.spray(index, value, addrepeats = TRUE), l, n))
-             },
-           stop("moment closure method \"", name, "\" is not implementet.")
-    )
+#' #' @importFrom spray as.spray
+#' #' @export
+#' momentClosure <- function(name, ode, l, n){
+#'   value <- value(ode)
+#'   index <- index(ode)
+#'   problematicRows <- which(rowSums(index) > l)
+#'   for(i in problematicRows){
+#'     switch(name,
+#'            setZero = {value[i] <- 0},
+#'            reduceDegree = {
+#'              index[i, 1:n] <- sapply(index[i, 1:n], function(j) max(0, j-1))
+#'              return(momentClosure(name, as.spray(index, value, addrepeats = TRUE), l, n))
+#'              },
+#'            stop("moment closure method \"", name, "\" is not implementet.")
+#'     )
+#'   }
+#'   return(as.spray(index, value, addrepeats = TRUE))
+#' }
+
+
+#' @param odeList list of spray objects. Every entry corresponds to a differential equation.
+#' @param lhs a matrix with nrow(lhs) =  length(odeList). Row i of lhs represents the spray object
+#' f = product(t[i, ]). It stands for the left hand side of the ode E(f(t))' which is stored in 
+#' odeList[[i]].
+#' @param centralize boolean variable indicating if centralized moments should be replaced instead
+#' of raw moments
+momentClosure <- function(odeList, lhs, centralize = T){
+  matchingRows <- lapply(odeList, function(ode){
+    sapply(1:nrow(index(ode)), 
+           function(i) prodlim::row.match(index(ode)[i,], lhs))
+  })
+  
+  #rowsToChange = index of ode's that contain moments which are not in lhs
+  rowsToChange <- which(sapply(1:length(matchingRows), function(row) anyNA(matchingRows[[row]])))
+  
+  if(length(rowsToChange) == 0){
+    return(odeList)
+    # schreibe odeSystem in language um 
   }
-  return(as.spray(index, value, addrepeats = TRUE))
+  
+  #missingMoments = moments which are not in lhs (each row represents one moment, as in lhs)
+  missingMoments <- NULL
+  for(i in rowsToChange){
+    h <- which(is.na(matchingRows[[i]]))
+    missingMoments <- rbind(missingMoments, index(odeList[[i]])[h, ])
+  }
+  colnames(missingMoments) <- colnames(lhs)
+  missingMoments <- unique(missingMoments)
+  
+  lhsComplete <- rbind(lhs, missingMoments)
+  
+  # m =  highest degree that has existing ode's <- brauche ich das überhaupt?
+  m <- max(rowSums(t[matchingRows[[rowsToChange]],], na.rm = TRUE)) 
+  
+  if(centralize){
+    # schreibe die ODEs aus rowsToChange um
+  }
+  
+  # erstelle Vektor mit Ersetzungszahlen der Länge nrow(missingMoments)
+  # schreibe Odesystem in language um
+  
+  # newOde <- momentClosure(closure, odeList[[j]], m, n)
+  # odeList[[j]] <- newOde
+  # matchingRows[[j]] <- sapply(1:nrow(index(newOde)), function(i) 
+  #   prodlim::row.match(index(newOde)[i,], t))
 }
