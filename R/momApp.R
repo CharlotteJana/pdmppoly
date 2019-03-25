@@ -176,7 +176,7 @@ setMethod("momApp", signature(obj = "polyPdmpModel"),
 
 ##### moment closure ####
 
-raw2central <- function(j, m, n){
+closureCoefficient <- function(j, m, n){
   
   if(length(j) != length(n)) stop("length of j and n should be equal")
   if(max(j) > m) stop("m should be grater than or equal to all elements of j")
