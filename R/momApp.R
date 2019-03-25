@@ -89,7 +89,7 @@ setMethod("momApp", signature(obj = "polyPdmpModel"),
   ### calculate EVGenerator to every moment combination
     odeList <- lapply(1:nrow(t), function(c)
       EVGenerator(obj, m = t[c,1:n], j = states[which(t[c, (n+1):(n+k)] == 1)]))
- 
+    
   ### create system of odes  
     matchingRows <- lapply(odeList, function(ode){
       sapply(1:nrow(index(ode)), 
@@ -112,6 +112,7 @@ setMethod("momApp", signature(obj = "polyPdmpModel"),
     odeSystem <- lapply(odeSystem, function(i) 
       Reduce(function(a,b) bquote(.(a)+.(b)), i)
     )
+    
     
   ### simulate the system of odes with deSolve
     discInd <- getIndex(obj@init[dnames], states)
@@ -174,6 +175,30 @@ setMethod("momApp", signature(obj = "polyPdmpModel"),
 })
 
 ##### moment closure ####
+
+raw2central <- function(j, m, n){
+  
+  if(length(j) != length(n)) stop("length of j and n should be equal")
+  if(max(j) > m) stop("m should be grater than or equal to all elements of j")
+  if(min(n) < m) stop("m should be less than or equal to all elements of n")
+
+  summationRange <- vector("list", length(j))
+  for(r in seq_along(j)){
+    summationRange[[r]] <- j[r]:m
+  }
+  summationIndex <- do.call(expand.grid, summationRange)
+  
+  sum <- 0
+  for(r in 1:nrow(summationIndex)){
+    row <- as.numeric(summationIndex[r, ])
+    factors <- lapply(1:length(row), function(i){
+      (-1)^(row[i]-j[i])*choose(n[i], row[i])*choose(row[i], j[i])
+    })
+    summand <- Reduce("*", factors)
+    sum <- sum + summand
+  }
+  return(sum)
+}
 
 #' @importFrom spray as.spray
 #' @export
