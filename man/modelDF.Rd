@@ -44,7 +44,7 @@ The following parameter sets were simulated:
 }
 
 \examples{
-library(spray)
+
 #------ code to generate the pdmpModel version -----
 
 genePdmpDF <- new("pdmpModel", 
@@ -65,7 +65,7 @@ genePdmpDF <- new("pdmpModel",
      jumpfunc = function(t, x, parms, jtype) {
        c(x[1:2], 1 - x[3])
      }, 
-     times = c(from = 0, to = 100, by = 0.01), 
+     times = c(from = 0, to = 100, by = 0.1), 
      solver = "lsodar")
 
 #------ code to generate the polyPdmpModel version -----
@@ -86,7 +86,7 @@ genePolyDF <- new("polyPdmpModel",
     jumpfunc = function(t, x, parms, jtype){
       c(x[1:2], 1 - x[3])
     }, 
-    times = c(from = 0, to = 100, by = 0.01), 
+    times = c(from = 0, to = 100, by = 0.1), 
     solver = "lsodar")
 
 #------- comparison of the models --------------
