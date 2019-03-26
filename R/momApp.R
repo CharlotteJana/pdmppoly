@@ -67,7 +67,7 @@ setMethod("momApp", signature(obj = "polyPdmpModel"),
   # to avoid the R CMD Check NOTE 'no visible binding for global variable ...'
   time <- variable <- NULL
     
-  ### create all moment combinations that are needed 
+  ###### create all moment combinations that are needed ######
   
     # r = all moment combinations that are needed
     r <- data.frame(sapply(1:n, function(i) i = 0:maxOrder))
@@ -80,61 +80,102 @@ setMethod("momApp", signature(obj = "polyPdmpModel"),
     indicatorMatrix <- matrix(rep(t(diag(k)), length.out = k*k*nrow(r)), 
                               ncol = k, byrow = TRUE)
    
-    # t = all moment combinations times all indicator variables
-    t <- as.data.frame(r[rep(seq_len(nrow(r)), each=k),])
-    t <- cbind(t, indicatorMatrix)
-    dimnames(t) <- list(1:nrow(t), c(cnames, indicatorNames))
-    t <- as.matrix(t)
+    # lhs = all moment combinations times all indicator variables 
+    #       (this will be the lefthandside of the ode system)
+    lhs <- as.data.frame(r[rep(seq_len(nrow(r)), each=k),])
+    lhs <- cbind(lhs, indicatorMatrix)
+    dimnames(lhs) <- list(1:nrow(lhs), c(cnames, indicatorNames))
+    lhs <- as.matrix(lhs)
     
-  ### calculate EVGenerator to every moment combination
-    odeList <- lapply(1:nrow(t), function(c)
-      EVGenerator(obj, m = t[c,1:n], j = states[which(t[c, (n+1):(n+k)] == 1)]))
+  ###### create system of odes #####
     
-  ### create system of odes  
+    #calculate EVGenerator to every moment combination 
+    odeList <- lapply(1:nrow(lhs), function(c)
+      EVGenerator(obj, m = lhs[c,1:n], j = states[which(lhs[c, (n+1):(n+k)] == 1)]))
+    
     matchingRows <- lapply(odeList, function(ode){
       sapply(1:nrow(index(ode)), 
-             function(i) prodlim::row.match(index(ode)[i,], t))
+             function(i) prodlim::row.match(index(ode)[i,], lhs))
     })
-    for(j in 1:length(matchingRows)){
-      if(anyNA(matchingRows[[j]])){
-        m <- max(rowSums(t[matchingRows[[j]],], na.rm = TRUE)) # highest degree that has existing odes
-        newOde <- momentClosure(closure, odeList[[j]], m, n)
-        odeList[[j]] <- newOde
-        matchingRows[[j]] <- sapply(1:nrow(index(newOde)), function(i) 
-          prodlim::row.match(index(newOde)[i,], t))
+    
+  ###### check for missing ode's and eventually perform moment closure ######
+    
+    # rowsToChange = index of ode's that contain moments which are not in lhs
+    rowsToChange <- which(sapply(1:length(matchingRows), function(row) anyNA(matchingRows[[row]])))
+    
+    # lhsMissing = moments which are not in lhs (each row represents one moment, as in lhs)
+    lhsMissing <- NULL
+    for(i in rowsToChange){
+      h <- which(is.na(matchingRows[[i]]))
+      lhsMissing <- rbind(lhsMissing, index(odeList[[i]])[h, ])
+    }
+    colnames(lhsMissing) <- colnames(lhs)
+    rownames(lhsMissing) <- rep("missing", nrow(lhsMissing))
+    lhsMissing <- unique(lhsMissing)
+    
+    lhsFull <- rbind(lhs, lhsMissing)
+    matchingRows <- lapply(odeList, function(ode){
+      sapply(1:nrow(index(ode)), 
+             function(i) prodlim::row.match(index(ode)[i,], lhsFull))
+    })
+    
+    if(closure %in% c("normal") & !centralize){
+      centralize <- TRUE
+      warning("Argument 'centralize' is changed to TRUE because closure method '", closure, "'
+              is only implemented for centralized moments.")
+    }
+    missingMoments <- momentClosure(closure, lhsMissing, lhs, n)
+    
+  ###### convert ode's into quoted formulas #######
+    
+    if(centralize){ # centralize ode's which contain missing moments
+      
+      # m =  highest degree that has existing ode's <- #t brauche ich das überhaupt?
+      m <- max(rowSums(lhs[matchingRows[[rowsToChange]],], na.rm = TRUE)) 
+      
+      # schreibe die ODEs aus rowsToChange um
+    }
+    else{
+      odeSystem <- rep(list(NA), nrow(lhs))
+      for(j in seq_len(nrow(lhs))){
+        list <- lapply(seq_along(matchingRows[[j]]), function(i){
+          momentIndex <- matchingRows[[j]][[i]]
+          momentIsMissing <- identical(rownames(lhsFull)[momentIndex], "missing")
+          if(momentIsMissing){
+            h <-  prodlim::row.match(lhsFull[momentIndex, ], lhsMissing)
+            return(bquote(.(value(odeList[[j]])[i])*(.(missingMoments[[h]]))))
+          }
+          else{
+            return(bquote(.(value(odeList[[j]])[i])*state[.(momentIndex)]))
+          }
+        })
+        odeSystem[[j]] <- Reduce(function(a,b) bquote(.(a)+.(b)), list)
       }
     }
-    odeSystem <- lapply(1:length(matchingRows), function(j)
-        sapply(1:length(matchingRows[[j]]), function(i) {
-          bquote(.(value(odeList[[j]])[i])*state[.(matchingRows[[j]][[i]])]) 
-        })
-    )
-    odeSystem <- lapply(odeSystem, function(i) 
-      Reduce(function(a,b) bquote(.(a)+.(b)), i)
-    )
+
+  #### simulate the system of odes with deSolve ######
     
-    
-  ### simulate the system of odes with deSolve
     discInd <- getIndex(obj@init[dnames], states)
-    state <- apply(t, 1, function(row) 
+    state <- apply(lhs, 1, function(row) 
       if(row[n+discInd] == 1) 
         Reduce("*", obj@init[1:n]^row[1:n]) 
       else 0
     ) #initial value: dirac messure with peak in obj@init
     times <- fromtoby(obj@times)
-    func <- function(t, state, parms){
+    func <- function(lhs, state, parms){
       list(sapply(odeSystem, function(x) eval(x)))
     }
     out <- ode(y = state, times = times, func = func, 
                parms = obj@parms, method = obj@solver)
 
-  ### create class 'momApp' from the result 'out' 
+  #### create class 'momApp' from the result 'out' #####
+    
     # discRes = only indicator variables
     discRes <- out[, c(1:(k+1))] # Achtung: Zeitspalte kommt dazu
-    colnames(discRes)[-1] <- colnames(t)[(n+1):(n+k)] 
+    colnames(discRes)[-1] <- colnames(lhs)[(n+1):(n+k)] 
 
     # contRes = only continous variables (indicator variables are summed up)
-    contRes <- cbind(t, t(out[, -1]))
+    contRes <- cbind(lhs, t(out[, -1]))
     contRes <- aggregate(as.formula(paste("contRes[,-(1:(n+k))] ~", 
                                           paste(cnames, collapse = "+"))), 
                          data = contRes, 
@@ -174,7 +215,7 @@ setMethod("momApp", signature(obj = "polyPdmpModel"),
    return(result)
 })
 
-##### moment closure ####
+##### help functions ####
 
 closureCoefficient <- function(j, m, n){
   
@@ -200,94 +241,6 @@ closureCoefficient <- function(j, m, n){
   return(sum)
 }
 
-#' #' @importFrom spray as.spray
-#' #' @export
-#' momentClosure <- function(name, ode, l, n){
-#'   value <- value(ode)
-#'   index <- index(ode)
-#'   problematicRows <- which(rowSums(index) > l)
-#'   for(i in problematicRows){
-#'     switch(name,
-#'            setZero = {value[i] <- 0},
-#'            reduceDegree = {
-#'              index[i, 1:n] <- sapply(index[i, 1:n], function(j) max(0, j-1))
-#'              return(momentClosure(name, as.spray(index, value, addrepeats = TRUE), l, n))
-#'              },
-#'            stop("moment closure method \"", name, "\" is not implementet.")
-#'     )
-#'   }
-#'   return(as.spray(index, value, addrepeats = TRUE))
-#' }
-
-
-#' @param odeList list of spray objects. Every entry corresponds to a differential equation.
-#' @param lhs a matrix with nrow(lhs) =  length(odeList). Row i of lhs represents the spray object
-#' f = product(t[i, ]). It stands for the left hand side of the ode E(f(t))' which is stored in 
-#' odeList[[i]].
-#' @param centralize boolean variable indicating if centralized moments should be replaced instead
-#' of raw moments
-#' @param n number of continous variables
-momentClosure <- function(odeList, lhs, centralize = T, n){
-  matchingRows <- lapply(odeList, function(ode){
-    sapply(1:nrow(index(ode)), 
-           function(i) prodlim::row.match(index(ode)[i,], lhs))
-  })
-  
-  #rowsToChange = index of ode's that contain moments which are not in lhs
-  rowsToChange <- which(sapply(1:length(matchingRows), function(row) anyNA(matchingRows[[row]])))
-  
-  if(length(rowsToChange) == 0){
-    return(odeList)
-    # schreibe odeSystem in language um 
-  }
-  
-  #lhsMissing = moments which are not in lhs (each row represents one moment, as in lhs)
-  lhsMissing <- NULL
-  for(i in rowsToChange){
-    h <- which(is.na(matchingRows[[i]]))
-    lhsMissing <- rbind(lhsMissing, index(odeList[[i]])[h, ])
-  }
-  colnames(lhsMissing) <- colnames(lhs)
-  lhsMissing <- unique(lhsMissing)
-  lhsFull <- rbind(lhs, lhsMissing)
-  
-  # m =  highest degree that has existing ode's <- brauche ich das überhaupt?
-  m <- max(rowSums(t[matchingRows[[rowsToChange]],], na.rm = TRUE)) 
-  
-  if(centralize){
-    # schreibe die ODEs aus rowsToChange um
-  }
-  
-  ####### MOMENT CLOSURE #########
-  
-  missingMoments <- rep(list(NA), nrow(lhsMissing))
-  if(closure == "zero")
-    missingMoments <- rep(list(0), nrow(lhsMissing))
-  if(closure == "normal" & centralize & n == 1){ # if we have only one continous variable
-    for(i in seq_len(nrow(lhsMissing))){
-      order <- as.numeric(lhsMissing[i, 1])
-      sigmaRowIndex <- prodlim::row.match(c(2, lhsMissing[i, -1]), lhs)
-      sigma <- bquote(sqrt(state[.(sigmaRowIndex)]))
-      missingMoments[[i]] <- switch(order %% 2,
-                                    bquote(.(sigma)^.(order)*.(dfactorial(order-1))),
-                                    0)
-    }
-  }
-  if(anyNA(missingMoments)){
-    stop("Closure method '", closure, "' is not implemented.
-         Please note that some closures only work with centralize = TRUE.")
-  }
-  
-  ######## Anderes ##########
-  
-  # schreibe Odesystem in language um
-  
-  # newOde <- momentClosure(closure, odeList[[j]], m, n)
-  # odeList[[j]] <- newOde
-  # matchingRows[[j]] <- sapply(1:nrow(index(newOde)), function(i) 
-  #   prodlim::row.match(index(newOde)[i,], t))
-}
-
 #' Double factorial
 #' 
 #' This function returns the double factorial n!! of a natural number n.
@@ -309,4 +262,49 @@ dfactorial <- function(n){
     evens <- seq_len(n)[!as.logical(seq_len(n) %% 2)]
     return(Reduce("*", evens))
   }
+}
+
+########### moment closure ##############
+
+#' @param n numeric: number of all continous variables
+#' @param lhs  numeric matrix. Each row gives the order of a moment
+#' for which an ode exists.
+#' @param lhsMissing matrix. Each row gives the order of a
+#' moment for which no ode exists. 
+#' @param closure string specifying the closure method that is 
+#' to be used. The following values are possible: \code{zero} sets
+#' all moments to 0, \code{normal} sets all moments as moments of
+#' a centralized normal distribution.
+#' @value A list where each element is a quoted expression.
+#' The i-th element of this list gives a formula for the
+#' moment whose order is given in the i-th row of \code{lhsMissing}.
+#' @note This function is used internally in \code{\link{momApp}}.
+#' It relies on \code{lhs} and \code{lhsMissing} given in a specific
+#' form: The first n columns give the moment orders of the continous
+#' variables of a \code{\link{polyPdmpModel}} object, in the same order as in
+#' slot \code{init}.
+momentClosure <- function(closure, lhsMissing, lhs, n){
+  
+  missingMoments <- rep(list(NA), nrow(lhsMissing))
+  
+  # zero: all moments = 0
+  if(closure == "zero")
+    missingMoments <- rep(list(0), nrow(lhsMissing))
+  
+  # normal: moments of a centralized normal distribution
+  if(closure == "normal" & n == 1){ # if we have only one continous variable
+    for(i in seq_len(nrow(lhsMissing))){
+      order <- as.numeric(lhsMissing[i, 1])
+      sigmaRowIndex <- prodlim::row.match(c(2, lhsMissing[i, -1]), lhs) #t2 check if 2nd moment is  contained in lhs
+      sigma <- bquote(sqrt(state[.(sigmaRowIndex)]))
+      missingMoments[[i]] <- switch(order %% 2,
+                                    bquote(.(sigma)^.(order)*.(dfactorial(order-1))),
+                                    0)
+    }
+  }
+  if(anyNA(missingMoments)){
+    stop("Closure method '", closure, "' is not implemented.")
+  }
+  
+  return(missingMoments)
 }
