@@ -226,7 +226,8 @@ closureCoefficient <- function(j, m, n){
 #' odeList[[i]].
 #' @param centralize boolean variable indicating if centralized moments should be replaced instead
 #' of raw moments
-momentClosure <- function(odeList, lhs, centralize = T){
+#' @param n number of continous variables
+momentClosure <- function(odeList, lhs, centralize = T, n){
   matchingRows <- lapply(odeList, function(ode){
     sapply(1:nrow(index(ode)), 
            function(i) prodlim::row.match(index(ode)[i,], lhs))
@@ -240,16 +241,15 @@ momentClosure <- function(odeList, lhs, centralize = T){
     # schreibe odeSystem in language um 
   }
   
-  #missingMoments = moments which are not in lhs (each row represents one moment, as in lhs)
-  missingMoments <- NULL
+  #lhsMissing = moments which are not in lhs (each row represents one moment, as in lhs)
+  lhsMissing <- NULL
   for(i in rowsToChange){
     h <- which(is.na(matchingRows[[i]]))
-    missingMoments <- rbind(missingMoments, index(odeList[[i]])[h, ])
+    lhsMissing <- rbind(lhsMissing, index(odeList[[i]])[h, ])
   }
-  colnames(missingMoments) <- colnames(lhs)
-  missingMoments <- unique(missingMoments)
-  
-  lhsComplete <- rbind(lhs, missingMoments)
+  colnames(lhsMissing) <- colnames(lhs)
+  lhsMissing <- unique(lhsMissing)
+  lhsFull <- rbind(lhs, lhsMissing)
   
   # m =  highest degree that has existing ode's <- brauche ich das überhaupt?
   m <- max(rowSums(t[matchingRows[[rowsToChange]],], na.rm = TRUE)) 
@@ -258,11 +258,55 @@ momentClosure <- function(odeList, lhs, centralize = T){
     # schreibe die ODEs aus rowsToChange um
   }
   
-  # erstelle Vektor mit Ersetzungszahlen der Länge nrow(missingMoments)
+  ####### MOMENT CLOSURE #########
+  
+  missingMoments <- rep(list(NA), nrow(lhsMissing))
+  if(closure == "zero")
+    missingMoments <- rep(list(0), nrow(lhsMissing))
+  if(closure == "normal" & centralize & n == 1){ # if we have only one continous variable
+    for(i in seq_len(nrow(lhsMissing))){
+      order <- as.numeric(lhsMissing[i, 1])
+      sigmaRowIndex <- prodlim::row.match(c(2, lhsMissing[i, -1]), lhs)
+      sigma <- bquote(sqrt(state[.(sigmaRowIndex)]))
+      missingMoments[[i]] <- switch(order %% 2,
+                                    bquote(.(sigma)^.(order)*.(dfactorial(order-1))),
+                                    0)
+    }
+  }
+  if(anyNA(missingMoments)){
+    stop("Closure method '", closure, "' is not implemented.
+         Please note that some closures only work with centralize = TRUE.")
+  }
+  
+  ######## Anderes ##########
+  
   # schreibe Odesystem in language um
   
   # newOde <- momentClosure(closure, odeList[[j]], m, n)
   # odeList[[j]] <- newOde
   # matchingRows[[j]] <- sapply(1:nrow(index(newOde)), function(i) 
   #   prodlim::row.match(index(newOde)[i,], t))
+}
+
+#' Double factorial
+#' 
+#' This function returns the double factorial n!! of a natural number n.
+#' It is defined as \eqn{n!! = n*(n-2)*(n-4)*...*1} if n is odd and
+#' \eqn{n!! = n*(n-2)*(n-4)*...*2} if n is even.
+#' 
+#' @param n a non negative, natural number
+#' @export
+dfactorial <- function(n){
+  if(n %% 1 != 0 | n < 0)
+    stop("dfactorial is only defined for non negative, natural numbers")
+  if(n == 0)
+    return(1)
+  if(n %% 2 == 1){
+    odds <- seq_len(n)[as.logical(seq_len(n) %% 2)]
+    return(Reduce("*", odds))
+  }
+  if(n %% 2 == 0){
+    evens <- seq_len(n)[!as.logical(seq_len(n) %% 2)]
+    return(Reduce("*", evens))
+  }
 }
