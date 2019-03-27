@@ -217,29 +217,66 @@ setMethod("momApp", signature(obj = "polyPdmpModel"),
 
 ##### help functions ####
 
-closureCoefficient <- function(j, m, n){
+closureCoefficient <- function(j, m, p){
   
-  if(length(j) != length(n)) stop("length of j and n should be equal")
+  if(length(j) != length(p)) stop("length of j and p should be equal")
   if(max(j) > m) stop("m should be grater than or equal to all elements of j")
-  if(min(n) < m) stop("m should be less than or equal to all elements of n")
+  if(min(p) < m) stop("m should be less than or equal to all elements of p")
 
   summationRange <- vector("list", length(j))
   for(r in seq_along(j)){
     summationRange[[r]] <- j[r]:m
   }
-  summationIndex <- do.call(expand.grid, summationRange)
+  summationIndexes <- do.call(expand.grid, summationRange)
   
   sum <- 0
-  for(r in 1:nrow(summationIndex)){
-    row <- as.numeric(summationIndex[r, ])
-    factors <- lapply(1:length(row), function(i){
-      (-1)^(row[i]-j[i])*choose(n[i], row[i])*choose(row[i], j[i])
+  for(r in 1:nrow(summationIndexes)){
+    index <- as.numeric(summationIndexes[r, ])
+    factors <- lapply(1:length(index), function(i){
+      (-1)^(index[i]-j[i])*choose(p[i], index[i])*choose(index[i], j[i])
     })
     summand <- Reduce("*", factors)
     sum <- sum + summand
   }
   return(sum)
 }
+
+#' @inheritParams momentClosure
+#' @param k numeric vector giving the order of the moment that shall be centered.
+#' It should have the same length as \code{ncol(lhs)}.
+#' @param p numeric vector with \code{length(p) = n}.
+centralMoment <- function(lhsMissing, lhs, missingMoments, k, n, p){
+  
+  m <- max(lhs[, 1:n]) # maximal order of moments for which there exist ode's
+  kd <- k[(n+1):length(k)]
+  
+  # mu = vector with expected values
+  muRowIndex <- lapply(1:n, function(i){
+    muRow <- c(rep(0, n), kd)
+    muRow[i] <- 1
+    prodlim::row.match(muRow, lhs)
+  })
+  mu <- lapply(muRowIndex, function(i) bquote(state[.(i)]))
+  
+  if(m > max(k)){
+    index <- prodlim::row.match(k, lhsMissing)
+    return(missingMoments[[index]])
+  }
+  else{
+    sum <- 0
+    sumIndexes <- as.matrix(expand.grid(lapply(1:n, function(i) 0:m)))
+    print(sumIndexes)
+    for(r in 1:nrow(sumIndexes)){
+      index <- sumIndexes[r, ]
+      rawMomentIndex <- prodlim::row.match(c(index, kd), lhs)
+      rawMoment <- bquote(state[.(rawMomentIndex)])
+      muPower <- lapply(seq_along(mu), function(i) bquote(.(mu[[i]])^.(as.numeric(p-index)[i])))
+      muPower <- Reduce(function(a,b) bquote(.(a)*.(b)), muPower)
+      summand <- bquote(.(rawMoment)*.(muPower)*(.(as.numeric(closureCoefficient(index, m, p)))))
+      sum <- bquote(.(sum) + .(summand))
+    }
+  }
+}  
 
 #' Double factorial
 #' 
@@ -302,6 +339,7 @@ momentClosure <- function(closure, lhsMissing, lhs, n){
                                     0)
     }
   }
+  
   if(anyNA(missingMoments)){
     stop("Closure method '", closure, "' is not implemented.")
   }
