@@ -4,13 +4,14 @@
 \alias{transformMoment}
 \title{A help function for \code{\link{momApp}}}
 \usage{
-transformMoment(order, type, centralMomentOrders, centralMoments,
-  rawMomentOrders, rawMoments, closure)
+transformMoment(order, type, momentList, closure = "zero")
 }
 \arguments{
 \item{order}{numeric vector giving the order of the desired moment}
 
 \item{type}{string, either 'central' or 'raw'}
+
+\item{closure}{string giving the closure method to use if a central moment is unknown.}
 
 \item{centralMomentOrders}{matrix. Every row gives the order of a central moment that is already known.}
 
@@ -19,8 +20,6 @@ transformMoment(order, type, centralMomentOrders, centralMoments,
 \item{rawMomentOrders}{matrix. Every row gives the order of a raw moment that is already known.}
 
 \item{rawMoments}{list. The i-th entry is the raw Moment of order \code{rawMomentOrders[i, ]}.}
-
-\item{closure}{string giving the closure method to use if a central moment is unknown.}
 }
 \description{
 Let X be a random variable and Y the corresponding centered variable, i.e. \eqn{Y = X - \mu}. 
@@ -30,14 +29,14 @@ If \code{type = 'raw'}, this function returns
 The values of \eqn{E(Y^k)} are replaced by
 \itemize{
   \item \code{centralMoment[[i]]} if \code{k} = \code{centralMomentOrders[i, ]},
-  \item \code{\link{transformMoment}(type = 'central', )} if \code{k} is a row in \code{rawMomentOrders},
-  \item \code{\link{momentClosure}(closure, k)} if \code{k} is neither a row in \code{centralMomentOrders} nor \code{rawMomentOrders}.
+  \item \code{\link{transformMoment}(type = 'central', ...)} if \code{k} is a row in \code{rawMomentOrders},
+  \item \code{\link{momentClosure}(closure, k)} if \code{k} is neither a row in \code{centralMomentOrders} nor in \code{rawMomentOrders}.
 }
 If \code{type = 'central'}, this function returns
 \deqn{E(Y^p) = \sum_{k_1=0}^{p_1}...\sum_{k_n=0}^{p_n} (-1)^{p-k} {p \choose k} \mu^{p-k} E(X^k).}
 The values of \eqn{E(X^k)} are replaced by
 \itemize{
   \item \code{rawMoment[[i]]} if \code{k} = \code{rawMomentOrders[i, ]},
-  \item \code{\link{transformMoment}(type = 'raw', )} if \code{k} is a row in \code{centralMomentOrders}.
+  \item \code{\link{transformMoment}(type = 'raw', ...)} if \code{k} is not a row in \code{rawMomentOrders}.
 }
 }
