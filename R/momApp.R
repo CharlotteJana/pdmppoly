@@ -252,7 +252,7 @@ setMethod("momApp", signature(obj = "polyPdmpModel"),
 #' @param rawMomentOrders matrix. Every row gives the order of a raw moment that is already known.
 #' @param rawMoments list. The i-th entry is the raw Moment of order \code{rawMomentOrders[i, ]}.
 #' @param closure string giving the closure method to use if a central moment is unknown.
-transformMoment <- function(order, type, momentList, closure = "zero"){
+transformMomentOld <- function(order, type, momentList, closure = "zero"){
   
   p <- order
   n <- length(p)
