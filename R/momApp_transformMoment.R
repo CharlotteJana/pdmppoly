@@ -41,8 +41,9 @@ transformMoment <- function(order, type, momentList, closure = "zero"){
   
   p <- order
   n <- length(p)
+  otherType <- setdiff(c("central", "raw"), type) # if type = 'raw' then otherType = 'central' and vice versa
   k_indexes <- as.matrix(expand.grid(lapply(1:n, function(i) 0:p[i])))
-  
+
   readMoments <- function(momentList, type){ # a help function to assign some values
     
     if(type == "raw"){
@@ -70,7 +71,21 @@ transformMoment <- function(order, type, momentList, closure = "zero"){
     })
     assign("k_in_otherOrders", k_in_otherOrders, envir = parent.frame())
   }
-  readMoments(momentList)
+  readMoments(momentList, type)
+  
+  # before calculation: check if calculation is needed
+  if(!is.na(prodlim::row.match(p, typeOrders))) # if there is already an entry in momentList
+    return(momentList)
+  if(type == "central" & is.na(prodlim::row.match(p, otherOrders))){
+    moment <- momentClosure(closure = closure, 
+                            missingOrders = t(p),
+                            knownOrders = typeOrders,
+                            knownMoments = typeMoments)[[1]]
+    
+    momentList$centralMomentOrders <- rbind(momentList$centralMomentOrders, p)
+    momentList$centralMoments <- append(momentList$centralMoments, moment)
+    return(momentList)
+  }
   
   # mu = vector with expected values
   muRowIndex <- lapply(1:n, function(i){
@@ -80,89 +95,64 @@ transformMoment <- function(order, type, momentList, closure = "zero"){
   })
   mu <- lapply(muRowIndex, function(i) momentList$rawMoments[[i]])
   if(sum(sapply(mu, is.null)) > 0){
-    stop("The elements rawMomentOrders and rawMoments of momentList 
-         should contain all expected values.")
+    stop("momentList$rawMoments should contain all expected values.")
   }
   
+  #### calculation #####
+    
+  sum <- list()
+  for(k_index in 1:nrow(k_indexes)){
+    
+    k <- k_indexes[k_index, ]
+    
+    # if k is neither a row in typeMomentOrders nor in otherMomentOrders
+    if(is.na(k_in_typeOrders[k_index]) & is.na(k_in_otherOrders[k_index])){
+      momentCentral <- momentClosure(closure, 
+                                     missingOrders = t(k),
+                                     knownOrders = momentList$centralMomentOrders,
+                                     knownMoments = momentList$centralMoments)[[1]]
+      momentList$centralMomentOrders <- rbind(momentList$centralMomentOrders, k)
+      momentList$centralMoments <- append(momentList$centralMoments, momentCentral)
+      readMoments(momentList, type)
+    }
+    # if k is a row in typeMomentOrders but not in otherMomentOrders
+    if(!is.na(k_in_typeOrders[k_index]) & is.na(k_in_otherOrders[k_index])){
+      momentList <- transformMoment(order = k, 
+                                    type = otherType, 
+                                    momentList = momentList, 
+                                    closure = closure)
+      readMoments(momentList, type)
+    }
+    # if k is a row in otherMomentOrders
+    if(!is.na(k_in_otherOrders[k_index])){
+      momentK <- otherMoments[[k_in_otherOrders[k_index]]]
+    }
+    
+    # compute summand
+    pChooseK <- as.numeric(Reduce("*", lapply(1:n, function(i) choose(p[i], k[i]))))
+    muPower <- lapply(1:n, function(i) bquote(.(mu[[i]])^.(as.numeric(p[1:n]-k)[i])))
+    muPower <- Reduce(function(a,b) bquote(.(a)*.(b)), muPower)
+    if(type == "raw"){
+      summand <- bquote(.(pChooseK)*.(muPower)*(.(momentK)))
+    }
+    if(type == "central"){
+      sign <- (-1)^(sum(p)-sum(k))
+      summand <- bquote(.(sign*pChooseK)*.(muPower)*(.(momentK)))
+    }
+    sum[[k_index]] <- summand
+  }
+  sum <- Reduce(function(a,b) bquote(.(a)+.(b)), sum)
   
   if(type == 'raw'){
-    
-    sum <- list()
-    for(k_index in 1:nrow(k_indexes)){
-      
-      k <- k_indexes[k_index, ]
-      cat("type = ", type, "\tp = ",p,"\tk = ", k, "\n")
-      
-      # if k is a row in rawMomentOrders but not in centralMomentOrders
-      if(!is.na(k_in_rOrders[k_index]) & is.na(k_in_cOrders[k_index])){
-        momentList <- transformMoment(order = k, 
-                                      type = 'central', 
-                                      momentList = momentList, 
-                                      closure = closure)
-        
-        readMoments(momentList)
-      }
-      # if k is a row in centralMomentOrders
-      if(!is.na(k_in_cOrders[k_index])){
-        momentK <- cMoments[[k_in_cOrders[k_index]]]
-      }
-      # if k is neither a row in rawMomentOrders nor in centralMomentOrders
-      if(is.na(k_in_rOrders[k_index]) & is.na(k_in_cOrders[k_index])){
-        momentK <- momentClosure(closure = closure, 
-                                 lhs = rOrders, # vielleicht eher cOrders?
-                                 lhsMissing = t(k),
-                                 n = n)[[1]]
-        momentList$centralMomentOrders <- rbind(cOrders, k)
-        momentList$centralMoments[[length(cMoments)+1]] <- momentK
-        readMoments(momentList)
-      }
-      
-      # compute summand
-      pChooseK <- as.numeric(Reduce("*", lapply(1:n, function(i) choose(p[i], k[i]))))
-      muPower <- lapply(1:n, function(i) bquote(.(mu[[i]])^.(as.numeric(p[1:n]-k)[i])))
-      muPower <- Reduce(function(a,b) bquote(.(a)*.(b)), muPower)
-      sum[[k_index]] <- bquote(.(pChooseK)*.(muPower)*(.(momentK)))
-    }
-    sum <- Reduce(function(a,b) bquote(.(a)+.(b)), sum)
-    momentList$rawMomentOrders <- rbind(rOrders, p)
-    momentList$rawMoments[[length(rMoments)+1]] <- sum
-    return(momentList)
+    momentList$rawMomentOrders <- rbind(typeOrders, p)
+    momentList$rawMoments <- append(typeMoments, sum)
   }
-  
   if(type == 'central'){
-    
-    sum <- list()
-    for(k_index in 1:nrow(k_indexes)){
-      
-      k <- k_indexes[k_index, ]
-      cat("type = cent\tp = ",p,"\tk = ", k, "\n")
-      
-      # if k is not a row in rawMomentOrders
-      if(is.na(k_in_rOrders[k_index])){
-        momentList <- transformMoment(order = k, 
-                                      type = 'raw', 
-                                      momentList = momentList,
-                                      closure = closure)
-        readMoments(momentList)
-      }
-      # if k is a row in rawMomentOrders
-      if(!is.na(k_in_rOrders[k_index])){
-        momentK <- rMoments[[k_in_rOrders[k_index]]]
-      }
-      
-      # compute summuand
-      pChooseK <- as.numeric(Reduce("*", lapply(1:n, function(i) choose(p[i], k[i]))))
-      muPower <- lapply(1:n, function(i) bquote(.(mu[[i]])^.(as.numeric(p[1:n]-k)[i])))
-      muPower <- Reduce(function(a,b) bquote(.(a)*.(b)), muPower)
-      sign <- (-1)^(sum(p)-sum(k))
-      sum[[k_index]] <- bquote(.(sign)*.(pChooseK)*.(muPower)*(.(momentK)))
-    }
-    sum <- Reduce(function(a,b) bquote(.(a)+.(b)), sum)
-    momentList$centralMomentOrders <- rbind(cOrders, p)
-    momentList$centralMoments[[length(cMoments)+1]] <- sum
-    return(momentList)
+    momentList$centralMomentOrders <- rbind(typeOrders, p)
+    momentList$centralMoments <- append(typeMoments, sum)
   }
-  }  
+  return(momentList)
+}  
 
 
 validate_momentList <- function(x){
@@ -193,44 +183,46 @@ validate_momentList <- function(x){
          should be identical.")
   }
   
-  #------- check moments of order 0 -------
+  # ------- check moments of order 1 -------
   
-  zeros <- rep(0, ncol(x$rawMomentOrders))
-  indexRaw <- prodlim::row.match(zeros, x$rawMomentOrders)
-  indexCentr <- prodlim::row.match(zeros, x$centralMomentOrders)
+  n <- ncol(x$rawMomentOrders)
+  for(i in seq_len(n)){
+    unitVector <- rep(0, n)
+    unitVector[n-i+1] <- 1
+    rowIndex <- prodlim::row.match(unitVector, x$centralMomentOrders)
+    if(!is.na(rowIndex)){
+      if(x$centralMoments[[rowIndex]] != 0) 
+        warning("Central moments of order 1 should be 0.")
+    }
+    else{
+      x$centralMomentOrders <- rbind(unitVector, x$centralMomentOrders)
+      x$centralMoments <- append(0, x$centralMoments)
+    }
+  }
+  rownames(x$centralMomentOrders) <- NULL
+  
+  #------- check moments of order 0 -------
+ 
+  indexRaw <- prodlim::row.match(rep(0, n), x$rawMomentOrders)
+  indexCentr <- prodlim::row.match(rep(0, n), x$centralMomentOrders)
   
   if(!is.na(indexRaw)){
-    if(x$rawMoments[[indexRaw]] != 0)
-      warning("Moments of order 0 should have value 0.")
+    if(x$rawMoments[[indexRaw]] != 1)
+      warning("Moments of order 0 should have value 1.")
   }
   if(!is.na(indexCentr)){
-    if(x$centralMoments[[indexCentr]] != 0)
-    warning("Moments of order 0 should have value 0.")
+    if(x$centralMoments[[indexCentr]] != 1)
+    warning("Moments of order 0 should have value 1.")
   }
   
   if(is.na(indexRaw)){
-    x$rawMomentOrders <- cbind(x$rawMomentOrders, zeros)
-    x$rawMoments <- append(x$rawMoments, 1)
+    x$rawMomentOrders <- rbind(rep(0, n), x$rawMomentOrders)
+    x$rawMoments <- append(1, x$rawMoments)
   }
   if(is.na(indexCentr)){
-    x$centralMomentOrders <- cbind(x$centralMomentOrders, zeros)
-    x$centralMoments <- append(x$centralMoments, 1)
+    x$centralMomentOrders <- rbind(rep(0, n), x$centralMomentOrders)
+    x$centralMoments <- append(1, x$centralMoments)
   }
   
-  # ------- check moments of order 1 -------
-  
-  for(i in seq_len(ncol(x$rawMomentOrders))){
-    unitVector <- zeros
-    unitVector[i] <- 1
-    rowIndex <- prodlim::row.match(unitVector, x$centralMomentOrders)
-    if(!is.null(rowIndex)){
-     if(x$centralMoments[[rowIndex]] != 0) 
-       warning("Central moments of order 1 should be 0.")
-    }
-    else{
-      x$centralMomentOrders <- rbind(x$centralMomentOrders, unitVector)
-      x$centralMoments <- append(x$centralMoments, 0)
-    }
-  }
   return(x)
 }

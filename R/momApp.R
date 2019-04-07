@@ -413,9 +413,9 @@ dfactorial <- function(n){
 #' form: The first n columns give the moment orders of the continous
 #' variables of a \code{\link{polyPdmpModel}} object, in the same order as in
 #' slot \code{init}.
-momentClosure <- function(closure, lhsMissing, lhs, n){
+momentClosureOld <- function(closure, lhsMissing, lhs, n){
   missingMoments <- rep(list(NA), nrow(lhsMissing))
-
+  
   # zero: all moments = 0
   if(closure == "zero"){
     missingMoments <- rep(list(0), nrow(lhsMissing))
