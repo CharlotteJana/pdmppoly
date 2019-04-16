@@ -2,7 +2,7 @@
 % Please edit documentation in R/momApp_momentClosure.R
 \name{momentClosure}
 \alias{momentClosure}
-\title{Calculate moments}
+\title{Symbolic calculation of moments}
 \usage{
 momentClosure(distribution, missingOrders, mean = NA, cov = NA,
   var = NA)
@@ -11,19 +11,20 @@ momentClosure(distribution, missingOrders, mean = NA, cov = NA,
 \item{distribution}{string specifying the (multivariate) distribution
 of X. The following values are possible: 
 \itemize{
-\item \code{zero} sets all moments to 0,
-\item \code{normal} sets all moments as moments of a centralized normal distribution,
-\item \code{lognormal} sets all moments as moments of a lognormal distribution.
+\item \code{"zero"} sets all moments to 0,
+\item \code{"normal"} calculates the moments of a centralized normal distribution,
+\item \code{"lognormal"} calculates the raw moments of a lognormal distribution,
+\item \code{"gamma"} calculates the raw moments of a gamma distribution.
 }}
 
-\item{missingOrders}{numeric matrix. Each row gives the order
+\item{missingOrders}{numeric vector or matrix. Each row gives the order
 of a moment that shall be calculated.}
 
 \item{mean}{vector or list with expected values. Entry \code{mean[[i]]} should
 contain a value for \eqn{E(X_i)}.}
 
 \item{cov}{matrix or nested list. Entry \code{cov[i][j]} (or \code{cov[[i]][[j]]} 
-respectivly) should contain a #' value for the covariance \eqn{Cov(X_i, X_j)}.}
+respectivly) should contain a value for the covariance \eqn{Cov(X_i, X_j)}.}
 
 \item{var}{optional. If \code{n = 1}, \code{cov} would only
 contain one entry - the variance \eqn{Var(X)}. This value can be passed
@@ -35,5 +36,10 @@ The i-th element of this list gives a formula for the
 moment whose order is given in the i-th row of \code{missingOrders}.
 }
 \description{
-Compute central moments of a multivariate variable \eqn{X = (X_1, ..., X_n)}.
+Compute the moments of a multivariate variable \eqn{X = (X_1, ..., X_n)}
+and return the formula as quoted expression.
+}
+\note{
+The calculation of the central moments of a multivariate normal distribution
+is based on function \code{\link[symmoments]{callmultmoments}} of package \pkg{symmoments}.
 }
