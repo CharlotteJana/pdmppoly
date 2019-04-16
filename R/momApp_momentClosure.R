@@ -1,4 +1,7 @@
 #t1 wird die variable mean überhaupt benötigt?
+#t1 tests für momentClosure
+#v1 momentClosure umbenennen?
+#t2 lognormal: überprüfen, ob mean wohldefiniert
 
 ########### moment closure ##############
 
@@ -16,9 +19,12 @@
 #' @param missingOrders numeric matrix. Each row gives the order
 #' of a moment that shall be calculated.
 #' @param distribution string specifying the (multivariate) distribution
-#' of X. The following values are possible: \code{zero} sets
-#' all moments to 0, \code{normal} sets all moments as moments of
-#' a centralized normal distribution.
+#' of X. The following values are possible: 
+#' \itemize{
+#' \item \code{zero} sets all moments to 0,
+#' \item \code{normal} sets all moments as moments of a centralized normal distribution,
+#' \item \code{lognormal} sets all moments as moments of a lognormal distribution.
+#' } 
 #' @return A list where each element is a quoted expression.
 #' The i-th element of this list gives a formula for the
 #' moment whose order is given in the i-th row of \code{missingOrders}.
@@ -52,6 +58,7 @@ momentClosure <- function(distribution, missingOrders, mean = NA, cov = NA, var 
     missingMoments <- rep(list(0), nrow(missingOrders))
   }
   
+  # normal: moments are 0 (if sum(order) is odd) or calculated with package symmoments (if sum(order) is even)
   if(distribution == "normal"){
     for(i in seq_len(nrow(missingOrders))){
       order <- as.numeric(missingOrders[i, ])
@@ -77,6 +84,34 @@ momentClosure <- function(distribution, missingOrders, mean = NA, cov = NA, var 
         momFormula <- Reduce(function(a,b) bquote(.(a)+.(b)), momFormula)
         missingMoments[[i]] <- momFormula
       }
+    }
+  }
+  
+  if(distribution == "lognormal"){ 
+    sigma <- cov
+    mu <- list()
+    for(i in 1:n){
+      sigma[[i]][[i]] <- bquote(log(1+.(cov[[i]][[i]])/.(mean[i])^2))
+      mu[[i]] <- bquote(log(.(mean[i])-0.5*.(sigma[[i]][[i]])))
+      for(j in seq_len(i-1)){
+        sigma[[i]][[j]] <- bquote(log(1 + .(cov[[i]][[j]])/exp(.(mu[[i]])+.(mu[[j]])+0.5*(.(sigma[[i]][[i]])*.(sigma[[j]][[j]])))))
+        sigma[[j]][[i]] <- sigma[[i]][[j]]
+      }
+    }
+    for(i in seq_len(nrow(missingOrders))){
+      order <- as.numeric(missingOrders[i, ])
+      summand1 <- lapply(1:n, function(i) bquote(.(order[i])*.(mu[[i]])))
+      summand1 <- Reduce(function(a,b) bquote(.(a)+.(b)), summand1)
+      summand2 <- lapply(1:n, function(i) lapply(i:n, function(j){ 
+                                                        if(i == j) 
+                                                          bquote(.(order[i])^2*.(cov[[i]][[i]]))
+                                                        else 
+                                                          bquote(2*.(order[i])*.(order[j])*.(cov[[i]][[j]]))
+                                                 })
+                         )
+      summand2 <- Reduce(c, summand2) # flatten the nested list
+      summand2 <- Reduce(function(a,b) bquote(.(a)+.(b)), summand2)
+      missingMoments[[i]] <- bquote(exp(.(summand1)+0.5*.(summand2)))
     }
   }
   

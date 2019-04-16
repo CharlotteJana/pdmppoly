@@ -9,9 +9,12 @@ momentClosure(distribution, missingOrders, mean = NA, cov = NA,
 }
 \arguments{
 \item{distribution}{string specifying the (multivariate) distribution
-of X. The following values are possible: \code{zero} sets
-all moments to 0, \code{normal} sets all moments as moments of
-a centralized normal distribution.}
+of X. The following values are possible: 
+\itemize{
+\item \code{zero} sets all moments to 0,
+\item \code{normal} sets all moments as moments of a centralized normal distribution,
+\item \code{lognormal} sets all moments as moments of a lognormal distribution.
+}}
 
 \item{missingOrders}{numeric matrix. Each row gives the order
 of a moment that shall be calculated.}

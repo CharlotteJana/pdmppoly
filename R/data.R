@@ -3,6 +3,7 @@
 #s3 benaim: detailed description
 #s1 PROM durch meine Promotion ersetzen
 #s1 Raten berichtigen
+#t1 alle modelle neu abspeichern (hängen noch von simecol ab)
 
 #========== simplePoly =====================
 
