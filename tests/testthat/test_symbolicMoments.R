@@ -47,3 +47,11 @@ test_that("distribution = 'lognormal' works for n = 1", {
 test_that("distribution = 'lognormal' works for n = 2", {
   skip("not implemented yet")
 })
+
+test_that("distribution = 'gamma' works", {
+  
+  cov <-  matrix(c(1, 2, 3, 2, 4, 5, 3, 5, 6), nrow = 3)
+  mean <- c("m1", "m2", "m3")
+  moment <- symbolicMoments(distribution = 'gamma', missingOrders = 1:3, cov = cov, mean = mean)
+
+})

@@ -33,6 +33,7 @@
 #' is based on function \code{\link[symmoments]{callmultmoments}} of package \pkg{symmoments}.
 #' @importFrom symmoments callmultmoments
 #' @importFrom stringr str_extract_all
+#' @importFrom multicool multinom
 #' @export
 symbolicMoments <- function(distribution, missingOrders, mean = NA, cov = NA, var = NA){
   
@@ -91,6 +92,7 @@ symbolicMoments <- function(distribution, missingOrders, mean = NA, cov = NA, va
     return(missingMoments)
   }
   
+  # lognormal
   if(distribution == "lognormal"){ 
     sigma <- cov
     mu <- list()
@@ -123,16 +125,50 @@ symbolicMoments <- function(distribution, missingOrders, mean = NA, cov = NA, va
     }
   }
   
+  # gamma
   if(distribution == "gamma"){
-    stop("distribution = 'gamma' is not implemented yet")
+    beta <- lapply(1:n, function(i) bquote(.(cov[[i]][[i]])/.(mean[[i]])))
+    A <- cov
+    for(i in 1:n){
+      sum <- 0
+      for(j in 1:n){
+        if(i != j){
+          A[[i]][[j]] <- bquote(.(cov[[i]][[j]])/(.(beta[[i]])*.(beta[[j]])))
+          sum <- bquote(.(sum) + .(A[[i]][[j]]))
+        }
+      }
+      A[[i]][[i]] <- bquote(.(mean[[i]])/.(beta[[i]]) - .(sum))
+    }
+    
+    h <- function(j, index){
+      result <- list()
+      for(k in seq_len(index)){
+        result <- append(result, bquote(factorial(.(A[[j]][[k]])+m-1)/factorial(.(A[[j]][[k]])-1)))
+      }
+      Reduce(function(a,b) bquote(.(a)*.(b)), result)
+    }
+    
+    for(i in seq_len(nrow(missingOrders))){
+      order <- as.numeric(missingOrders[i, ])
+      factors <- list()
+      for(j in 1:n){
+        m <- order[i]
+        sum_indexes <- expand.grid(rep(list(0:m), n))
+        sum_indexes <- sum_indexes[which(rowSums(sum_indexes) == m), ]
+        summands <- lapply(1:nrow(sum_indexes), function(index){
+          bquote(.(multicool::multinom(m, index))*.(h(j, index)))
+        })
+        sum <- Reduce(function(a,b) bquote(.(a)+.(b)), summands)
+        factors <- append(factors, sum)
+      }
+      missingMoments[[i]] <- Reduce(function(a,b) bquote(.(a)*.(b)), factors)
+    }
   }
   
   # normal for one dimensional variable
   if(distribution == "normal1d" & n == 1){
     for(i in seq_len(nrow(missingOrders))){
       order <- as.numeric(missingOrders[i, 1])
-      # sigmaRowIndex <- prodlim::row.match(2, knownOrders) #t2 check if 2nd moment is  contained in lhs
-      # sigma <- knownMoments[[sigmaRowIndex]]
       variance <- cov[[i]][[1]]
       missingMoments[[i]] <- switch(order %% 2,
                                     bquote(.(variance)^.(order)*.(dfactorial(order-1))),
