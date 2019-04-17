@@ -1,5 +1,6 @@
 #t1 tests für momentClosure
 #t2 lognormal: überprüfen, ob mean wohldefiniert
+#v1 was passiert bei falschen werten für mean, cov bei gamma?
 #t1 References: LakatosCo2015
 
 ########### moment closure ##############
@@ -31,9 +32,14 @@
 #' moment whose order is given in the i-th row of \code{missingOrders}.
 #' @note The calculation of the central moments of a multivariate normal distribution
 #' is based on function \code{\link[symmoments]{callmultmoments}} of package \pkg{symmoments}.
+#' If \code{distribution = 'gamma'} and the evaluation of the results leads to NaNs, 
+#' then the values of cov and mean do not fit to a multivariate gamma distribution.
+#' The diagonals of cov should be large with respect to the other entries of cov.
+#' More specifically, the inequations 
+#' \eqn{mean[i] > \sum_{k \neq i} \frac{mean[k]*cov[i,k]}{cov[i,i]}}
+#' should be satisfied for all i in 1:n.
 #' @importFrom symmoments callmultmoments
 #' @importFrom stringr str_extract_all
-#' @importFrom multicool multinom
 #' @export
 symbolicMoments <- function(distribution, missingOrders, mean = NA, cov = NA, var = NA){
   
@@ -137,13 +143,15 @@ symbolicMoments <- function(distribution, missingOrders, mean = NA, cov = NA, va
           sum <- bquote(.(sum) + .(A[[i]][[j]]))
         }
       }
-      A[[i]][[i]] <- bquote(.(mean[[i]])/.(beta[[i]]) - .(sum))
+      A[[i]][[i]] <- bquote(.(mean[[i]])^2/.(cov[[i]][[i]]) - .(sum))
     }
-    
     h <- function(j, index){
       result <- list()
-      for(k in seq_len(index)){
-        result <- append(result, bquote(factorial(.(A[[j]][[k]])+m-1)/factorial(.(A[[j]][[k]])-1)))
+      for(k in 1:n){
+        if(index[k] == 1)
+          result <- append(result, bquote(.(A[[j]][[k]])))
+        if(index[k] > 1)
+        result <- append(result, bquote(factorial(.(A[[j]][[k]])+.(index[k])-1)/factorial(.(A[[j]][[k]])-1)))
       }
       Reduce(function(a,b) bquote(.(a)*.(b)), result)
     }
@@ -153,14 +161,18 @@ symbolicMoments <- function(distribution, missingOrders, mean = NA, cov = NA, va
       factors <- list()
       for(j in 1:n){
         m <- order[i]
-        sum_indexes <- expand.grid(rep(list(0:m), n))
+        sum_indexes <- as.matrix(expand.grid(rep(list(0:m), n)))
         sum_indexes <- sum_indexes[which(rowSums(sum_indexes) == m), ]
+        dimnames(sum_indexes) <- NULL
         summands <- lapply(1:nrow(sum_indexes), function(index){
-          bquote(.(multicool::multinom(m, index))*.(h(j, index)))
+          bquote(.(multinomial(m, sum_indexes[index, ]))*.(h(j, sum_indexes[index, ])))
         })
+        print(lapply(summands, eval))
         sum <- Reduce(function(a,b) bquote(.(a)+.(b)), summands)
-        factors <- append(factors, sum)
+        factors <- append(factors, sum) # das geht so nicht, ich muss die komplizierte formel implementieren
       }
+      factors <- append(factors,
+                        lapply(seq_along(beta), function(j) bquote(.(beta[[j]])^.(order[j])))) # times beta^order
       missingMoments[[i]] <- Reduce(function(a,b) bquote(.(a)*.(b)), factors)
     }
   }

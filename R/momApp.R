@@ -394,6 +394,21 @@ dfactorial <- function(n){
   }
 }
 
+#' Multinomial coefficient
+#' 
+#' This function returns the multinomial coefficient of a natural number m
+#' and a vector of natrual numbers k.
+#' It is defined as \eqn{m!\(k[1]!*...*k[n]!)}, 
+#' where \code{n = length(k)} and \eqn{m!} stands for \code{factorial(m)}.
+#' 
+#' @param m a non negative, natural number
+#' @param k a vector of non negative, natural numbers
+#' @export
+multinomial <- function(m, k){
+  a <- sapply(k, factorial)
+  return(factorial(m)/prod(a))
+}
+
 ########### moment closure ##############
 
 #' @param n numeric: number of all continous variables
