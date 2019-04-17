@@ -1,7 +1,6 @@
-#t1 wird die variable mean überhaupt benötigt?
 #t1 tests für momentClosure
-#v1 momentClosure umbenennen?
 #t2 lognormal: überprüfen, ob mean wohldefiniert
+#t1 References: LakatosCo2015
 
 ########### moment closure ##############
 
@@ -23,9 +22,9 @@
 #' of X. The following values are possible: 
 #' \itemize{
 #' \item \code{"zero"} sets all moments to 0,
-#' \item \code{"normal"} calculates the moments of a centralized normal distribution,
-#' \item \code{"lognormal"} calculates the raw moments of a lognormal distribution,
-#' \item \code{"gamma"} calculates the raw moments of a gamma distribution.
+#' \item \code{"normal"} calculates the moments of a centralized multivariate normal distribution,
+#' \item \code{"lognormal"} calculates the raw moments of a multivariate lognormal distribution,
+#' \item \code{"gamma"} calculates the raw moments of a multivariate gamma distribution.
 #' } 
 #' @return A list where each element is a quoted expression.
 #' The i-th element of this list gives a formula for the
@@ -35,7 +34,7 @@
 #' @importFrom symmoments callmultmoments
 #' @importFrom stringr str_extract_all
 #' @export
-momentClosure <- function(distribution, missingOrders, mean = NA, cov = NA, var = NA){
+symbolicMoments <- function(distribution, missingOrders, mean = NA, cov = NA, var = NA){
   
   # definitions
   if(is.vector(missingOrders))

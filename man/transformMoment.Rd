@@ -30,7 +30,7 @@ The values of \eqn{E(Y^k)} are replaced by
 \itemize{
   \item \code{centralMoment[[i]]} if \code{k} = \code{centralMomentOrders[i, ]},
   \item \code{\link{transformMoment}(type = 'central', ...)} if \code{k} is a row in \code{rawMomentOrders},
-  \item \code{\link{momentClosure}(closure, k)} if \code{k} is neither a row in \code{centralMomentOrders} nor in \code{rawMomentOrders}.
+  \item \code{\link{symbolicMoments}(closure, k)} if \code{k} is neither a row in \code{centralMomentOrders} nor in \code{rawMomentOrders}.
 }
 If \code{type = 'central'}, this function returns
 \deqn{E(Y^p) = \sum_{k_1=0}^{p_1}...\sum_{k_n=0}^{p_n} (-1)^{p-k} {p \choose k} \mu^{p-k} E(X^k).}

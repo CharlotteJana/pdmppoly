@@ -10,7 +10,7 @@
 #' \itemize{
 #'   \item \code{centralMoment[[i]]} if \code{k} = \code{centralMomentOrders[i, ]},
 #'   \item \code{\link{transformMoment}(type = 'central', ...)} if \code{k} is a row in \code{rawMomentOrders},
-#'   \item \code{\link{momentClosure}(closure, k)} if \code{k} is neither a row in \code{centralMomentOrders} nor in \code{rawMomentOrders}.
+#'   \item \code{\link{symbolicMoments}(closure, k)} if \code{k} is neither a row in \code{centralMomentOrders} nor in \code{rawMomentOrders}.
 #' }
 #' If \code{type = 'central'}, this function returns
 #' \deqn{E(Y^p) = \sum_{k_1=0}^{p_1}...\sum_{k_n=0}^{p_n} (-1)^{p-k} {p \choose k} \mu^{p-k} E(X^k).}
@@ -77,10 +77,10 @@ transformMoment <- function(order, type, momentList, closure = "zero"){
   if(!is.na(prodlim::row.match(p, typeOrders))) # if there is already an entry in momentList
     return(momentList)
   if(type == "central" & is.na(prodlim::row.match(p, otherOrders))){
-    moment <- momentClosure(closure = closure, 
+    moment <- symbolicMoments(distribution = closure, 
                             missingOrders = t(p),
-                            knownOrders = typeOrders,
-                            knownMoments = typeMoments)[[1]]
+                            knownOrders = typeOrders, # ändern!
+                            knownMoments = typeMoments)[[1]] # ändern!
     
     momentList$centralMomentOrders <- rbind(momentList$centralMomentOrders, p)
     momentList$centralMoments <- append(momentList$centralMoments, moment)
@@ -107,10 +107,10 @@ transformMoment <- function(order, type, momentList, closure = "zero"){
     
     # if k is neither a row in typeMomentOrders nor in otherMomentOrders
     if(is.na(k_in_typeOrders[k_index]) & is.na(k_in_otherOrders[k_index])){
-      momentCentral <- momentClosure(closure, 
+      momentCentral <- symbolicMoments(distribution = closure, 
                                      missingOrders = t(k),
-                                     knownOrders = momentList$centralMomentOrders,
-                                     knownMoments = momentList$centralMoments)[[1]]
+                                     knownOrders = momentList$centralMomentOrders, # ändern!
+                                     knownMoments = momentList$centralMoments)[[1]] # ändern!
       momentList$centralMomentOrders <- rbind(momentList$centralMomentOrders, k)
       momentList$centralMoments <- append(momentList$centralMoments, momentCentral)
       readMoments(momentList, type)
