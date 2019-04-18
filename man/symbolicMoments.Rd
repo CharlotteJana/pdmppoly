@@ -44,8 +44,8 @@ The calculation of the central moments of a multivariate normal distribution
 is based on function \code{\link[symmoments]{callmultmoments}} of package \pkg{symmoments}.
 If \code{distribution = 'gamma'} and the evaluation of the results leads to NaNs, 
 then the values of cov and mean do not fit to a multivariate gamma distribution.
-The diagonals of cov should be large with respect to the other entries of cov.
-More specifically, the inequations 
+All entries should of cov should be positive and the diagonals should be large
+with respect to the other entries. More specifically, the inequations 
 \eqn{mean[i] > \sum_{k \neq i} \frac{mean[k]*cov[i,k]}{cov[i,i]}}
 should be satisfied for all i in 1:n.
 }

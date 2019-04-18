@@ -34,8 +34,8 @@
 #' is based on function \code{\link[symmoments]{callmultmoments}} of package \pkg{symmoments}.
 #' If \code{distribution = 'gamma'} and the evaluation of the results leads to NaNs, 
 #' then the values of cov and mean do not fit to a multivariate gamma distribution.
-#' The diagonals of cov should be large with respect to the other entries of cov.
-#' More specifically, the inequations 
+#' All entries should of cov should be positive and the diagonals should be large
+#' with respect to the other entries. More specifically, the inequations 
 #' \eqn{mean[i] > \sum_{k \neq i} \frac{mean[k]*cov[i,k]}{cov[i,i]}}
 #' should be satisfied for all i in 1:n.
 #' @importFrom symmoments callmultmoments
@@ -133,47 +133,48 @@ symbolicMoments <- function(distribution, missingOrders, mean = NA, cov = NA, va
   
   # gamma
   if(distribution == "gamma"){
+    
+    # define parameters beta and A
     beta <- lapply(1:n, function(i) bquote(.(cov[[i]][[i]])/.(mean[[i]])))
-    A <- cov
-    for(i in 1:n){
-      sum <- 0
-      for(j in 1:n){
-        if(i != j){
-          A[[i]][[j]] <- bquote(.(cov[[i]][[j]])/(.(beta[[i]])*.(beta[[j]])))
-          sum <- bquote(.(sum) + .(A[[i]][[j]]))
-        }
+    A_indexes <- as.data.frame(t(cbind(combn(1:n, 2), matrix(rep(1:n, each = 2), nrow = 2))))
+    A <- list()
+    for(r in 1:nrow(A_indexes)){
+      i <- A_indexes[r, 1]
+      j <- A_indexes[r, 2]
+      if(i != j){
+        A <- append(A, bquote(.(cov[[i]][[j]])/(.(beta[[i]])*.(beta[[j]]))))
       }
-      A[[i]][[i]] <- bquote(.(mean[[i]])^2/.(cov[[i]][[i]]) - .(sum))
-    }
-    h <- function(j, index){
-      result <- list()
-      for(k in 1:n){
-        if(index[k] == 1)
-          result <- append(result, bquote(.(A[[j]][[k]])))
-        if(index[k] > 1)
-        result <- append(result, bquote(factorial(.(A[[j]][[k]])+.(index[k])-1)/factorial(.(A[[j]][[k]])-1)))
+      else{
+        sum_indexes <- which(rowSums(apply(A_indexes, 2, match, i, nomatch = 0)) == 1)
+        sum <- Reduce(function(a,b) bquote(.(a)+.(b)), A[sum_indexes])
+        A <- append(A, bquote(.(mean[[i]])^2/.(cov[[i]][[i]]) - .(sum)))
       }
-      Reduce(function(a,b) bquote(.(a)*.(b)), result)
     }
     
+    # calculate moments
     for(i in seq_len(nrow(missingOrders))){
       order <- as.numeric(missingOrders[i, ])
-      factors <- list()
+      polynomials <- list()
       for(j in 1:n){
-        m <- order[i]
-        sum_indexes <- as.matrix(expand.grid(rep(list(0:m), n)))
-        sum_indexes <- sum_indexes[which(rowSums(sum_indexes) == m), ]
-        dimnames(sum_indexes) <- NULL
-        summands <- lapply(1:nrow(sum_indexes), function(index){
-          bquote(.(multinomial(m, sum_indexes[index, ]))*.(h(j, sum_indexes[index, ])))
-        })
-        print(lapply(summands, eval))
-        sum <- Reduce(function(a,b) bquote(.(a)+.(b)), summands)
-        factors <- append(factors, sum) # das geht so nicht, ich muss die komplizierte formel implementieren
+        poly_indexes <- rowSums(apply(A_indexes, 2, match, j, nomatch = 0)) >= 1
+        polynomials <- append(polynomials, list(linear(as.numeric(poly_indexes), 1)^order[j]))
       }
-      factors <- append(factors,
-                        lapply(seq_along(beta), function(j) bquote(.(beta[[j]])^.(order[j])))) # times beta^order
-      missingMoments[[i]] <- Reduce(function(a,b) bquote(.(a)*.(b)), factors)
+      polynomials <- Reduce('*', polynomials)
+      summands <- list()
+      for(r in seq_len(nrow(polynomials$index))){
+        row <- polynomials$index[r, ]
+        factors <- list(polynomials$value[r])
+        for(k in seq_along(row)){
+          if(row[k] == 1)
+            factors <- append(factors, bquote(.(A[[k]])))
+          if(row[k] > 1)
+            factors <- append(factors, bquote(factorial(.(A[[k]])+.(row[k])-1)/factorial(.(A[[k]])-1)))
+        }
+        summands <- append(summands, Reduce(function(a,b) bquote(.(a)*.(b)), factors))
+      }
+      sum <-  Reduce(function(a,b) bquote(.(a)+.(b)), summands)
+      result <- append(sum, lapply(seq_along(beta), function(j) bquote(.(beta[[j]])^.(order[j])))) # times beta^order
+      missingMoments[[i]] <- Reduce(function(a,b) bquote(.(a)*.(b)), result)
     }
   }
   

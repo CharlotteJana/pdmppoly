@@ -70,5 +70,9 @@ test_that("distribution = 'gamma' works", {
   # multplied by beta[1]²*beta[2] = 4 leads to 80
   
   moment <- symbolicMoments(distribution = 'gamma', missingOrders = order, cov = cov, mean = mean)
-
+  expect_identical(eval(moment[[1]]), 80)
+  
+  # test if 'gamma' works for more than one given order
+  moments <- symbolicMoments(distribution = 'gamma', missingOrders = rbind(c(2,1), c(1,3)), cov = cov, mean = mean)
+  expect_identical(lapply(moments, eval), list(80, 540))
 })
