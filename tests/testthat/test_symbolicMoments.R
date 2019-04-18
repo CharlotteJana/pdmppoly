@@ -1,13 +1,16 @@
-#v1 Ist es konsistenter, wenn quote(0) anstatt 0 zurückgegeben wird?
-#t1 multinomial testen
-
 context("symbolic moments")
 
-test_that("covariance matrix is validated", {
-  cov <-  matrix(c(1, 2, 3, 2, 4, 5, 3, 5, 6), nrow = 3)
-})
-
-test_that("mean is validated", {
+test_that("errors are thrown when wrong input", {
+  
+  cov <-  matrix(c(1, -1, 3, 2, 4, 5, 3, 5, 6), nrow = 3) # not symmetric
+  expect_error(symbolicMoments(distribution = 'normal', cov = cov, missingOrders = 1:3))
+  expect_identical(symbolicMoments(distribution = 'zero', cov = cov, missingOrders = 1:3), 
+                   list(0)) # cov is not needed for 'zero' and therfore not validated
+  
+  cov[2] <- 2 # now it is symmetric
+  expect_error(symbolicMoments(distribution = 'normal', cov = cov, missingOrders = 1:2)) # wrong dimensions of missingOrders
+  expect_error(symbolicMoments(distribution = 'gamma', cov = cov, missingOrders = 1:3, mean = 1:2)) # wrong dimensions of mean
+  
 })
 
 test_that("distribution = 'zero' works", {
@@ -16,17 +19,39 @@ test_that("distribution = 'zero' works", {
 })
 
 test_that("distribution = 'normal' works", {
-  skip("not implemented yet")
   
-  cov <-  matrix(c(1, 2, 3, 2, 4, 5, 3, 5, 6), nrow = 3)
-  
+  cov <-  matrix(c("a", "b", "c", "d", 
+                   "b", "e", "f", "h", 
+                   "c", "f", "g", "i", 
+                   "d", "h", "i", "j"), ncol = 4, byrow = TRUE)
+
   # order is odd -> moment should be zero
-  moment <- symbolicMoments(distribution = 'normal', missingOrders = c(1,2,4), cov = cov)
+  moment <- symbolicMoments(distribution = 'normal', missingOrders = c(1,2,6,4), cov = cov)
   expect_equal(moment, list(0))
   
-  # order is even
-  moment <- symbolicMoments(distribution = 'normal', missingOrders = 1:3, cov = cov)
-  moment <- lapply(moment, eval)
+  # n = 4 and order is even (example: see Wikipedia on multivariate normal distribution)
+  missingOrders <- matrix(c(4, 0, 0, 0,
+                            3, 1, 0, 0,
+                            2, 2, 0, 0,
+                            2, 1, 1, 0,
+                            1, 1, 1, 1), ncol = 4, byrow = TRUE)
+  
+  mom1 <- symbolicMoments(distribution = 'normal', 
+                            missingOrders = missingOrders, cov = cov)
+  mom2 <- list(quote(3 * "a"^2),
+               quote(3 * ("a"^1 * "b"^1)),
+               quote(2 * "b"^2 + 1 * ("a"^1 * "e"^1)),
+               quote(2 * ("b"^1 * "c"^1) + 1 * ("a"^1 * "f"^1)),
+               quote(1 * ("d"^1 * "f"^1) + 1 * ("c"^1 * "h"^1) + 1 * ("b"^1 * "i"^1)))
+  expect_equal(mom1, mom2)
+  
+  # n = 1 and different orders
+  mom1 <- symbolicMoments(distribution = 'normal', var = 4,
+                          missingOrders = as.matrix(1:8, ncol = 1))
+  mom1 <- sapply(mom1, eval)
+  mom2 <- actuar::mnorm(1:8, mean = 0, sd = 2)
+  expect_identical(mom1, mom2)
+  
 })
 
 test_that("distribution = 'lognormal' works for n = 1", {
@@ -49,7 +74,7 @@ test_that("distribution = 'lognormal' works for n = 2", {
   skip("not implemented yet")
 })
 
-test_that("distribution = 'gamma' works", {
+test_that("distribution = 'gamma' works for n = 2", {
   # this example is based on [Lak+15], Appendix B
   
   cov <-  matrix(c(6, 2, 2, 4), nrow = 2)

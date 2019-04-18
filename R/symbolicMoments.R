@@ -1,9 +1,9 @@
-#t1 tests für momentClosure
+#t1 tests
 #t2 lognormal: überprüfen, ob mean wohldefiniert
 #v1 was passiert bei falschen werten für mean, cov bei gamma?
 #t1 References: LakatosCo2015
-
-########### moment closure ##############
+#v1 Ist es konsistenter, wenn quote(0) anstatt 0 zurückgegeben wird?
+#t1 multinomial testen
 
 #' Symbolic calculation of moments
 #'
@@ -78,13 +78,13 @@ symbolicMoments <- function(distribution, missingOrders, mean = NA, cov = NA, va
       else{
         moment <- symmoments::callmultmoments(order) # calculation of the moment
         names(moment$coefficients) <- NULL
+        cnames <- colnames(moment$representation)
+        cindexes <- lapply(stringr::str_extract_all(cnames, "[[:digit:]]"), as.numeric)
         momFormula <- list()
-        for(j in length(moment$coefficients)){
+        for(j in seq_along(moment$coefficients)){
           factors <- lapply(1:(n*(n+1)/2), function(r){
             power <- moment$representation[j, r]
-            index <- grep("[0-9]", names(moment$representation[j, ])[r], value = TRUE)
-            index <- as.numeric(stringr::str_extract_all(index, "[[:digit:]]")[[1]])
-            if(power != 0) bquote(.(cov[[index[1]]][[index[2]]])^.(power))
+            if(power != 0) bquote(.(cov[[cindexes[[r]][1]]][[cindexes[[r]][2]]])^.(power))
           })
           factors[sapply(factors, is.null)] <- NULL
           factors <- Reduce(function(a,b) bquote(.(a)*.(b)), factors)
@@ -106,7 +106,6 @@ symbolicMoments <- function(distribution, missingOrders, mean = NA, cov = NA, va
       sigma[[i]][[i]] <- list(bquote(log(1+.(cov[[i]][[i]])/.(mean[i])^2)))
       sigma[[i]][[i]] <- sigma[[i]][[i]][[1]]
       mu[[i]] <- bquote(log(.(mean[i]))-0.5*.(sigma[[i]][[i]]))
-      cat("mu = ", eval(mu[[i]]), "var = ", eval(sigma[[i]][[i]]), "\n")
       for(j in seq_len(i-1)){
         sigma[[i]][[j]] <- bquote(
           log(1 + .(cov[[i]][[j]])/exp(.(mu[[i]])+.(mu[[j]])+0.5*(.(sigma[[i]][[i]])*.(sigma[[j]][[j]]))))
