@@ -71,7 +71,19 @@ test_that("distribution = 'lognormal' works for n = 1", {
 })
 
 test_that("distribution = 'lognormal' works for n = 2", {
-  skip("not implemented yet")
+  skip("doesn't work")
+  
+  cov <-  matrix(c(6, 2, 2, 4), nrow = 2)
+  mean <- c(3, 4)
+  order <- c(2, 2)
+  
+  mom1 <- 4*log(cov[1,2] - mean[1]*mean[2]) +
+          log(cov[1,1] - mean[1]^2) - 4*log(mean[1]) +
+          log(cov[2,2] - mean[2]^2) - 4*log(mean[2])
+  
+  mom2 <- symbolicMoments(distribution = 'lognormal', missingOrders = order, cov = cov, mean = mean)
+  expect_identical(mom1, eval(mom2[[1]]))
+  
 })
 
 test_that("distribution = 'gamma' works for n = 2", {

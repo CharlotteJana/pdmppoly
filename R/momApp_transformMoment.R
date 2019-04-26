@@ -77,10 +77,11 @@ transformMoment <- function(order, type, momentList, closure = "zero"){
   if(!is.na(prodlim::row.match(p, typeOrders))) # if there is already an entry in momentList
     return(momentList)
   if(type == "central" & is.na(prodlim::row.match(p, otherOrders))){
+    cov <- 
     moment <- symbolicMoments(distribution = closure, 
-                            missingOrders = t(p),
-                            knownOrders = typeOrders, # ändern!
-                            knownMoments = typeMoments)[[1]] # ändern!
+                              missingOrders = t(p),
+                              mean = rep(0, n),
+                              cov = cov)[[1]]
     
     momentList$centralMomentOrders <- rbind(momentList$centralMomentOrders, p)
     momentList$centralMoments <- append(momentList$centralMoments, moment)
@@ -108,9 +109,11 @@ transformMoment <- function(order, type, momentList, closure = "zero"){
     # if k is neither a row in typeMomentOrders nor in otherMomentOrders
     if(is.na(k_in_typeOrders[k_index]) & is.na(k_in_otherOrders[k_index])){
       momentCentral <- symbolicMoments(distribution = closure, 
-                                     missingOrders = t(k),
-                                     knownOrders = momentList$centralMomentOrders, # ändern!
-                                     knownMoments = momentList$centralMoments)[[1]] # ändern!
+                                       missingOrders = t(k))
+                                      # mean = ???,
+                                      # cov = ???)
+                                     #knownOrders = momentList$centralMomentOrders, # ändern!
+                                     #knownMoments = momentList$centralMoments)[[1]] # ändern!
       momentList$centralMomentOrders <- rbind(momentList$centralMomentOrders, k)
       momentList$centralMoments <- append(momentList$centralMoments, momentCentral)
       readMoments(momentList, type)
@@ -153,76 +156,3 @@ transformMoment <- function(order, type, momentList, closure = "zero"){
   }
   return(momentList)
 }  
-
-
-validate_momentList <- function(x){
-  
-  stopifnot(is.list(x$rawMoments))
-  stopifnot(is.list(x$centralMoments))
-  stopifnot(is.matrix(x$rawMomentOrders) | is.data.frame(x$rawMomentOrders))
-  stopifnot(is.matrix(x$centralMomentOrders) | is.data.frame(x$centralMomentOrders))
-  
-  if(length(unique(x$rawMomentOrders)) != length(x$rawMomentOrders)){
-    stop("Some rows in 'rawMomentOrders' appear several times. 
-         They should only appear once.")
-  }
-  if(length(unique(x$centralMomentOrders)) != length(x$centralMomentOrders)){
-    stop("Some rows in 'centralMomentOrders' appear several times. 
-         They should only appear once.")
-  }
-  if(nrow(x$rawMomentOrders) != length(x$rawMoments)){
-    stop("The number of elements in 'rawMoments' should be equal to
-         the number of rows in 'rawMomentOrders'.")
-  }
-  if(nrow(x$centralMomentOrders) != length(x$centralMoments)){
-    stop("The number of elements in 'centralMoments' should be equal to
-         the number of rows in 'centralMomentOrders'.")
-  }
-  if(ncol(x$rawMomentOrders) != ncol(x$centralMomentOrders)){
-    stop("The number of columns in 'rawMomentOrders' and 'centralMomentOrders'
-         should be identical.")
-  }
-  
-  # ------- check moments of order 1 -------
-  
-  n <- ncol(x$rawMomentOrders)
-  for(i in seq_len(n)){
-    unitVector <- rep(0, n)
-    unitVector[n-i+1] <- 1
-    rowIndex <- prodlim::row.match(unitVector, x$centralMomentOrders)
-    if(!is.na(rowIndex)){
-      if(x$centralMoments[[rowIndex]] != 0) 
-        warning("Central moments of order 1 should be 0.")
-    }
-    else{
-      x$centralMomentOrders <- rbind(unitVector, x$centralMomentOrders)
-      x$centralMoments <- append(0, x$centralMoments)
-    }
-  }
-  rownames(x$centralMomentOrders) <- NULL
-  
-  #------- check moments of order 0 -------
- 
-  indexRaw <- prodlim::row.match(rep(0, n), x$rawMomentOrders)
-  indexCentr <- prodlim::row.match(rep(0, n), x$centralMomentOrders)
-  
-  if(!is.na(indexRaw)){
-    if(x$rawMoments[[indexRaw]] != 1)
-      warning("Moments of order 0 should have value 1.")
-  }
-  if(!is.na(indexCentr)){
-    if(x$centralMoments[[indexCentr]] != 1)
-    warning("Moments of order 0 should have value 1.")
-  }
-  
-  if(is.na(indexRaw)){
-    x$rawMomentOrders <- rbind(rep(0, n), x$rawMomentOrders)
-    x$rawMoments <- append(1, x$rawMoments)
-  }
-  if(is.na(indexCentr)){
-    x$centralMomentOrders <- rbind(rep(0, n), x$centralMomentOrders)
-    x$centralMoments <- append(1, x$centralMoments)
-  }
-  
-  return(x)
-}
