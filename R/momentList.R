@@ -1,3 +1,4 @@
+#t1 Überall cov.momentList durch cov ersetzen
 
 #' @name momentList
 momentList <- function(rawMomentOrders = NULL,

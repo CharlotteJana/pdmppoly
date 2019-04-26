@@ -81,7 +81,7 @@ transformMoment <- function(order, type, momentList, closure = "zero"){
     moment <- symbolicMoments(distribution = closure, 
                               missingOrders = t(p),
                               mean = rep(0, n),
-                              cov = cov)[[1]]
+                              cov = cov.momentList(momentList))[[1]]
     
     momentList$centralMomentOrders <- rbind(momentList$centralMomentOrders, p)
     momentList$centralMoments <- append(momentList$centralMoments, moment)
@@ -109,11 +109,9 @@ transformMoment <- function(order, type, momentList, closure = "zero"){
     # if k is neither a row in typeMomentOrders nor in otherMomentOrders
     if(is.na(k_in_typeOrders[k_index]) & is.na(k_in_otherOrders[k_index])){
       momentCentral <- symbolicMoments(distribution = closure, 
-                                       missingOrders = t(k))
-                                      # mean = ???,
-                                      # cov = ???)
-                                     #knownOrders = momentList$centralMomentOrders, # ändern!
-                                     #knownMoments = momentList$centralMoments)[[1]] # ändern!
+                                       missingOrders = t(k),
+                                       mean = mean(momentList),
+                                       cov = cov.momentList(momentList))[[1]]
       momentList$centralMomentOrders <- rbind(momentList$centralMomentOrders, k)
       momentList$centralMoments <- append(momentList$centralMoments, momentCentral)
       readMoments(momentList, type)

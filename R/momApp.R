@@ -49,13 +49,13 @@
 #' @importFrom dplyr %>%
 #' @export
 setGeneric("momApp",
-           function(obj, maxOrder = 4, closure = "setZero")
+           function(obj, maxOrder = 4, closure = "zero", centralize = TRUE)
              standardGeneric("momApp"))
 
 #' @rdname momApp
 #' @export
 setMethod("momApp", signature(obj = "polyPdmpModel"), 
-          function(obj, maxOrder = 4, closure = "setZero") {
+          function(obj, maxOrder = 4, closure = "zero", centralize = TRUE) {
   
   states <- obj@discStates[[1]]
   n <- length(obj@init) - length(obj@discStates) # continuous variables
@@ -103,35 +103,43 @@ setMethod("momApp", signature(obj = "polyPdmpModel"),
     # rowsToChange = index of ode's that contain moments which are not in lhs
     rowsToChange <- which(sapply(1:length(matchingRows), function(row) anyNA(matchingRows[[row]])))
     
-    # lhsMissing = moments which are not in lhs (each row represents one moment, as in lhs)
-    lhsMissing <- NULL
-    for(i in rowsToChange){
-      h <- which(is.na(matchingRows[[i]]))
-      lhsMissing <- rbind(lhsMissing, index(odeList[[i]])[h, ])
+    if(length(rowsToChange) == 0){
+      lhsFull <- lhs
     }
-    colnames(lhsMissing) <- colnames(lhs)
-    rownames(lhsMissing) <- rep("missing", nrow(lhsMissing))
-    lhsMissing <- unique(lhsMissing)
+    else{
     
-    lhsFull <- rbind(lhs, lhsMissing)
-    matchingRows <- lapply(odeList, function(ode){
-      sapply(1:nrow(index(ode)), 
-             function(i) prodlim::row.match(index(ode)[i,], lhsFull))
-    })
+      # lhsMissing = moments which are not in lhs (each row represents one moment, as in lhs)
+      lhsMissing <- NULL
+      for(i in rowsToChange){
+        h <- which(is.na(matchingRows[[i]]))
+        lhsMissing <- rbind(lhsMissing, index(odeList[[i]])[h, ])
+      }
+      
+      colnames(lhsMissing) <- colnames(lhs)
+      rownames(lhsMissing) <- rep("missing", nrow(lhsMissing))
+      lhsMissing <- unique(lhsMissing)
+      
+      lhsFull <- rbind(lhs, lhsMissing)
+      matchingRows <- lapply(odeList, function(ode){
+        sapply(1:nrow(index(ode)), 
+               function(i) prodlim::row.match(index(ode)[i,], lhsFull))
+      })
+      
+      if(closure %in% c("normal") & !centralize){
+        centralize <- TRUE
+        warning("Argument 'centralize' is changed to TRUE because closure method '", closure, "'
+                is only implemented for centralized moments.")
+      }
+      missingMoments <- momentClosure(closure, lhsMissing, lhs, n)
     
-    if(closure %in% c("normal") & !centralize){
-      centralize <- TRUE
-      warning("Argument 'centralize' is changed to TRUE because closure method '", closure, "'
-              is only implemented for centralized moments.")
     }
-    missingMoments <- momentClosure(closure, lhsMissing, lhs, n)
     
   ###### convert ode's into quoted formulas #######
     
-    if(centralize){ # centralize ode's which contain missing moments
+    if(centralize & length(rowsToChange > 0)){ # centralize ode's which contain missing moments
       
       # m =  highest degree that has existing ode's <- #t brauche ich das überhaupt?
-      m <- max(rowSums(lhs[matchingRows[[rowsToChange]],], na.rm = TRUE)) 
+       m <- max(rowSums(lhs[matchingRows[[rowsToChange]],], na.rm = TRUE)) 
       
       # schreibe die ODEs aus rowsToChange um
     }
