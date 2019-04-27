@@ -107,7 +107,7 @@ setMethod("momApp", signature(obj = "polyPdmpModel"),
       lhsFull <- lhs
     }
     else{
-    
+      
       # lhsMissing = moments which are not in lhs (each row represents one moment, as in lhs)
       lhsMissing <- NULL
       for(i in rowsToChange){
@@ -125,25 +125,39 @@ setMethod("momApp", signature(obj = "polyPdmpModel"),
                function(i) prodlim::row.match(index(ode)[i,], lhsFull))
       })
       
-      if(closure %in% c("normal") & !centralize){
+      
+      if(closure %in% c("normal") & !centralize){ #t Fälle erweitern
         centralize <- TRUE
         warning("Argument 'centralize' is changed to TRUE because closure method '", closure, "'
                 is only implemented for centralized moments.")
       }
-      missingMoments <- momentClosure(closure, lhsMissing, lhs, n)
-    
     }
     
   ###### convert ode's into quoted formulas #######
     
-    if(centralize & length(rowsToChange > 0)){ # centralize ode's which contain missing moments
+    if(centralize & length(rowsToChange > 0)){ # centralize ode's which contain missing moments and perform moment closure
       
-      # m =  highest degree that has existing ode's <- #t brauche ich das überhaupt?
-       m <- max(rowSums(lhs[matchingRows[[rowsToChange]],], na.rm = TRUE)) 
-      
-      # schreibe die ODEs aus rowsToChange um
+      missingMoments <- list()
+
+      for(i in 1:nrow(lhsMissing)){
+        missingRow <- lhsMissing[i, ]
+        indicatorIndex <- which(missingRow[(n+1):(n+k)] == 1)
+        indicatorLhs <- lhs[k*(1:(nrow(lhs)/k)-1) + indicatorIndex, 1:n, drop = FALSE]
+        states <- lapply(rownames(indicatorLhs), function(name) bquote(state[.(as.numeric(name))]))
+        mList <- momentList(rawMomentOrders = indicatorLhs,
+                            rawMoments = states)
+        
+        suppressWarnings(
+          mListExpanded <- transformMoment(order = missingRow[1:n],
+                                           type = "raw",
+                                           closure = closure,
+                                           momentList = mList)
+        )
+        
+        missingMoments[[i]] <- mListExpanded$rawMoments[[prodlim::row.match(missingRow[1:n], mListExpanded$rawMomentOrders)]]
+      }
     }
-    else{
+    else{ # ab hier weiter arbeiten!!!!
       odeSystem <- rep(list(NA), nrow(lhs))
       for(j in seq_len(nrow(lhs))){
         list <- lapply(seq_along(matchingRows[[j]]), function(i){

@@ -7,7 +7,12 @@ mList <- structure(list(rawMomentOrders = rbind(1:3, diag(3), 4:6),
                         centralMoments = as.list(letters, "lastElement")),
                    class = "momentList")
 
-test_that("cov works", {
+test_that("mean works", {
+  mean <- mean(mList)
+  expect_equal(mean, list("m1", "m2", "m3"))
+})
+
+test_that("cov works for n > 1", {
   skip("besser cov testen als cov.momentList")
   
   cov <- cov.momentList(mList)
@@ -16,7 +21,15 @@ test_that("cov works", {
                          list("k", "m", "s")))
 })
 
-test_that("mean works", {
-  mean <- mean(mList)
-  expect_equal(mean, list("m1", "m2", "m3"))
+test_that("cov works for n = 1", {
+  skip("besser cov testen als cov.momentList")
+  
+  mList <- structure(list(rawMomentOrders = cbind(c(3, 1, 5)),
+                          rawMoments = list("A", "m1", "B"),
+                          centralMomentOrders = cbind(c(0, 1, 2)),
+                          centralMoments = list(1, 0, "C")),
+                     class = "momentList")
+  
+  cov <- cov.momentList(mList)
+  expect_equal(cov, list(list("C")))
 })

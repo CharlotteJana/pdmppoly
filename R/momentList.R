@@ -6,6 +6,19 @@ momentList <- function(rawMomentOrders = NULL,
                        centralMomentOrders = NULL,
                        centralMoments = list()){
   
+  if(is.null(rawMomentOrders) & is.null(centralMomentOrders))
+    stop("Please provide either values for 'rawMomentOrders' and 'rawMoments'
+          or values for 'centralMomentOrders' and 'centralMoments'")
+  
+  if(is.null(rawMomentOrders)){
+    rawMomentOrders <- t(rep(0, ncol(centralMomentOrders)))
+    rawMoments <- list(1)
+  }
+  if(is.null(centralMomentOrders)){
+    centralMomentOrders <- rbind(rep(0, ncol(rawMomentOrders)), diag(ncol(rawMomentOrders)))
+    centralMoments <- append(1, as.list(rep(0, ncol(rawMomentOrders))))
+  }
+  
   mList <- structure(list(rawMomentOrders = rawMomentOrders,
                           rawMoments = rawMoments,
                           centralMomentOrders = centralMomentOrders,
@@ -38,7 +51,9 @@ validate_momentList <- function(x){
     stop("The number of elements in 'centralMoments' should be equal to
          the number of rows in 'centralMomentOrders'.")
   }
-  if(ncol(x$rawMomentOrders) != ncol(x$centralMomentOrders)){
+  if(nrow(x$rawMomentOrders) != 0 &
+     nrow(x$centralMomentOrders) != 0 & 
+     ncol(x$rawMomentOrders) != ncol(x$centralMomentOrders)){
     stop("The number of columns in 'rawMomentOrders' and 'centralMomentOrders'
          should be identical.")
   }
@@ -95,10 +110,11 @@ cov.momentList <- function(x){
   for(i in 1:n){
     cov[[i]] <- list()
     for(j in 1:i){
+      
       row <- rep(0, n)
       row[i] <- row[i] + 1
       row[j] <- row[j] + 1
-
+      
       cov[[i]][[j]] <- x$centralMoments[[prodlim::row.match(row, x$centralMomentOrders)]]
       cov[[j]][[i]] <- cov[[i]][[j]]
     }

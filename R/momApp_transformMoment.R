@@ -77,7 +77,6 @@ transformMoment <- function(order, type, momentList, closure = "zero"){
   if(!is.na(prodlim::row.match(p, typeOrders))) # if there is already an entry in momentList
     return(momentList)
   if(type == "central" & is.na(prodlim::row.match(p, otherOrders))){
-    cov <- 
     moment <- symbolicMoments(distribution = closure, 
                               missingOrders = t(p),
                               mean = rep(0, n),
