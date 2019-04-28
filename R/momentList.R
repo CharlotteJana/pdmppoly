@@ -104,9 +104,24 @@ validate_momentList <- function(x){
 
 #' @describeIn momentList
 cov.momentList <- function(x){
-  n <- ncol(x$centralMomentOrders)
-  cov <- list()
   
+  n <- ifelse(length(x$centralMoments) > 0, 
+              ncol(x$centralMomentOrders), 
+              ncol(x$rawMomentOrders))
+
+  covOrder <- expand.grid(lapply(1:n, function(i) 0:2))
+  covOrder <- covOrder[which(rowSums(covOrder) == 2),]
+  covOrderMissing <- is.na(prodlim::row.match(covOrder, x$centralMomentOrders))
+  
+  for(i in seq_along(covOrderMissing)){
+    if(covOrderMissing[i]){
+      x <- transformMoment(order = as.numeric(covOrder[i, ]),
+                           type = "central",
+                           momentList = x)  
+    }
+  }
+  
+  cov <- list()
   for(i in 1:n){
     cov[[i]] <- list()
     for(j in 1:i){
