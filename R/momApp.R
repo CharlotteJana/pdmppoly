@@ -3,6 +3,7 @@
 #v3 init = dirac measure?
 #t1 test momApp: verschiedene closure methoden
 #t1 momentClosure: documentation
+#v1 Macht es Sinn, immer cov über transformMoment zu berechnen? Vllt lognormal nochmal umprogrammieren?
 
 #' Moment approximation for polynomial PDMPs
 #' 
@@ -124,18 +125,11 @@ setMethod("momApp", signature(obj = "polyPdmpModel"),
         sapply(1:nrow(index(ode)), 
                function(i) prodlim::row.match(index(ode)[i,], lhsFull))
       })
-      
-      
-      if(closure %in% c("normal") & !centralize){ #t Fälle erweitern
-        centralize <- TRUE
-        warning("Argument 'centralize' is changed to TRUE because closure method '", closure, "'
-                is only implemented for centralized moments.")
-      }
     }
     
   ###### convert ode's into quoted formulas #######
     
-    if(centralize & length(rowsToChange > 0)){ # centralize ode's which contain missing moments and perform moment closure
+    if(length(rowsToChange > 0)){ 
       
       missingMoments <- list()
 
@@ -143,38 +137,50 @@ setMethod("momApp", signature(obj = "polyPdmpModel"),
         missingRow <- lhsMissing[i, ]
         indicatorIndex <- which(missingRow[(n+1):(n+k)] == 1)
         indicatorLhs <- lhs[k*(1:(nrow(lhs)/k)-1) + indicatorIndex, 1:n, drop = FALSE]
-        states <- lapply(rownames(indicatorLhs), function(name) bquote(state[.(as.numeric(name))]))
-        mList <- momentList(rawMomentOrders = indicatorLhs,
-                            rawMoments = states)
+        stateList <- lapply(rownames(indicatorLhs), function(name) bquote(state[.(as.numeric(name))]))
+        mList <- momentList(rawMomentOrders = indicatorLhs, rawMoments = stateList)
         
-        suppressWarnings(
-          mListExpanded <- transformMoment(order = missingRow[1:n],
-                                           type = "raw",
-                                           closure = closure,
-                                           momentList = mList)
-        )
-        
-        missingMoments[[i]] <- mListExpanded$rawMoments[[prodlim::row.match(missingRow[1:n], mListExpanded$rawMomentOrders)]]
+        if(centralize){ # centralize ode's which contain missing moments and perform moment closure
+          if(closure %in% c("lognormal", "gamma")){
+            stop("Closure method '", closure, "' is only implemented for raw moments.")
+          }
+          suppressWarnings(
+            mListExpanded <- transformMoment(order = missingRow[1:n],
+                                             type = "raw",
+                                             closure = closure,
+                                             momentList = mList)
+          )
+          
+          missingMoments[[i]] <- mListExpanded$rawMoments[[prodlim::row.match(missingRow[1:n], mListExpanded$rawMomentOrders)]]
+        }
+        else{ # perform moment closure directly
+          if(closure %in% c("normal")){
+            stop("Closure method '", closure, "' is only implemented for centralized moments.")
+          }
+          missingMoments[[i]] <- symbolicMoments(distribution = closure,
+                                                 missingOrders = missingRow[1:n],
+                                                 cov = ifelse(closure == "zero", NA, cov(mList)),
+                                                 mean = ifelse(closure == "zero", NA, mean(mList)))
+        }
       }
     }
-    else{ # ab hier weiter arbeiten!!!!
-      odeSystem <- rep(list(NA), nrow(lhs))
-      for(j in seq_len(nrow(lhs))){
-        list <- lapply(seq_along(matchingRows[[j]]), function(i){
-          momentIndex <- matchingRows[[j]][[i]]
-          momentIsMissing <- identical(rownames(lhsFull)[momentIndex], "missing")
-          if(momentIsMissing){
-            h <-  prodlim::row.match(lhsFull[momentIndex, ], lhsMissing)
-            return(bquote(.(value(odeList[[j]])[i])*(.(missingMoments[[h]]))))
-          }
-          else{
-            return(bquote(.(value(odeList[[j]])[i])*state[.(momentIndex)]))
-          }
-        })
-        odeSystem[[j]] <- Reduce(function(a,b) bquote(.(a)+.(b)), list)
-      }
+    
+    odeSystem <- rep(list(NA), nrow(lhs))
+    for(j in seq_len(nrow(lhs))){
+      list <- lapply(seq_along(matchingRows[[j]]), function(i){
+        momentIndex <- matchingRows[[j]][[i]]
+        momentIsMissing <- identical(rownames(lhsFull)[momentIndex], "missing")
+        if(momentIsMissing){
+          h <-  prodlim::row.match(lhsFull[momentIndex, ], lhsMissing)
+          return(bquote(.(value(odeList[[j]])[i])*(.(missingMoments[[h]]))))
+        }
+        else{
+          return(bquote(.(value(odeList[[j]])[i])*state[.(momentIndex)]))
+        }
+      })
+      odeSystem[[j]] <- Reduce(function(a,b) bquote(.(a)+.(b)), list)
     }
-
+    
   #### simulate the system of odes with deSolve ######
     
     discInd <- getIndex(obj@init[dnames], states)
