@@ -19,6 +19,7 @@ Imports: actuar,
     dplyr,
     ggplot2,
     LaF,
+    momcalc,
     prodlim,
     Rdpack,
     reshape2,
@@ -31,11 +32,7 @@ Remotes: CharlotteJana/pdmpsim
 RoxygenNote: 6.1.1
 Collate: 
     'analysis.R'
-    'combinatorics.R'
     'data.R'
-    'distributions.R'
-    'distributions_BEGG.R'
-    'distributions_unimodal.R'
     'manipulate.R'
     'spray_extension.R'
     'polypdmp_class.R'
@@ -44,8 +41,6 @@ Collate:
     'polypdmp_generator.R'
     'momApp.R'
     'momApp_outputMethods.R'
-    'momApp_transformMoment.R'
     'momentboundaries.R'
     'msCsv_moments.R'
     'supports.R'
-    'symbolicMoments.R'

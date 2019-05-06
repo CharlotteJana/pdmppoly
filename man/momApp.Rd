@@ -9,10 +9,10 @@
 \alias{momApp,polyPdmpModel-method}
 \title{Moment approximation for polynomial PDMPs}
 \usage{
-momApp(obj, maxOrder = 4, closure = "setZero")
+momApp(obj, maxOrder = 4, closure = "zero", centralize = TRUE)
 
-\S4method{momApp}{polyPdmpModel}(obj, maxOrder = 4,
-  closure = "setZero")
+\S4method{momApp}{polyPdmpModel}(obj, maxOrder = 4, closure = "zero",
+  centralize = TRUE)
 }
 \arguments{
 \item{obj}{object of class \code{\link{polyPdmpModel}}.}
