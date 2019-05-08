@@ -48,6 +48,7 @@
 #' @importFrom deSolve ode
 #' @importFrom stats aggregate as.formula
 #' @importFrom dplyr %>%
+#' @importFrom momcalc momentList transformMoment symbolicMoments
 #' @export
 setGeneric("momApp",
            function(obj, maxOrder = 4, closure = "zero", centralize = TRUE)
@@ -138,18 +139,19 @@ setMethod("momApp", signature(obj = "polyPdmpModel"),
         indicatorIndex <- which(missingRow[(n+1):(n+k)] == 1)
         indicatorLhs <- lhs[k*(1:(nrow(lhs)/k)-1) + indicatorIndex, 1:n, drop = FALSE]
         stateList <- lapply(rownames(indicatorLhs), function(name) bquote(state[.(as.numeric(name))]))
-        mList <- momentList(rawMomentOrders = indicatorLhs, rawMoments = stateList)
+        mList <- momcalc::momentList(rawMomentOrders = indicatorLhs, 
+                                     rawMoments = stateList, 
+                                     warnings = FALSE)
         
         if(centralize){ # centralize ode's which contain missing moments and perform moment closure
           if(closure %in% c("lognormal", "gamma")){
             stop("Closure method '", closure, "' is only implemented for raw moments.")
           }
-          suppressWarnings(
-            mListExpanded <- transformMoment(order = missingRow[1:n],
-                                             type = "raw",
-                                             closure = closure,
-                                             momentList = mList)
-          )
+
+          mListExpanded <- momcalc::transformMoment(order = missingRow[1:n],
+                                                    type = "raw",
+                                                    closure = closure,
+                                                    momentList = mList)
           
           missingMoments[[i]] <- mListExpanded$rawMoments[[prodlim::row.match(missingRow[1:n], mListExpanded$rawMomentOrders)]]
         }
@@ -157,14 +159,21 @@ setMethod("momApp", signature(obj = "polyPdmpModel"),
           if(closure %in% c("normal")){
             stop("Closure method '", closure, "' is only implemented for centralized moments.")
           }
-          missingMoments[[i]] <- symbolicMoments(distribution = closure,
+          if(closure == "zero"){
+            cov <- NA
+            mean <- NA
+          }
+          else{
+            cov <- momcalc::cov(mList)
+            mean <- mean(mList)
+          }
+          missingMoments[[i]] <- momcalc::symbolicMoments(distribution = closure,
                                                  missingOrders = missingRow[1:n],
-                                                 cov = ifelse(closure == "zero", NA, cov(mList)),
-                                                 mean = ifelse(closure == "zero", NA, mean(mList)))
+                                                 cov = cov, mean = mean)[[1]]
         }
       }
     }
-    
+    print(missingMoments)
     odeSystem <- rep(list(NA), nrow(lhs))
     for(j in seq_len(nrow(lhs))){
       list <- lapply(seq_along(matchingRows[[j]]), function(i){
@@ -185,10 +194,8 @@ setMethod("momApp", signature(obj = "polyPdmpModel"),
     
     discInd <- getIndex(obj@init[dnames], states)
     state <- apply(lhs, 1, function(row) 
-      if(row[n+discInd] == 1) 
-        Reduce("*", obj@init[1:n]^row[1:n]) 
-      else 0
-    ) #initial value: dirac messure with peak in obj@init
+        1/length(discStates(obj)[[1]])*Reduce("*", obj@init[1:n]^row[1:n]) 
+    ) #initial value: dirac messure with peak in obj@init["f"] and ...
     times <- fromtoby(obj@times)
     func <- function(lhs, state, parms){
       list(sapply(odeSystem, function(x) eval(x)))
@@ -207,6 +214,7 @@ setMethod("momApp", signature(obj = "polyPdmpModel"),
     contRes <- aggregate(as.formula(paste("contRes[,-(1:(n+k))] ~", 
                                           paste(cnames, collapse = "+"))), 
                          data = contRes, 
+                         na.action = na.pass,
                          FUN = sum)
     contRes <- cbind(out[, 1], t(contRes[-1, -(1:n)]))
     contNames <- c(sapply(2:(nrow(r)), function(row) 
@@ -242,158 +250,3 @@ setMethod("momApp", signature(obj = "polyPdmpModel"),
     
    return(result)
 })
-
-##### transformMoment ####
-
-#' A help function for \code{\link{momApp}}
-#'
-#' Let X be a random variable and Y the corresponding centered variable, i.e. \eqn{Y = X - \mu}. 
-#' Let p be the \code{order} of the desired moment. 
-#' If \code{type = 'raw'}, this function returns
-#' \deqn{E(X^p) = \sum_{k_1=0}^{p_1}...\sum_{k_n=0}^{p_n} {p \choose k} \mu^{p-k} E(Y^k).}
-#' The values of \eqn{E(Y^k)} are replaced by
-#' \itemize{
-#'   \item \code{centralMoment[[i]]} if \code{k} = \code{centralMomentOrders[i, ]},
-#'   \item \code{\link{transformMoment}(type = 'central', ...)} if \code{k} is a row in \code{rawMomentOrders},
-#'   \item \code{\link{momentClosure}(closure, k)} if \code{k} is neither a row in \code{centralMomentOrders} nor in \code{rawMomentOrders}.
-#' }
-#' If \code{type = 'central'}, this function returns
-#' \deqn{E(Y^p) = \sum_{k_1=0}^{p_1}...\sum_{k_n=0}^{p_n} (-1)^{p-k} {p \choose k} \mu^{p-k} E(X^k).}
-#' The values of \eqn{E(X^k)} are replaced by
-#' \itemize{
-#'   \item \code{rawMoment[[i]]} if \code{k} = \code{rawMomentOrders[i, ]},
-#'   \item \code{\link{transformMoment}(type = 'raw', ...)} if \code{k} is not a row in \code{rawMomentOrders}.
-#' }
-#' 
-#' @value This function returns an object of class 'momentList' with elements
-#' \itemize{
-#'   \item \code{centralMomentOrders}:
-#'   \item centralMoments
-#'   \item rawMomentOrders
-#'   \item rawMoments
-#'   \item closure
-#' }
-#' @param type string, either 'central' or 'raw'
-#' @param order numeric vector giving the order of the desired moment
-#' @param centralMomentOrders matrix. Every row gives the order of a central moment that is already known.
-#' @param centralMoments list. The i-th entry is the central Moment of order \code{centralMomentOrders[i, ]}.
-#' @param rawMomentOrders matrix. Every row gives the order of a raw moment that is already known.
-#' @param rawMoments list. The i-th entry is the raw Moment of order \code{rawMomentOrders[i, ]}.
-#' @param closure string giving the closure method to use if a central moment is unknown.
-transformMomentOld <- function(order, type, momentList, closure = "zero"){
-  
-  p <- order
-  n <- length(p)
-  k_indexes <- as.matrix(expand.grid(lapply(1:n, function(i) 0:p[i])))
-  
-  readMoments <- function(momentList){
-    
-    assign("cOrders", momentList$centralMomentOrders, envir = parent.frame())
-    assign("cMoments", momentList$centralMoments, envir = parent.frame())
-    assign("rOrders", momentList$rawMomentOrders, envir = parent.frame())
-    assign("rMoments", momentList$rawMoments, envir = parent.frame())
-    
-    k_in_cOrders <- apply(k_indexes, 1, function(i){
-      if(is.null(cOrders)) NA
-      else prodlim::row.match(i, cOrders)
-      })
-    assign("k_in_cOrders", k_in_cOrders, envir = parent.frame())
-    
-    k_in_rOrders <- apply(k_indexes, 1, function(i){
-      if(is.null(rOrders)) NA
-      else prodlim::row.match(i, rOrders)
-    })
-    assign("k_in_rOrders", k_in_rOrders, envir = parent.frame())
-  }
-  readMoments(momentList)
-  
-  # mu = vector with expected values
-  muRowIndex <- lapply(1:n, function(i){
-    muRow <- rep(0, n)
-    muRow[i] <- 1
-    prodlim::row.match(muRow, rOrders)
-  })
-  mu <- lapply(muRowIndex, function(i) rMoments[[i]])
-  if(sum(sapply(mu, is.null)) > 0){
-    stop("The elements rawMomentOrders and rawMoments of momentList 
-         should contain all expected values.")
-  }
-
-  if(type == 'raw'){
-    
-    sum <- list()
-    for(k_index in 1:nrow(k_indexes)){
-      
-      k <- k_indexes[k_index, ]
-      cat("type = ", type, "\tp = ",p,"\tk = ", k, "\n")
-      
-      # if k is a row in rawMomentOrders but not in centralMomentOrders
-      if(!is.na(k_in_rOrders[k_index]) & is.na(k_in_cOrders[k_index])){
-        momentList <- transformMoment(order = k, 
-                                      type = 'central', 
-                                      momentList = momentList, 
-                                      closure = closure)
-
-        readMoments(momentList)
-      }
-      # if k is a row in centralMomentOrders
-      if(!is.na(k_in_cOrders[k_index])){
-        momentK <- cMoments[[k_in_cOrders[k_index]]]
-      }
-      # if k is neither a row in rawMomentOrders nor in centralMomentOrders
-      if(is.na(k_in_rOrders[k_index]) & is.na(k_in_cOrders[k_index])){
-        momentK <- momentClosure(closure = closure, 
-                                 lhs = rOrders, # vielleicht eher cOrders?
-                                 lhsMissing = t(k),
-                                 n = n)[[1]]
-        momentList$centralMomentOrders <- rbind(cOrders, k)
-        momentList$centralMoments[[length(cMoments)+1]] <- momentK
-        readMoments(momentList)
-      }
-      
-      # compute summand
-      pChooseK <- as.numeric(Reduce("*", lapply(1:n, function(i) choose(p[i], k[i]))))
-      muPower <- lapply(1:n, function(i) bquote(.(mu[[i]])^.(as.numeric(p[1:n]-k)[i])))
-      muPower <- Reduce(function(a,b) bquote(.(a)*.(b)), muPower)
-      sum[[k_index]] <- bquote(.(pChooseK)*.(muPower)*(.(momentK)))
-    }
-    sum <- Reduce(function(a,b) bquote(.(a)+.(b)), sum)
-    momentList$rawMomentOrders <- rbind(rOrders, p)
-    momentList$rawMoments[[length(rMoments)+1]] <- sum
-    return(momentList)
-  }
-  
-  if(type == 'central'){
-    
-    sum <- list()
-    for(k_index in 1:nrow(k_indexes)){
-      
-      k <- k_indexes[k_index, ]
-      cat("type = cent\tp = ",p,"\tk = ", k, "\n")
-      
-      # if k is not a row in rawMomentOrders
-      if(is.na(k_in_rOrders[k_index])){
-        momentList <- transformMoment(order = k, 
-                                      type = 'raw', 
-                                      momentList = momentList,
-                                      closure = closure)
-        readMoments(momentList)
-      }
-      # if k is a row in rawMomentOrders
-      if(!is.na(k_in_rOrders[k_index])){
-        momentK <- rMoments[[k_in_rOrders[k_index]]]
-      }
-      
-      # compute summuand
-      pChooseK <- as.numeric(Reduce("*", lapply(1:n, function(i) choose(p[i], k[i]))))
-      muPower <- lapply(1:n, function(i) bquote(.(mu[[i]])^.(as.numeric(p[1:n]-k)[i])))
-      muPower <- Reduce(function(a,b) bquote(.(a)*.(b)), muPower)
-      sign <- (-1)^(sum(p)-sum(k))
-      sum[[k_index]] <- bquote(.(sign)*.(pChooseK)*.(muPower)*(.(momentK)))
-    }
-    sum <- Reduce(function(a,b) bquote(.(a)+.(b)), sum)
-    momentList$centralMomentOrders <- rbind(cOrders, p)
-    momentList$centralMoments[[length(cMoments)+1]] <- sum
-    return(momentList)
-  }
-}  

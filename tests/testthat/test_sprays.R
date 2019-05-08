@@ -1,7 +1,7 @@
 #======== todo =================================================================
 
 library(spray)
-context("helper functions")
+context("spray")
 
 test_that("increase_arity works as expected", {
 

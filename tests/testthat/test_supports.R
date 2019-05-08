@@ -2,7 +2,6 @@
 
 context("supports")
 
-
 test_that("getSupport returns a data.frame", {
   data(genePolyK)
   a <- 1
