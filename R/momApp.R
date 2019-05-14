@@ -1,9 +1,6 @@
 #======== todo =================================================================
 #v3 contRes und discRes umbenennen
-#v3 init = dirac measure?
-#t1 test momApp: verschiedene closure methoden
-#t1 momentClosure: documentation
-#v1 Macht es Sinn, immer cov über transformMoment zu berechnen? Vllt lognormal nochmal umprogrammieren?
+#t2 ist contInd wirklich nötig?
 
 #' Moment approximation for polynomial PDMPs
 #' 
@@ -48,7 +45,7 @@
 #' @importFrom deSolve ode
 #' @importFrom stats aggregate as.formula
 #' @importFrom dplyr %>%
-#' @importFrom momcalc momentList transformMoment symbolicMoments
+#' @importFrom momcalc momentList transformMoment symbolicMoments extractCov extractMean
 #' @export
 setGeneric("momApp",
            function(obj, maxOrder = 4, closure = "zero", centralize = TRUE)
@@ -164,8 +161,8 @@ setMethod("momApp", signature(obj = "polyPdmpModel"),
             mean <- NA
           }
           else{
-            cov <- momcalc::cov(mList)
-            mean <- mean(mList)
+            cov <- momcalc::extractCov(mList)
+            mean <- momcalc::extractMean(mList)
           }
           missingMoments[[i]] <- momcalc::symbolicMoments(distribution = closure,
                                                  missingOrders = missingRow[1:n],
@@ -245,7 +242,8 @@ setMethod("momApp", signature(obj = "polyPdmpModel"),
                              contRes = contRes, 
                              contInd = r,
                              maxOrder = maxOrder,
-                             closure = closure
+                             closure = closure,
+                             centralize = centralize
                              ), class = "momApp")
     
    return(result)
