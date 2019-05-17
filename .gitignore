@@ -3,5 +3,5 @@
 .RData
 .Ruserdata
 .Rbuildignore
-*.rda
+data/*
 pdmppoly.Rproj
