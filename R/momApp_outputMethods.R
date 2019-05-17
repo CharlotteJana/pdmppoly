@@ -51,9 +51,22 @@ print.momApp <- function(x, ...){
   cat(noquote("model: \n"))
   cat(format(x$model, short = FALSE, collapse = "\n",
              slots = c("descr", "parms", "init")))
-  maxTime <- times(x$model)["to"]
-  cat("\n\nMoment approximation at time t = ", maxTime, " \nwith moment closure",
-      " method \"", x$closure, "\" results in \n\n", sep = "")
+  
+  # maximal Time for which all moments are real numbers
+  maxTime <- min(vapply(seq_len(maxOrder),
+                    function(i) {
+                      h <- x$moments[which(x$moments[, "order"] == i), ]
+                      pos <- Position(is.na, rowSums(h))
+                      ifelse(is.na(pos),
+                             times(x$model)["to"],
+                             h[, "time"][pos - 1])
+                    },
+                    numeric(1)))
+  
+  cat("\n\nMoment approximation at time t = ", maxTime, " \nwith ",
+      "moment closure method \"", x$closure, "\"\nfor ",
+      ifelse(x$centralize, "centralized", "raw"), " moments of order > ",
+      x$maxOrder, ": \n\n", sep = "")
   
   s <- x$moments[which(x$moments$time == maxTime), ]
   rownames(s) <- NULL
@@ -66,6 +79,7 @@ print.momApp <- function(x, ...){
 summary.momApp <- function(object, ...){
   cat(noquote("\n$maxOrder \t"), object$maxOrder)
   cat(noquote("\n$closure \t"), object$closure)
+  cat(noquote("\n$centralize\t"), object$centralize)
   cat(noquote("\n$model \n"))
   cat(format(object$model, short = FALSE, collapse = "\n",
              slots = c("descr", "parms", "init")))
