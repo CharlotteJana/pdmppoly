@@ -29,6 +29,7 @@ RdMacros: Rdpack
 Remotes: CharlotteJana/pdmpsim
 RoxygenNote: 6.1.1
 Collate: 
+    'analyseModel.R'
     'analysis.R'
     'data.R'
     'manipulate.R'
@@ -38,6 +39,7 @@ Collate:
     'polypdmp_accessors.R'
     'polypdmp_generator.R'
     'momApp.R'
+    'momApp_compare.R'
     'momApp_outputMethods.R'
     'momentboundaries.R'
     'msCsv_moments.R'

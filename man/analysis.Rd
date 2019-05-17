@@ -2,11 +2,11 @@
 % Please edit documentation in R/analysis.R
 \name{analysis}
 \alias{analysis}
-\title{Analysis of models used in PROM}
+\title{Analyse the gene regulation models used in PROM}
 \usage{
 analysis(data, model, polyModel, seeds = NULL, useCsv = FALSE,
   dir = file.path(getwd(), "simulations"), subDirs = FALSE,
-  momentorders = 1:10, plotorder = 1:4, plot = TRUE,
+  momentorders = 1:4, plotorder = 1:4, plot = TRUE,
   modality = TRUE, sim = TRUE, lower = NULL, upper = NULL)
 }
 \arguments{
@@ -43,5 +43,5 @@ stored at the same places where \code{analysis} would store the simulations.}
 \item{upper}{integer. Upper bound of the compact support of the distribution.}
 }
 \description{
-Analysis of models used in PROM
+Analyse the gene regulation models used in PROM
 }

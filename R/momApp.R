@@ -34,9 +34,7 @@
 #' @name momApp
 #' @aliases momentApproximation momentapproximation momapp
 #' @include polypdmp_class.R polypdmp_accessors.R polypdmp_generator.R
-#' @seealso \code{\link{momentClosure}} for the internal method that performs
-#'   the moment closure, \code{\link{momApp-methods}} for further analysing
-#'   the result.
+#' @seealso \code{\link{momApp-methods}} for further analysing the result.
 #' @return an object of class \code{momApp} (see details).
 #' @note This method works only for PDMPs with one discrete variable.
 #' @importFrom prodlim row.match
@@ -170,7 +168,7 @@ setMethod("momApp", signature(obj = "polyPdmpModel"),
         }
       }
     }
-    print(missingMoments)
+
     odeSystem <- rep(list(NA), nrow(lhs))
     for(j in seq_len(nrow(lhs))){
       list <- lapply(seq_along(matchingRows[[j]]), function(i){

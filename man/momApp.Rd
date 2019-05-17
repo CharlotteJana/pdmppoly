@@ -57,7 +57,5 @@ print(a)
 summary(a)
 }
 \seealso{
-\code{\link{momentClosure}} for the internal method that performs
-  the moment closure, \code{\link{momApp-methods}} for further analysing
-  the result.
+\code{\link{momApp-methods}} for further analysing the result.
 }

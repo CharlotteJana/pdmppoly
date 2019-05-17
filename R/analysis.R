@@ -8,7 +8,7 @@
 #t1: modality tests funktionieren nicht! (siehe plots)
 #t1: lower und upper müssen vektoren sein!
 
-#' Analysis of models used in PROM
+#' Analyse the gene regulation models used in PROM
 #' 
 #' @param data a data.frame, see Details below
 #' @param model an object of class \code{\link{pdmpModel}}
@@ -35,16 +35,17 @@
 #' @importFrom grDevices dev.off dev.print png
 #' @export
 analysis <- function(data, model, polyModel, seeds = NULL, useCsv = FALSE, 
-                     dir = file.path(getwd(), "simulations"), subDirs = FALSE, 
-                     momentorders = 1:10, plotorder = 1:4, plot = TRUE, modality = TRUE,
-                     sim = TRUE, lower = NULL, upper = NULL){
+                         dir = file.path(getwd(), "simulations"), subDirs = FALSE, 
+                         momentorders = 1:4, plotorder = 1:4, plot = TRUE, 
+                         modality = TRUE, sim = TRUE, lower = NULL, upper = NULL){
 
   #### variables ####
   initNames <- names(init(model))
   parmsNames <- names(parms(model))
   discVars <- names(discStates(model))
   contVars <- setdiff(initNames, discVars)
-  approxMethods <- c("setZero", "reduceDegree")
+  closureMethods <- c("zero", "zero", "normal", "lognormal", "gamma")
+  closureCentral <- c(TRUE, FALSE, TRUE, FALSE, FALSE)
   
   # to avoid the R CMD Check NOTE 'no visible binding for global variable ...'
   variable <- method <- time <- E <- . <- NULL
@@ -144,7 +145,7 @@ analysis <- function(data, model, polyModel, seeds = NULL, useCsv = FALSE,
           saveRDS(statistics, paste0(fname,"__statistics.rda"))
         })
         
-        ### moments
+        ### moments ####
         try({
           message("Approximate Moments")
           
@@ -155,8 +156,13 @@ analysis <- function(data, model, polyModel, seeds = NULL, useCsv = FALSE,
           }
           moments[["Simulation"]] <- msim
           
-          for(s in approxMethods){
-            mcalc <- momApp(polyModel, max(momentorders), closure = s)$moments
+          for(s in seq_along(closureMethods)){
+            try({
+              mcalc <- momApp(obj = polyModel, 
+                              maxOrder = max(momentorders), 
+                              closure = closureMethods[s],
+                              centralize = closureCentral[s])$moments
+            })
             moments[[s]] <- mcalc
           }
           moments <- dplyr::bind_rows(moments, .id = "method")
