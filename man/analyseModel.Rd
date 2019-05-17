@@ -23,9 +23,6 @@ analyseModel(polyModel, model = polyModel, seeds = NULL,
 \item{filenameprefix}{string. The name of each file saved by \code{analyseModel}
 will start with this string.}
 
-\item{momentorders}{vector giving all the orders of moments that shall 
-be calculated with \code{\link{momApp}}. Defaults to 1:10.}
-
 \item{plotorder}{vector giving all the orders of moments that shall be plotted
 with \code{\link{plotCompareMomApp}}. Defaults to 1:4.}
 
@@ -36,7 +33,8 @@ distribution is unimodal with \code{\link{is.unimodal}}?}
 
 \item{sim}{boolean variable. Should \code{analyseModel} do the simulation
 or use already simulated data? In the latter case, it will use files
-stored at the same places where \code{analyseModel} would store the simulations.}
+stored at the same places where \code{analyseModel} would store the simulations.
+Furthermore, no value for parameter \code{seeds} is necessary.}
 
 \item{momApp}{boolean variable. Should \code{analyseModel} calculate moments
 with \code{\link{momApp}}?}
@@ -52,6 +50,9 @@ This variable is only needed if \code{modality = TRUE}.}
 (if \code{TRUE}) for simulation? Defaults to \code{FALSE}, because
 function \code{multSimCsv} is only necessary for huge simulations that 
 exceed the working storage.}
+
+\item{momentorder}{integer giving the maximal order of moments that shall 
+be calculated with \code{\link{momApp}}. Defaults to 10.}
 }
 \description{
 Perform all methods that are available for a polynomial PDMP:

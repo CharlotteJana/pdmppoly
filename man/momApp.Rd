@@ -23,7 +23,7 @@ method is specified in parameter \code{closure}.}
 
 \item{closure}{string defining the method that does the moment closure, i. e.
 that changes the system of ODEs into a closed form that is solvable.
-Possible values are \code{setZero} (the default) and reduceDegree.}
+Possible values are \code{zero} and ... .}
 }
 \value{
 an object of class \code{momApp} (see details).

@@ -22,7 +22,7 @@ test_that("moment calculation leads to same results for model K and model K2", {
 
 test_that("elements contRes, discRes and moments contain the same results", {
   data(genePolyK2)
-  x <- momApp(genePolyK2, maxOrder = 6, closure = "reduceDegree")
+  x <- momApp(genePolyK2, maxOrder = 6, closure = "zero")
   
   # calculate moments out of contRes and discRes
   l <- x$maxOrder
@@ -61,7 +61,7 @@ test_that("momApp works for a model with more than 2 discrete states", {
 test_that("order of variables in init doesn't matter", {
   skip("functionality not implemented yet")
   data(genePolyF)
-  res1 <- momApp(genePolyF, closure = "reduceDegree")
+  res1 <- momApp(genePolyF, closure = "zero")
   
   model <- new("polyPdmpModel",
                    descr = "Model F with different order of variables",
@@ -79,7 +79,7 @@ test_that("order of variables in init doesn't matter", {
                    }, 
                    times = times(genePolyF), 
                    solver = "lsodar")
-  res2 <- momApp(model, closure = "reduceDegree")
+  res2 <- momApp(model, closure = "zero")
   expect_identical(res1$moments, res2$moments)
   expect_identical(res1$discRes, res2$discRes)
   expect_identical(res1$contRes, res2$contRes)

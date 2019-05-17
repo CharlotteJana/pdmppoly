@@ -2,7 +2,7 @@
 #t2: example in documentation
 #t1: useCsv = multSimCsv implementieren
 #t1: auskommentierten code mit manipulate bearbeiten
-#t1: model und polyModel vergleichen
+#t3: model und polyModel vergleichen
 #t2: modality plot for every variable
 #t1: modality tests funktionieren nicht! (siehe plots)
 #t1: lower und upper müssen vektoren sein!
@@ -29,8 +29,8 @@
 #' @param dir string giving the directory where files will be stored.
 #' @param filenameprefix string. The name of each file saved by \code{analyseModel}
 #' will start with this string.
-#' @param momentorders vector giving all the orders of moments that shall 
-#' be calculated with \code{\link{momApp}}. Defaults to 1:10.
+#' @param momentorder integer giving the maximal order of moments that shall 
+#' be calculated with \code{\link{momApp}}. Defaults to 10.
 #' @param plotorder vector giving all the orders of moments that shall be plotted
 #' with \code{\link{plotCompareMomApp}}. Defaults to 1:4.
 #' @param useCsv boolean variable. Should \code{analyseModel} use 
@@ -45,6 +45,7 @@
 #' @param sim boolean variable. Should \code{analyseModel} do the simulation
 #' or use already simulated data? In the latter case, it will use files
 #' stored at the same places where \code{analyseModel} would store the simulations.
+#' Furthermore, no value for parameter \code{seeds} is necessary.
 #' @param momApp boolean variable. Should \code{analyseModel} calculate moments
 #' with \code{\link{momApp}}?
 #' @param modality boolean variable. Should \code{analyseModel} test if the 
@@ -86,19 +87,21 @@ analyseModel <- function(polyModel, model = polyModel, seeds = NULL,
     
   }
   else{
-    if(!sim){
+    if(!sim){ # load existing simulated data
+      
       ms <- readRDS(file = paste0(fname, ".rda"))
       message("Get MultSimData")
       msData <- readRDS(file = paste0(fname, "__multSimData.rda"))
       moments <- readRDS(file = paste0(fname, "__moments.rda"))
       
       if(!identical(model, ms$model))
-        stop("Simulation stored in ", paste0(fname, "__moments.rda"),
+        stop("Simulation stored in ", paste0(fname, ".rda"),
              " was done with other model parameters.")
+      if(is.null(seeds))
+        seeds <- ms$seeds
       if(!identical(seeds, ms$seeds))
-        stop("Simulation stored in ", paste0(fname, "__moments.rda"),
+        stop("Simulation stored in ", paste0(fname, ".rda"),
              " was done with different seeds.")
-      
     }
     else{
       ### simulation
@@ -111,24 +114,23 @@ analyseModel <- function(polyModel, model = polyModel, seeds = NULL,
         saveRDS(msData, file = paste0(fname, "__multSimData.rda"))
       })
     }
-      
-    ### statistics 
-    try({
-      statistics <- pdmpsim::summarise_at(
-        msData,
-        .vars = initNames,
-        .funs = statistics)
-      saveRDS(statistics, paste0(fname,"__statistics.rda"))
-    })
   }
-    
   
+  ### statistics 
+  try({
+    statistics <- pdmpsim::summarise_at(
+      msData,
+      .vars = initNames,
+      .funs = statistics)
+    saveRDS(statistics, paste0(fname,"__statistics.rda"))
+  })
+    
   #### moments ####
   if(momApp){
     try({
       message("Approximate Moments")
       moments <- compareMomApp(polyModel, ms = ms, 
-                               maxOrder = max(momentorders))
+                               maxOrder = max(momentorder))
       saveRDS(moments, file = paste0(fname, "__moments.rda"))
     })
   }
@@ -253,24 +255,26 @@ analyseModel <- function(polyModel, model = polyModel, seeds = NULL,
     # moments
     try({
       message("moments, ", appendLF = FALSE)
-      plotdata <- reshape2::melt(moments, 1:3, stringsAsFactors = TRUE)
-      plotdata$method <- factor(plotdata$method, levels = c("Simulation", 
-                                                            approxMethods))
-      plotdata$variable <- as.character(plotdata$variable)
-      plotdata <- subset(plotdata, order <= plotorder)
-      
-      mplot <- ggplot(data = plotdata, ggplot2::aes(x = time, y = value))+ 
-        ggplot2::geom_line(size = 1,
-                           ggplot2::aes(color = method, linetype = method)) +
-        ggplot2::theme(axis.title.y = ggplot2::element_blank(), 
-                       axis.title.x = ggplot2::element_blank()) + 
-        ggplot2::labs(
-          title = model@descr,
-          subtitle = format(model, slots = c("parms"), short = FALSE),
-          caption = paste("Number of Simulations:", length(seeds))) +
-        ggplot2::facet_wrap(variable ~ order, 
-                            scales = "free_y", nrow = length(model@init),
-                            labeller = ggplot2::label_bquote(cols = E(.(variable)^.(order))))
+      mplot <- plotCompareMomApp(polyModel, moments = moments , 
+                                 maxOrder = plotOrder, simnumber = length(ms$seeds))
+      # plotdata <- reshape2::melt(moments, 1:3, stringsAsFactors = TRUE)
+      # plotdata$method <- factor(plotdata$method, levels = c("Simulation", 
+      #                                                       approxMethods))
+      # plotdata$variable <- as.character(plotdata$variable)
+      # plotdata <- subset(plotdata, order <= plotorder)
+      # 
+      # mplot <- ggplot(data = plotdata, ggplot2::aes(x = time, y = value))+ 
+      #   ggplot2::geom_line(size = 1,
+      #                      ggplot2::aes(color = method, linetype = method)) +
+      #   ggplot2::theme(axis.title.y = ggplot2::element_blank(), 
+      #                  axis.title.x = ggplot2::element_blank()) + 
+      #   ggplot2::labs(
+      #     title = model@descr,
+      #     subtitle = format(model, slots = c("parms"), short = FALSE),
+      #     caption = paste("Number of Simulations:", length(seeds))) +
+      #   ggplot2::facet_wrap(variable ~ order, 
+      #                       scales = "free_y", nrow = length(model@init),
+      #                       labeller = ggplot2::label_bquote(cols = E(.(variable)^.(order))))
       
       ggplot2::ggsave(filename = paste0(fname,"__moments.png"), plot = mplot, 
                       dpi = 300, width = 20.4, height = length(model@init)*5.5, 

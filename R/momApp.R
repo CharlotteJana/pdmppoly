@@ -1,6 +1,7 @@
 #======== todo =================================================================
 #v3 contRes und discRes umbenennen
 #t2 ist contInd wirklich nötig?
+# documentation von closure anpassen
 
 #' Moment approximation for polynomial PDMPs
 #' 
@@ -10,7 +11,7 @@
 #'   method is specified in parameter \code{closure}.
 #' @param closure string defining the method that does the moment closure, i. e.
 #'   that changes the system of ODEs into a closed form that is solvable.
-#'   Possible values are \code{setZero} (the default) and reduceDegree.
+#'   Possible values are \code{zero} and ... .
 #' @details 
 #' The returned s3 class \code{momApp} contains 6 different elements:
 #' \itemize{
@@ -190,7 +191,7 @@ setMethod("momApp", signature(obj = "polyPdmpModel"),
     discInd <- getIndex(obj@init[dnames], states)
     state <- apply(lhs, 1, function(row) 
         1/length(discStates(obj)[[1]])*Reduce("*", obj@init[1:n]^row[1:n]) 
-    ) #initial value: dirac messure with peak in obj@init["f"] and ...
+    ) #initial value: dirac messure with peak in obj@init["f"] and every discrete state
     times <- fromtoby(obj@times)
     func <- function(lhs, state, parms){
       list(sapply(odeSystem, function(x) eval(x)))
@@ -201,7 +202,7 @@ setMethod("momApp", signature(obj = "polyPdmpModel"),
   #### create class 'momApp' from the result 'out' #####
     
     # discRes = only indicator variables
-    discRes <- out[, c(1:(k+1))] # Achtung: Zeitspalte kommt dazu
+    discRes <- out[, c(1:(k+1))] # time column + columns of indicator variables
     colnames(discRes)[-1] <- colnames(lhs)[(n+1):(n+k)] 
 
     # contRes = only continous variables (indicator variables are summed up)
