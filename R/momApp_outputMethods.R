@@ -1,4 +1,5 @@
 #======== todo =================================================================
+#t2 should $out appear in summary? How should it appear?
 
 #' Methods for objects of class \code{\link{momApp}}
 #' 
@@ -87,10 +88,6 @@ summary.momApp <- function(object, ...){
     cat(noquote("\n\n$moments, order = "), i, "\n")
     print(summary(object$moments[which(object$moments$order == i), -(1:2)], ...))
   }
-  cat(noquote("\n$discRes\n"))
-  print(summary(object$discRes[,-1], ...))
-  cat(noquote("\n$contRes\n"))
-  print(summary(object$contRes[,-1], ...))
 }
 
 #' @rdname momApp-methods
@@ -99,10 +96,8 @@ summary.momApp <- function(object, ...){
 tail.momApp <- function(x, ...){
   cat(noquote("$moments\n"))
   print(tail(x$moments, ...))
-  cat(noquote("\n$discRes\n"))
-  print(tail(x$discRes, ...))
-  cat(noquote("\n$contRes\n"))
-  print(tail(x$contRes, ...))
+  cat(noquote("\n$out\n"))
+  print(tail(x$out, ...))
 }
 
 #' @rdname momApp-methods
@@ -111,8 +106,6 @@ tail.momApp <- function(x, ...){
 head.momApp <- function(x, ...){
   cat(noquote("$moments\n"))
   print(head(x$moments, ...))
-  cat(noquote("$\ndiscRes\n"))
-  print(head(x$discRes, ...))
-  cat(noquote("\n$contRes\n"))
-  print(head(x$contRes, ...))
+  cat(noquote("\n$out\n"))
+  print(head(x$out, ...))
 }

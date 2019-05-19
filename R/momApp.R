@@ -1,7 +1,6 @@
 #======== todo =================================================================
-#v3 contRes und discRes umbenennen
-#t2 ist contInd wirklich nötig?
-# documentation von closure anpassen
+#t1 tests überarbeiten
+#t1 documentation von closure anpassen
 
 #' Moment approximation for polynomial PDMPs
 #' 
@@ -16,13 +15,9 @@
 #' The returned s3 class \code{momApp} contains 6 different elements:
 #' \itemize{
 #' \item \code{model}: the polyPdmpModel \code{obj}
-#' \item \code{discRes}: a matrix giving the calculated moments of the different
-#' indicator variables that replace the discrete variable (see \code{\link{blowupSpray}}
-#' for an explanation of the indicator variables)
-#' \item \code{contRes}: a matrix giving the calculated moments of the continous variables
+#' \item \code{out}: a matrix giving the result of function \code{\link[deSolve]{ode}}.
+#' Column names were added to make the result understandable.
 #' \item \code{maxOrder}: integer defining the highest order of moments to be calculated
-#' \item \code{closure}: string giving the closure method. See ... for more details.
-#' \item \code{contInd}: a data.frame with all moment indexes that are calculated
 #' \item \code{moments}: a data.frame with the resulting moments, of the same structure
 #'  as the result of function \code{\link[pdmpsim]{moments}} in package \pkg{pdmpsim}.
 #' }
@@ -42,28 +37,29 @@
 #' @importFrom spray index
 #' @importFrom simecol fromtoby
 #' @importFrom deSolve ode
-#' @importFrom stats aggregate as.formula
 #' @importFrom dplyr %>%
 #' @importFrom momcalc momentList transformMoment symbolicMoments extractCov extractMean
 #' @export
 setGeneric("momApp",
-           function(obj, maxOrder = 4, closure = "zero", centralize = TRUE)
+           function(obj, maxOrder = 4, closure = "zero", 
+                    centralize = TRUE, na.rm = TRUE)
              standardGeneric("momApp"))
 
 #' @rdname momApp
 #' @export
 setMethod("momApp", signature(obj = "polyPdmpModel"), 
-          function(obj, maxOrder = 4, closure = "zero", centralize = TRUE) {
+          function(obj, maxOrder = 4, closure = "zero", 
+                   centralize = TRUE, na.rm = TRUE) {
   
   states <- obj@discStates[[1]]
   n <- length(obj@init) - length(obj@discStates) # continuous variables
   k <- length(states)
   names <- names(obj@init)  # names of all variables
-  dnames <- names(obj@discStates)
-  cnames <- names[!names %in% dnames]
+  dname <- names(obj@discStates)
+  cnames <- names[!names %in% dname]
   
   # to avoid the R CMD Check NOTE 'no visible binding for global variable ...'
-  time <- variable <- NULL
+  # time <- variable <- NULL
     
   ###### create all moment combinations that are needed ######
   
@@ -74,7 +70,7 @@ setMethod("momApp", signature(obj = "polyPdmpModel"),
     dimnames(r) <- list(1:nrow(r), cnames)
     
     # create k indicator variables that indicate the state of the discrete var
-    indicatorNames <- sapply(1:k, function(i) paste0(dnames, states[i]))
+    indicatorNames <- sapply(1:k, function(i) paste0(dname, states[i]))
     indicatorMatrix <- matrix(rep(t(diag(k)), length.out = k*k*nrow(r)), 
                               ncol = k, byrow = TRUE)
    
@@ -188,62 +184,72 @@ setMethod("momApp", signature(obj = "polyPdmpModel"),
     
   #### simulate the system of odes with deSolve ######
     
-    discInd <- getIndex(obj@init[dnames], states)
+    discInd <- getIndex(obj@init[dname], states)
     state <- apply(lhs, 1, function(row) 
         1/length(discStates(obj)[[1]])*Reduce("*", obj@init[1:n]^row[1:n]) 
-    ) #initial value: dirac messure with peak in obj@init["f"] and every discrete state
+    ) #initial value: dirac messure with peak in 
+      # obj@init["f"] and every discrete state
     times <- fromtoby(obj@times)
     func <- function(lhs, state, parms){
       list(sapply(odeSystem, function(x) eval(x)))
     }
-    out <- ode(y = state, times = times, func = func, 
-               parms = obj@parms, method = obj@solver)
+   out <- ode(y = state, times = times, func = func, 
+              parms = obj@parms, method = obj@solver)
+   
+  ### create meaningful column names for out
+   
+   contNames <- c(sapply(2:(nrow(r)), function(row)
+     paste(cnames, r[row, 1:n], sep = "^", collapse = "*")
+   ))
+   contNames <- gsub("\\*?[^\\*\\(]+\\^0\\*?", "", contNames) # remove ^0
+   contNames <- gsub("+\\^+1", "", contNames) # remove ^1
+   discNames <- sapply(1:k, function(i) paste0("P(", dname, "=", states[i],")"))
+   outNames <- NULL
+   for(i in 1:k){
+     outNames <- rbind(outNames, paste0("E(", contNames, "|", 
+                                       dname, "=", states[i], ")"))
+   }
+   outNames <- c("time", discNames, outNames)
+   colnames(out) <- outNames
 
-  #### create class 'momApp' from the result 'out' #####
+  #### create data.frame with raw moments #####
     
-    # discRes = only indicator variables
-    discRes <- out[, c(1:(k+1))] # time column + columns of indicator variables
-    colnames(discRes)[-1] <- colnames(lhs)[(n+1):(n+k)] 
-
-    # contRes = only continous variables (indicator variables are summed up)
-    contRes <- cbind(lhs, t(out[, -1]))
-    contRes <- aggregate(as.formula(paste("contRes[,-(1:(n+k))] ~", 
-                                          paste(cnames, collapse = "+"))), 
-                         data = contRes, 
-                         na.action = na.pass,
-                         FUN = sum)
-    contRes <- cbind(out[, 1], t(contRes[-1, -(1:n)]))
-    contNames <- c(sapply(2:(nrow(r)), function(row) 
-      paste(colnames(r), r[row, 1:n], sep = "^", collapse = "*")))
-    contNames <- c("time", gsub("\\*?[^\\*]+\\^0\\*?", "", contNames))
-    dimnames(contRes)[[2]] <- contNames
+   moments <- expand.grid(time = times, order = 1:maxOrder)
+   moments[, names] <- NA
+   
+   # moments of discrete variables
+   colnames <- paste0("P(", dname, "=", states, ")")
+   for(j in 1:maxOrder){
+    values <- rowSums(out[, colnames] %*% diag(states))
+    moments[which(moments$order == j), dname] <- values
+   }
+   
+   # moments of order 1
+   for(i in 1:n){
+     colnames <- paste0("E(", cnames[i], "|", dname, "=", states, ")")
+     moments[which(moments$order == 1), cnames[i]] <- rowSums(out[, colnames])
+   }
+   
+   # moments of order > 1
+   for(i in 1:n){
+     for(j in 2:maxOrder){
+      colnames <- paste0("E(", cnames[i], "^", j,"|", dname, "=", states, ")")
+      moments[which(moments$order == j), cnames[i]] <- rowSums(out[, colnames])
+     }
+   }
+   if(na.rm == TRUE)
+     moments <- moments[!is.na(rowSums(moments)), ]
     
-    indexes <- sapply(colnames(r),
-      function(s) which(stringr::str_detect(contNames, paste0("^",s, "\\^[:digit:]+$"))))
+  #### create class 'momApp' #####
 
-    moments <- contRes[, c(1, indexes)] %>% 
-               as.data.frame() %>% 
-               tidyr::gather(key = variable, value = value, -time) %>%
-               dplyr::mutate(order = as.numeric(stringr::str_match(variable, "[:digit:]+$"))) %>%
-               dplyr::mutate_at(.vars = "variable", 
-                                .funs = stringr::str_match, pattern = "^[:alnum:]+") %>%
-               tidyr::spread(key = variable, value = value) %>%
-               dplyr::full_join(as.data.frame(discRes), by = "time")
-    
-
-    moments[, dnames] <- rowSums(as.matrix(moments[indicatorNames]) * 
-                             sapply(states, function(i) i^moments$order))
-    moments[, indicatorNames] <- NULL
-
-    result <- structure(list(model = obj, 
-                             moments = moments,
-                             discRes = discRes, 
-                             contRes = contRes, 
-                             contInd = r,
-                             maxOrder = maxOrder,
-                             closure = closure,
-                             centralize = centralize
-                             ), class = "momApp")
+  result <- structure(list(model = obj, 
+                           moments = moments,
+                           out = out,
+                           maxOrder = maxOrder,
+                           closure = closure,
+                           centralize = centralize
+                           ), class = "momApp")
     
    return(result)
 })
+   

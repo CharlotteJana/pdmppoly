@@ -35,13 +35,9 @@ Moment approximation for polynomial PDMPs
 The returned s3 class \code{momApp} contains 6 different elements:
 \itemize{
 \item \code{model}: the polyPdmpModel \code{obj}
-\item \code{discRes}: a matrix giving the calculated moments of the different
-indicator variables that replace the discrete variable (see \code{\link{blowupSpray}}
-for an explanation of the indicator variables)
-\item \code{contRes}: a matrix giving the calculated moments of the continous variables
+\item \code{out}: a matrix giving the result of function \code{\link[deSolve]{ode}}.
+Column names were added to make the result understandable.
 \item \code{maxOrder}: integer defining the highest order of moments to be calculated
-\item \code{closure}: string giving the closure method. See ... for more details.
-\item \code{contInd}: a data.frame with all moment indexes that are calculated
 \item \code{moments}: a data.frame with the resulting moments, of the same structure
  as the result of function \code{\link[pdmpsim]{moments}} in package \pkg{pdmpsim}.
 }
