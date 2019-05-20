@@ -26,29 +26,33 @@
 #' @param maxOrder integer defining the highest order of moments that are
 #'   considered. Higher orders are droped and replaced by fixed values. The
 #'   replacement method is specified in parameter \code{closure}.
-#' @param closure string defining the method that does the moment closure, i. e.
-#'   that changes the system of ODEs into a closed form that is solvable.
-#'   Possible values are \code{zero, normal, lognormal} or \code{gamma}.
-#' @param centralize boolean variable determining if central or raw moments
-#'   should be replaced by fixed values.
+#' @param closure character vector. Every entry defines one possibility of
+#'   \emph{moment closure}, i.e. changing the system of ODEs into a closed form
+#'   that is solvable. Possible values are \code{zero, normal, lognormal} or
+#'   \code{gamma}.
+#' @param centralize boolean vector with the same length as \code{closure}.
+#'   Entry \code{centralize[i]} defines if the replacement of moments with
+#'   fixed values according to \code{closure[i]} should be performed on
+#'   raw or central moments.
 #' @return
 #' The function returns an S3-object of class \code{momApp}.
 #' It contains 6 different elements:
 #' \itemize{
 #' \item \code{model}: the polyPdmpModel \code{obj}
-#' \item \code{out}: a matrix giving the result of function
-#'   \code{\link[deSolve]{ode}}. Column names were added to make the result
+#' \item \code{out}: a list. The i-th entry is the result of function
+#'   \code{\link[deSolve]{ode}}, performed on the system of ode which
+#'   was created with moment closure \code{closure[i]}. 
+#'   Column names are added to make the result
 #'   understandable.
-#' \item \code{moments}: a data.frame with the resulting raw moments, of the
-#'   same structure as the result of function \code{\link[pdmpsim]{moments}} in
-#'   package \pkg{pdmpsim}.
+#' \item \code{moments}: a data.frame with the resulting raw moments.
+# #' of the same structure as the result of function \code{\link[pdmpsim]{moments}} in package \pkg{pdmpsim}.
 #' \item \code{maxOrder}: value of parameter \code{maxOrder}
 #' \item \code{closure}: value of parameter \code{closure}
 #' \item \code{centralize}: value of parameter \code{centralize}
 #' }
 #' @examples 
-#' data(genePolyK2)
-#' a <- momApp(genePolyK2, maxOrder = 4)
+#' data(genePolyBF)
+#' a <- momApp(genePolyBF, maxOrder = 4)
 #' plot(a)
 #' print(a)
 #' summary(a)
@@ -80,6 +84,7 @@ setMethod("momApp", signature(obj = "polyPdmpModel"),
   names <- names(obj@init)  # names of all variables
   dname <- names(obj@discStates)
   cnames <- names[!names %in% dname]
+  closureName <- "no closure" # value of column 'closure' in the final result
   
   # to avoid the R CMD Check NOTE 'no visible binding for global variable ...'
   # time <- variable <- NULL
@@ -146,9 +151,8 @@ setMethod("momApp", signature(obj = "polyPdmpModel"),
   ###### convert ode's into quoted formulas #######
     
     if(length(rowsToChange > 0)){ 
-      
       missingMoments <- list()
-
+      
       for(i in 1:nrow(lhsMissing)){
         missingRow <- lhsMissing[i, ]
         indicatorIndex <- which(missingRow[(n+1):(n+k)] == 1)
@@ -158,51 +162,69 @@ setMethod("momApp", signature(obj = "polyPdmpModel"),
                                      rawMoments = stateList, 
                                      warnings = FALSE)
         
-        if(centralize){ # centralize ode's which contain missing moments and perform moment closure
-          if(closure %in% c("lognormal", "gamma")){
-            stop("Closure method '", closure, "' is only implemented for raw moments.")
-          }
-
-          mListExpanded <- momcalc::transformMoment(order = missingRow[1:n],
-                                                    type = "raw",
-                                                    closure = closure,
-                                                    momentList = mList)
+        for(c in seq_along(closure)){
+          if(length(missingMoments) < c)
+            missingMoments[[c]] <- list()
           
-          missingMoments[[i]] <- mListExpanded$rawMoments[[prodlim::row.match(missingRow[1:n], mListExpanded$rawMomentOrders)]]
-        }
-        else{ # perform moment closure directly
-          if(closure %in% c("normal")){
-            stop("Closure method '", closure, "' is only implemented for centralized moments.")
+          # define closureName
+          if(closure[c] == "zero")
+            closureName[c] <- paste0("zero (", ifelse(centralize[c], "central", "raw"), ")")
+          else
+            closureName[c] <- closure[c]
+          if(closure[c] == "normal" & centralize[c])
+            closureName[c] <- "normal (central)"
+          
+          if(closure[c] == "normal" & !centralize[c])
+            stop("Closure method 'normal' is only implemented for centralized moments.")
+          if(closure[c] %in% c("lognormal", "gamma") & centralize[c]){
+            stop("Closure method '", closure[c], "' is only implemented for raw moments.")
           }
-          if(closure == "zero"){
-            cov <- NA
-            mean <- NA
+          
+          # centralize ode's which contain missing moments and perform moment closure OR
+          if(centralize[c]){ 
+  
+            mListExpanded <- momcalc::transformMoment(order = missingRow[1:n],
+                                                      type = "raw",
+                                                      closure = closure[c],
+                                                      momentList = mList)
+            
+            a <- prodlim::row.match(missingRow[1:n], mListExpanded$rawMomentOrders)
+            missingMoments[[c]][[i]] <- mListExpanded$rawMoments[[a]]
           }
-          else{
-            cov <- momcalc::extractCov(mList)
-            mean <- momcalc::extractMean(mList)
+          else{ # perform moment closure directly
+            if(closure[c] == "zero"){
+              cov <- NA
+              mean <- NA
+            }
+            else{
+              cov <- momcalc::extractCov(mList)
+              mean <- momcalc::extractMean(mList)
+            }
+            missingMoments[[c]][[i]] <- momcalc::symbolicMoments(distribution = closure[c],
+                                                                 missingOrders = missingRow[1:n],
+                                                                 cov = cov, mean = mean)[[1]]
           }
-          missingMoments[[i]] <- momcalc::symbolicMoments(distribution = closure,
-                                                 missingOrders = missingRow[1:n],
-                                                 cov = cov, mean = mean)[[1]]
         }
       }
     }
-
-    odeSystem <- rep(list(NA), nrow(lhs))
-    for(j in seq_len(nrow(lhs))){
-      list <- lapply(seq_along(matchingRows[[j]]), function(i){
-        momentIndex <- matchingRows[[j]][[i]]
-        momentIsMissing <- identical(rownames(lhsFull)[momentIndex], "missing")
-        if(momentIsMissing){
-          h <-  prodlim::row.match(lhsFull[momentIndex, ], lhsMissing)
-          return(bquote(.(value(odeList[[j]])[i])*(.(missingMoments[[h]]))))
-        }
-        else{
-          return(bquote(.(value(odeList[[j]])[i])*state[.(momentIndex)]))
-        }
-      })
-      odeSystem[[j]] <- Reduce(function(a,b) bquote(.(a)+.(b)), list)
+    
+    odeSystem <- list()
+    for(c in seq_along(closure)){
+      odeSystem[[c]] <- rep(list(NA), nrow(lhs))
+      for(j in seq_len(nrow(lhs))){
+        list <- lapply(seq_along(matchingRows[[j]]), function(i){
+          momentIndex <- matchingRows[[j]][[i]]
+          momentIsMissing <- identical(rownames(lhsFull)[momentIndex], "missing")
+          if(momentIsMissing){
+            h <-  prodlim::row.match(lhsFull[momentIndex, ], lhsMissing)
+            return(bquote(.(value(odeList[[j]])[i])*(.(missingMoments[[c]][[h]]))))
+          }
+          else{
+            return(bquote(.(value(odeList[[j]])[i])*state[.(momentIndex)]))
+          }
+        })
+        odeSystem[[c]][[j]] <- Reduce(function(a,b) bquote(.(a)+.(b)), list)
+      }
     }
     
   #### simulate the system of odes with deSolve ######
@@ -213,11 +235,14 @@ setMethod("momApp", signature(obj = "polyPdmpModel"),
     ) #initial value: dirac messure with peak in 
       # obj@init["f"] and every discrete state
     times <- fromtoby(obj@times)
-    func <- function(lhs, state, parms){
-      list(sapply(odeSystem, function(x) eval(x)))
+    out <- list()
+    for(c in seq_along(closure)){
+      func <- function(lhs, state, parms){
+        list(sapply(odeSystem[[c]], function(x) eval(x)))
+      }
+      out[[closureName[c]]] <- ode(y = state, times = times, func = func, 
+                                   parms = obj@parms, method = obj@solver)
     }
-   out <- ode(y = state, times = times, func = func, 
-              parms = obj@parms, method = obj@solver)
    
   ### create meaningful column names for out
    
@@ -233,35 +258,46 @@ setMethod("momApp", signature(obj = "polyPdmpModel"),
                                        dname, "=", states[i], ")"))
    }
    outNames <- c("time", discNames, outNames)
-   colnames(out) <- outNames
+   for(i in seq_len(length(out))){
+     colnames(out[[i]]) <- outNames
+   }
 
   #### create data.frame with raw moments #####
     
-   moments <- expand.grid(time = times, order = 1:maxOrder)
+   moments <- expand.grid(closure = closureName, time = times, order = 1:maxOrder)
    moments[, names] <- NA
    
    # moments of discrete variables
    colnames <- paste0("P(", dname, "=", states, ")")
-   for(j in 1:maxOrder){
-    values <- rowSums(out[, colnames] %*% diag(states))
-    moments[which(moments$order == j), dname] <- values
+   for(c in seq_along(closure)){
+     for(j in 1:maxOrder){
+      values <- rowSums(out[[c]][, colnames] %*% diag(states))
+      rows <- which(moments$order == j & moments$closure == closureName[c])
+      moments[rows, dname] <- values
+     }
    }
    
    # moments of order 1
    for(i in 1:n){
      colnames <- paste0("E(", cnames[i], "|", dname, "=", states, ")")
-     moments[which(moments$order == 1), cnames[i]] <- rowSums(out[, colnames])
+     for(c in seq_along(closure)){
+       rows <- which(moments$order == 1 & moments$closure == closureName[c])
+       moments[rows, cnames[i]] <- rowSums(out[[c]][, colnames])
+     }
    }
    
    # moments of order > 1
    for(i in 1:n){
      for(j in 2:maxOrder){
       colnames <- paste0("E(", cnames[i], "^", j,"|", dname, "=", states, ")")
-      moments[which(moments$order == j), cnames[i]] <- rowSums(out[, colnames])
+      for(c in seq_along(closure)){
+        rows <- which(moments$order == j & moments$closure == closureName[c])
+        moments[rows, cnames[i]] <- rowSums(out[[c]][, colnames])
+      }
      }
    }
    if(na.rm == TRUE)
-     moments <- moments[!is.na(rowSums(moments)), ]
+     moments <- moments[!is.na(rowSums(moments[, -(1:3)])), ]
     
   #### create class 'momApp' #####
 

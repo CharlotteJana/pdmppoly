@@ -22,24 +22,27 @@ momApp(obj, maxOrder = 4, closure = "zero", centralize = TRUE,
 considered. Higher orders are droped and replaced by fixed values. The
 replacement method is specified in parameter \code{closure}.}
 
-\item{closure}{string defining the method that does the moment closure, i. e.
-that changes the system of ODEs into a closed form that is solvable.
-Possible values are \code{zero, normal, lognormal} or \code{gamma}.}
+\item{closure}{character vector. Every entry defines one possibility of
+\emph{moment closure}, i.e. changing the system of ODEs into a closed form
+that is solvable. Possible values are \code{zero, normal, lognormal} or
+\code{gamma}.}
 
-\item{centralize}{boolean variable determining if central or raw moments
-should be replaced by fixed values.}
+\item{centralize}{boolean vector with the same length as \code{closure}.
+Entry \code{centralize[i]} defines if the replacement of moments with
+fixed values according to \code{closure[i]} should be performed on
+raw or central moments.}
 }
 \value{
 The function returns an S3-object of class \code{momApp}.
 It contains 6 different elements:
 \itemize{
 \item \code{model}: the polyPdmpModel \code{obj}
-\item \code{out}: a matrix giving the result of function
-  \code{\link[deSolve]{ode}}. Column names were added to make the result
+\item \code{out}: a list. The i-th entry is the result of function
+  \code{\link[deSolve]{ode}}, performed on the system of ode which
+  was created with moment closure \code{closure[i]}. 
+  Column names are added to make the result
   understandable.
-\item \code{moments}: a data.frame with the resulting raw moments, of the
-  same structure as the result of function \code{\link[pdmpsim]{moments}} in
-  package \pkg{pdmpsim}.
+\item \code{moments}: a data.frame with the resulting raw moments.
 \item \code{maxOrder}: value of parameter \code{maxOrder}
 \item \code{closure}: value of parameter \code{closure}
 \item \code{centralize}: value of parameter \code{centralize}
@@ -69,8 +72,8 @@ be replaced by fixed values.
 This method works only for PDMPs with one discrete variable.
 }
 \examples{
-data(genePolyK2)
-a <- momApp(genePolyK2, maxOrder = 4)
+data(genePolyBF)
+a <- momApp(genePolyBF, maxOrder = 4)
 plot(a)
 print(a)
 summary(a)
