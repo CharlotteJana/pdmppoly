@@ -58,11 +58,12 @@
 #' @importFrom ggplot2 labs
 #' @importFrom simecol "times<-" "init<-" "init" "parms"
 #' @importFrom grDevices dev.off dev.print png
+#' @importFrom momcalc is.unimodal
 #' @export
 analyseModel <- function(polyModel, model = polyModel, seeds = NULL, 
                          dir = file.path(getwd(), "simulations"), 
                          filenameprefix = descr(polyModel),
-                         momentorders = 1:4, plotorder = 1:4, 
+                         momentorder = 4, plotorder = 1:4, 
                          plot = TRUE, modality = TRUE, sim = TRUE, momApp = TRUE,
                          lower = NULL, upper = NULL, useCsv = FALSE,
                          statistics = c("min", "max", "mean", "median", "sd")){
@@ -94,9 +95,9 @@ analyseModel <- function(polyModel, model = polyModel, seeds = NULL,
       msData <- readRDS(file = paste0(fname, "__multSimData.rda"))
       moments <- readRDS(file = paste0(fname, "__moments.rda"))
       
-      if(!identical(model, ms$model))
+      if(!all.equal(model, ms$model))
         stop("Simulation stored in ", paste0(fname, ".rda"),
-             " was done with other model parameters.")
+             " was done with another model or other model parameters.")
       if(is.null(seeds))
         seeds <- ms$seeds
       if(!identical(seeds, ms$seeds))
@@ -118,20 +119,20 @@ analyseModel <- function(polyModel, model = polyModel, seeds = NULL,
   
   ### statistics 
   try({
-    statistics <- pdmpsim::summarise_at(
+    stats <- pdmpsim::summarise_at(
       msData,
       .vars = initNames,
       .funs = statistics)
-    saveRDS(statistics, paste0(fname,"__statistics.rda"))
+    saveRDS(stats, paste0(fname,"__statistics.rda"))
   })
     
   #### moments ####
   if(momApp){
     try({
       message("Approximate Moments")
-      moments <- compareMomApp(polyModel, ms = ms, 
-                               maxOrder = max(momentorder))
-      saveRDS(moments, file = paste0(fname, "__moments.rda"))
+      ma <- momApp(polyModel, maxOrder = max(momentorder))
+      ma <- addSimulation(ma, ms)
+      saveRDS(ma, file = paste0(fname, "__moments.rda"))
     })
   }
   
@@ -141,29 +142,42 @@ analyseModel <- function(polyModel, model = polyModel, seeds = NULL,
     message("Modality tests")
     modalities <- data.frame()
     
-    for(calcMethod in c("Simulation", approxMethods)){
+    for(calcMethod in c("simulation", closureMethods)){
       modalityMethod <- data.frame(time = fromtoby(times(model)))
       
       for(name in contVars){
+        print(contVars)
+        # evaluate or set values for 'lower' and 'upper'
+        values <- subset(msData, variable == name, select = value)
+        if(is.null(lower)) 
+          lower <- min(values)
+        else
+          lower <- with(as.list(parms(model)), eval(lower))
+        if(is.null(upper)) 
+          upper <- max(values)
+        else
+          upper <- with(as.list(parms(model)), eval(upper))
         
-        if(is.null(lower) | is.null(upper)){ # set values if no support is given
-          values <- subset(msData, variable == name, select = value)
-          if(is.null(lower)) lower <- min(values)
-          if(is.null(upper)) upper <- max(values)
-        }
+        print(lower)
+        print(upper)
         
         # select moments
-        m <- subset(moments, method == calcMethod & order <= 4, 
+        m <- subset(ma$moments, method == calcMethod & order <= 4, 
                     select = c("time", "order", name))
         m <- tidyr::spread(m, order, name)
         m <- m[order(m$time),]
-        m2 <- apply(within(m, rm("time")), 1, 
-                    function(row){
-                      is.unimodal(
-                        lower = with(as.list(parms(model)), eval(lower)), 
-                        upper = with(as.list(parms(model)), eval(upper)), 
-                        moments = row)
-                    })
+        m2 <- momcalc::is.unimodal(
+          lower = lower,
+          upper = upper,
+          moments = within(m, rm("time"))
+        )
+        # m2 <- apply(within(m, rm("time")), 1, 
+        #             function(row){
+        #               momcalc::is.unimodal(
+        #                 lower = lower, 
+        #                 upper = upper, 
+        #                 moments = row)
+        #             })
         colname <- paste("modality of", name)
         modalityMethod[, colname] <- factor(m2, levels = c( "4-b-unimodal",
                                                             "not unimodal",
@@ -174,6 +188,7 @@ analyseModel <- function(polyModel, model = polyModel, seeds = NULL,
       modalities <- dplyr::bind_rows(modalities, modalityMethod)
     }
     modalities$method <- as.factor(modalities$method)
+    print(head(modalities))
     modalities$method
     saveRDS(modalities, file = paste0(fname, "__modality.rda"))
   }
@@ -251,31 +266,11 @@ analyseModel <- function(polyModel, model = polyModel, seeds = NULL,
       dev.off()
     })
     
-    
     # moments
     try({
       message("moments, ", appendLF = FALSE)
-      mplot <- plotCompareMomApp(polyModel, moments = moments , 
-                                 maxOrder = plotOrder, simnumber = length(ms$seeds))
-      # plotdata <- reshape2::melt(moments, 1:3, stringsAsFactors = TRUE)
-      # plotdata$method <- factor(plotdata$method, levels = c("Simulation", 
-      #                                                       approxMethods))
-      # plotdata$variable <- as.character(plotdata$variable)
-      # plotdata <- subset(plotdata, order <= plotorder)
-      # 
-      # mplot <- ggplot(data = plotdata, ggplot2::aes(x = time, y = value))+ 
-      #   ggplot2::geom_line(size = 1,
-      #                      ggplot2::aes(color = method, linetype = method)) +
-      #   ggplot2::theme(axis.title.y = ggplot2::element_blank(), 
-      #                  axis.title.x = ggplot2::element_blank()) + 
-      #   ggplot2::labs(
-      #     title = model@descr,
-      #     subtitle = format(model, slots = c("parms"), short = FALSE),
-      #     caption = paste("Number of Simulations:", length(seeds))) +
-      #   ggplot2::facet_wrap(variable ~ order, 
-      #                       scales = "free_y", nrow = length(model@init),
-      #                       labeller = ggplot2::label_bquote(cols = E(.(variable)^.(order))))
-      
+      mplot <- plot(ma)
+
       ggplot2::ggsave(filename = paste0(fname,"__moments.png"), plot = mplot, 
                       dpi = 300, width = 20.4, height = length(model@init)*5.5, 
                       units = "cm")
@@ -314,8 +309,5 @@ analyseModel <- function(polyModel, model = polyModel, seeds = NULL,
   }
     
   #### end  ####
-  message("All files are stored in ",ifelse(subDirs, 
-                                            file.path(dir, data[i, "prefix"]), 
-                                            dir))
-  
+  message("All files are stored in ", dir)
 }
