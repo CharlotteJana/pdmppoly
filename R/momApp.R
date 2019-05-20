@@ -68,15 +68,17 @@
 #' @importFrom momcalc extractCov extractMean
 #' @export
 setGeneric("momApp",
-           function(obj, maxOrder = 4, closure = "zero", 
-                    centralize = TRUE, na.rm = TRUE)
+           function(obj, maxOrder = 4, na.rm = TRUE,
+                    closure = c("zero", "zero", "normal", "lognormal", "gamma"),
+                    centralize = c(TRUE, FALSE, TRUE, FALSE, FALSE))
              standardGeneric("momApp"))
 
 #' @rdname momApp
 #' @export
 setMethod("momApp", signature(obj = "polyPdmpModel"), 
-          function(obj, maxOrder = 4, closure = "zero", 
-                   centralize = TRUE, na.rm = TRUE) {
+          function(obj, maxOrder = 4, na.rm = TRUE,
+                   closure = c("zero", "zero", "normal", "lognormal", "gamma"),
+                   centralize = c(TRUE, FALSE, TRUE, FALSE, FALSE)){
   
   states <- obj@discStates[[1]]
   n <- length(obj@init) - length(obj@discStates) # continuous variables
@@ -84,7 +86,7 @@ setMethod("momApp", signature(obj = "polyPdmpModel"),
   names <- names(obj@init)  # names of all variables
   dname <- names(obj@discStates)
   cnames <- names[!names %in% dname]
-  closureName <- "no closure" # value of column 'closure' in the final result
+  closureName <- NULL
   
   # to avoid the R CMD Check NOTE 'no visible binding for global variable ...'
   # time <- variable <- NULL
@@ -127,6 +129,9 @@ setMethod("momApp", signature(obj = "polyPdmpModel"),
     
     if(length(rowsToChange) == 0){
       lhsFull <- lhs
+      closure <- "no closure"
+      centralize <- NA
+      closureName <- "no closure" # value of column 'closure' in the final result
     }
     else{
       
@@ -264,7 +269,9 @@ setMethod("momApp", signature(obj = "polyPdmpModel"),
 
   #### create data.frame with raw moments #####
     
-   moments <- expand.grid(closure = closureName, time = times, order = 1:maxOrder)
+   moments <- expand.grid(`closure-method` = closureName, 
+                          time = times, 
+                          order = 1:maxOrder)
    moments[, names] <- NA
    
    # moments of discrete variables
@@ -272,7 +279,7 @@ setMethod("momApp", signature(obj = "polyPdmpModel"),
    for(c in seq_along(closure)){
      for(j in 1:maxOrder){
       values <- rowSums(out[[c]][, colnames] %*% diag(states))
-      rows <- which(moments$order == j & moments$closure == closureName[c])
+      rows <- which(moments$order == j & moments[, 1] == closureName[c])
       moments[rows, dname] <- values
      }
    }
@@ -281,7 +288,7 @@ setMethod("momApp", signature(obj = "polyPdmpModel"),
    for(i in 1:n){
      colnames <- paste0("E(", cnames[i], "|", dname, "=", states, ")")
      for(c in seq_along(closure)){
-       rows <- which(moments$order == 1 & moments$closure == closureName[c])
+       rows <- which(moments$order == 1 & moments[, 1] == closureName[c])
        moments[rows, cnames[i]] <- rowSums(out[[c]][, colnames])
      }
    }
@@ -291,7 +298,7 @@ setMethod("momApp", signature(obj = "polyPdmpModel"),
      for(j in 2:maxOrder){
       colnames <- paste0("E(", cnames[i], "^", j,"|", dname, "=", states, ")")
       for(c in seq_along(closure)){
-        rows <- which(moments$order == j & moments$closure == closureName[c])
+        rows <- which(moments$order == j & moments[, 1] == closureName[c])
         moments[rows, cnames[i]] <- rowSums(out[[c]][, colnames])
       }
      }

@@ -3,6 +3,7 @@
 \name{momApp-methods}
 \alias{momApp-methods}
 \alias{plot.momApp}
+\alias{addSimulation}
 \alias{print.momApp}
 \alias{summary.momApp}
 \alias{tail.momApp}
@@ -10,6 +11,8 @@
 \title{Methods for objects of class \code{\link{momApp}}}
 \usage{
 \method{plot}{momApp}(x, ...)
+
+addSimulation(x, ms)
 
 \method{print}{momApp}(x, ...)
 
@@ -31,5 +34,7 @@ Objects of class momApp occur as results of function \code{\link{momApp}}.
 Their structure is described in the \code{Details} section of the
 documentation of \code{\link{momApp}}. There are several methods to examine
 such objects, namely \code{print}, \code{summary}, \code{plot}, \code{tail}
-and \code{head}.
+and \code{head}. Function \code{addSimulation} allows to add moments that
+come from simulated data to the object. This makes it easy to compare the
+values.
 }

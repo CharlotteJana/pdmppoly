@@ -1,5 +1,4 @@
 #======== todo =================================================================
-#t2 should $out appear in summary? How should it appear?
 
 #' Methods for objects of class \code{\link{momApp}}
 #' 
@@ -7,14 +6,15 @@
 #' Their structure is described in the \code{Details} section of the
 #' documentation of \code{\link{momApp}}. There are several methods to examine
 #' such objects, namely \code{print}, \code{summary}, \code{plot}, \code{tail}
-#' and \code{head}.
+#' and \code{head}. Function \code{addSimulation} allows to add moments that
+#' come from simulated data to the object. This makes it easy to compare the
+#' values.
 #' @param x object of class \code{momApp}
 #' @param object object of class \code{momApp}
+#' @param ms object of class \code{\link[pdmpsim]multSim}} that contains simulated data
 #' @param ... further arguments to the default method
 #' @name momApp-methods
 NULL
-
-#------- output methods -----------
 
 #' @importFrom tidyr gather
 #' @importFrom ggplot2 ggplot aes geom_line facet_grid labs scale_color_discrete
@@ -48,31 +48,47 @@ plot.momApp <- function(x, ...){
 
 #' @rdname momApp-methods
 #' @export
+addSimulation <- function(x, ms){
+  
+}
+
+#' @rdname momApp-methods
+#' @export
 print.momApp <- function(x, ...){
-  cat(noquote("model: \n"))
+  cat(noquote("Model: \n"))
   cat(format(x$model, short = FALSE, collapse = "\n",
              slots = c("descr", "parms", "init")))
   
-  # maximal Time for which all moments are real numbers
-  maxTime <- min(vapply(seq_len(maxOrder),
-                    function(i) {
-                      h <- x$moments[which(x$moments[, "order"] == i), ]
-                      pos <- Position(is.na, rowSums(h))
-                      ifelse(is.na(pos),
-                             times(x$model)["to"],
-                             h[, "time"][pos - 1])
-                    },
+  cat("\n\nMoment approximation for moments of order > ",
+      x$maxOrder, " leads to \n\n", sep = "")
+  
+  s <- NULL
+  
+  for(c in seq_along(x$closure)){
+    closureName <- names(x$out[c])
+    
+    # maximal Time for which all moments are real numbers
+    maxTime <-  min(vapply(seq_len(x$maxOrder),
+                           function(i){
+                              row <- max(which(x$moments[, 1] == closureName &
+                                               x$moments[, "order"] == i))
+                              return(x$moments[row, "time"])
+                           },
                     numeric(1)))
-  
-  cat("\n\nMoment approximation at time t = ", maxTime, " \nwith ",
-      "moment closure method \"", x$closure, "\"\nfor ",
-      ifelse(x$centralize, "centralized", "raw"), " moments of order > ",
-      x$maxOrder, ": \n\n", sep = "")
-  
-  s <- x$moments[which(x$moments$time == maxTime), ]
+
+    # cat("\n\nMoment approximation at time t = ", maxTime, " \nwith ",
+    #     "moment closure method \"", x$closure[c], "\"\nfor ",
+    #     ifelse(x$centralize[c], "centralized", "raw"), " moments of order > ",
+    #      x$maxOrder, ": \n\n", sep = "")
+    
+    s <- dplyr::bind_rows(s,
+                          x$moments[which(x$moments$time == maxTime &
+                                          x$moments[, 1] == closureName), ])
+    
+    
+  }
   rownames(s) <- NULL
-  s$time <- NULL
-  print(s, ...)
+  print(s[order(s$order), ], ...)
 }
 
 #' @rdname momApp-methods
@@ -85,8 +101,11 @@ summary.momApp <- function(object, ...){
   cat(format(object$model, short = FALSE, collapse = "\n",
              slots = c("descr", "parms", "init")))
   for(i in 1:object$maxOrder){
-    cat(noquote("\n\n$moments, order = "), i, "\n")
-    print(summary(object$moments[which(object$moments$order == i), -(1:2)], ...))
+    for(c in seq_along(object$closure)){
+      cat(noquote("\n\n$moments, order = "), i, ", closure = ", names(object$out)[c], "\n")
+      rows <- which(object$moments$order == i & object$moments[, 1] == names(object$out)[c])
+      print(summary(object$moments[rows, -(1:3)], ...))
+    }
   }
 }
 
@@ -94,18 +113,24 @@ summary.momApp <- function(object, ...){
 #' @importFrom utils tail
 #' @export
 tail.momApp <- function(x, ...){
-  cat(noquote("$moments\n"))
+  cat("$moments\n")
   print(tail(x$moments, ...))
-  cat(noquote("\n$out\n"))
-  print(tail(x$out, ...))
+  cat("\n$out\n")
+  for(c in seq_along(x$closure)){
+    cat("\n$out$", names(x$out)[c], "\n\n", sep = "")
+    print(tail(x$out[[c]], ...))
+  }
 }
 
 #' @rdname momApp-methods
 #' @importFrom utils head
 #' @export
 head.momApp <- function(x, ...){
-  cat(noquote("$moments\n"))
+  cat("$moments\n")
   print(head(x$moments, ...))
-  cat(noquote("\n$out\n"))
-  print(head(x$out, ...))
+  cat("\n$out\n")
+  for(c in seq_along(x$closure)){
+    cat("\n$out$", names(x$out)[c], "\n\n", sep = "")
+    print(head(x$out[[c]], ...))
+  }
 }
