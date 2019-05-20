@@ -23,7 +23,6 @@ compareMomApp <- function(obj, maxOrder = 4, ms = NULL,
                       closure = closures[s],
                       centralize = centralize[s])$moments
       mcalc <- cbind(method = methodNames[s],
-                     # central = centralize[s],
                      mcalc)
       moments[[s]] <- mcalc
     })
@@ -34,13 +33,11 @@ compareMomApp <- function(obj, maxOrder = 4, ms = NULL,
       msim <- dplyr::bind_rows(msim, moments(ms, m))
     }
     msim <- cbind(method = "simulation",
-                 # central = FALSE,
                   msim)
     moments[[length(closures) + 1]] <- msim
   }
   moments <- dplyr::bind_rows(moments)
   moments$method <- as.factor(moments$method)
-  # moments$central <- as.factor(moments$central)
   return(moments)
 }
 

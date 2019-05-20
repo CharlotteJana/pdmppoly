@@ -9,38 +9,61 @@
 \alias{momApp,polyPdmpModel-method}
 \title{Moment approximation for polynomial PDMPs}
 \usage{
-momApp(obj, maxOrder = 4, closure = "zero", centralize = TRUE)
+momApp(obj, maxOrder = 4, closure = "zero", centralize = TRUE,
+  na.rm = TRUE)
 
 \S4method{momApp}{polyPdmpModel}(obj, maxOrder = 4, closure = "zero",
-  centralize = TRUE)
+  centralize = TRUE, na.rm = TRUE)
 }
 \arguments{
 \item{obj}{object of class \code{\link{polyPdmpModel}}.}
 
-\item{maxOrder}{integer defining the highest order of moments that are considered.
-Higher degrees are droped and replaced by other values. The replacement
-method is specified in parameter \code{closure}.}
+\item{maxOrder}{integer defining the highest order of moments that are
+considered. Higher orders are droped and replaced by fixed values. The
+replacement method is specified in parameter \code{closure}.}
 
 \item{closure}{string defining the method that does the moment closure, i. e.
 that changes the system of ODEs into a closed form that is solvable.
-Possible values are \code{zero} and ... .}
+Possible values are \code{zero, normal, lognormal} or \code{gamma}.}
+
+\item{centralize}{boolean variable determining if central or raw moments
+should be replaced by fixed values.}
 }
 \value{
-an object of class \code{momApp} (see details).
-}
-\description{
-Moment approximation for polynomial PDMPs
-}
-\details{
-The returned s3 class \code{momApp} contains 6 different elements:
+The function returns an S3-object of class \code{momApp}.
+It contains 6 different elements:
 \itemize{
 \item \code{model}: the polyPdmpModel \code{obj}
-\item \code{out}: a matrix giving the result of function \code{\link[deSolve]{ode}}.
-Column names were added to make the result understandable.
-\item \code{maxOrder}: integer defining the highest order of moments to be calculated
-\item \code{moments}: a data.frame with the resulting moments, of the same structure
- as the result of function \code{\link[pdmpsim]{moments}} in package \pkg{pdmpsim}.
+\item \code{out}: a matrix giving the result of function
+  \code{\link[deSolve]{ode}}. Column names were added to make the result
+  understandable.
+\item \code{moments}: a data.frame with the resulting raw moments, of the
+  same structure as the result of function \code{\link[pdmpsim]{moments}} in
+  package \pkg{pdmpsim}.
+\item \code{maxOrder}: value of parameter \code{maxOrder}
+\item \code{closure}: value of parameter \code{closure}
+\item \code{centralize}: value of parameter \code{centralize}
 }
+}
+\description{
+This function calculates the raw moments of a polynomial PDMP. 
+The calculation is not based on simulated data but uses the generator
+of the PDMP to create a system of ordinary differential equations.
+The moments can be calculated from the solution of this system of ode's. \cr \cr
+In some cases, the system of ode's is infinetly large and can therefore
+not be solved. A modification is necessary, meaning that all equations for 
+moments whose order is greater than a given order will be replaced by 
+fixed values. This process is called \emph{moment closure}. There are
+different possibilities, which values to set. They depend on the parameter
+\code{closure}. The following options are implemented:
+\itemize{
+\item \code{zero}: Set all values to zero.
+\item \code{normal}: Set values as moments of a normal distributed variable.
+\item \code{lognormal}: Set values as moments of a lognormal distributed variable.
+\item \code{gamma}: Set values as moments of a gamma distributed variable.
+}
+Parameter \code{centralize} determines, if raw or central moments should
+be replaced by fixed values.
 }
 \note{
 This method works only for PDMPs with one discrete variable.
