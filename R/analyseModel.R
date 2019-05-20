@@ -40,7 +40,7 @@
 #' exceed the working storage.
 #' @param statistics character vector. Each entry should be the name of a function
 #' that can be applied over simulated data. It will be used by the functions
-#' \code{\link[pdmpsim]{plotStats} and \code{\link[pdmpsim]{summarise_at}}.
+#' \code{\link[pdmpsim]{plotStats}} and \code{\link[pdmpsim]{summarise_at}}.
 #' @param plot boolean variable. Should \code{analyseModel} generate plots?
 #' @param sim boolean variable. Should \code{analyseModel} do the simulation
 #' or use already simulated data? In the latter case, it will use files

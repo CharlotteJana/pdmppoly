@@ -51,6 +51,10 @@ This variable is only needed if \code{modality = TRUE}.}
 function \code{multSimCsv} is only necessary for huge simulations that 
 exceed the working storage.}
 
+\item{statistics}{character vector. Each entry should be the name of a function
+that can be applied over simulated data. It will be used by the functions
+\code{\link[pdmpsim]{plotStats}} and \code{\link[pdmpsim]{summarise_at}}.}
+
 \item{momentorder}{integer giving the maximal order of moments that shall 
 be calculated with \code{\link{momApp}}. Defaults to 10.}
 }

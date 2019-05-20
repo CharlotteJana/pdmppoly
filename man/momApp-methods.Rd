@@ -2,17 +2,18 @@
 % Please edit documentation in R/momApp_outputMethods.R
 \name{momApp-methods}
 \alias{momApp-methods}
-\alias{plot.momApp}
 \alias{addSimulation}
+\alias{plot.momApp}
 \alias{print.momApp}
 \alias{summary.momApp}
 \alias{tail.momApp}
 \alias{head.momApp}
 \title{Methods for objects of class \code{\link{momApp}}}
 \usage{
-\method{plot}{momApp}(x, ...)
-
 addSimulation(x, ms)
+
+plot.momApp(x, plotorder = 1:x$maxOrder, vars = names(init(x$model)),
+  ...)
 
 \method{print}{momApp}(x, ...)
 
@@ -25,6 +26,14 @@ addSimulation(x, ms)
 \arguments{
 \item{x}{object of class \code{momApp}}
 
+\item{ms}{object of class \code{\link[pdmpsim]{multSim}} that contains simulated data}
+
+\item{plotorder}{numerical vector specifying the orders for which
+moments shall be plotted.}
+
+\item{vars}{character vector specifying the variables
+for which moments shall be plotted.}
+
 \item{...}{further arguments to the default method}
 
 \item{object}{object of class \code{momApp}}
@@ -34,7 +43,22 @@ Objects of class momApp occur as results of function \code{\link{momApp}}.
 Their structure is described in the \code{Details} section of the
 documentation of \code{\link{momApp}}. There are several methods to examine
 such objects, namely \code{print}, \code{summary}, \code{plot}, \code{tail}
-and \code{head}. Function \code{addSimulation} allows to add moments that
-come from simulated data to the object. This makes it easy to compare the
-values.
+and \code{head}. Function \code{addSimulation} adds moments that come from
+simulated data to object$moments and adds a new element \code{object$seeds}
+containing the vector with \code{seeds} that were used for simulation. Adding
+simulated moments makes it easy to compare the results, i.e. with
+\code{plot}.
+}
+\examples{
+data(genePolyBF)
+a <- momApp(genePolyBF, maxOrder = 4, 
+            closure = c("normal", "zero", "lognormal"), 
+            centralize = c(TRUE, FALSE, FALSE))
+print(a)
+summary(a)
+
+data(genePdmpBF)
+b <- addSimulation(a, multSim(genePdmpBF, seeds = 1:30))
+tail(b)
+plot(b, plotorder = c(1, 4))
 }

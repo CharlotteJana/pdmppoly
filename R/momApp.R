@@ -269,7 +269,7 @@ setMethod("momApp", signature(obj = "polyPdmpModel"),
 
   #### create data.frame with raw moments #####
     
-   moments <- expand.grid(`closure-method` = closureName, 
+   moments <- expand.grid(method = closureName, 
                           time = times, 
                           order = 1:maxOrder)
    moments[, names] <- NA

@@ -1,4 +1,5 @@
 #======== todo =================================================================
+#t2 addSimulation: compare models
 
 #' Methods for objects of class \code{\link{momApp}}
 #' 
@@ -6,50 +7,89 @@
 #' Their structure is described in the \code{Details} section of the
 #' documentation of \code{\link{momApp}}. There are several methods to examine
 #' such objects, namely \code{print}, \code{summary}, \code{plot}, \code{tail}
-#' and \code{head}. Function \code{addSimulation} allows to add moments that
-#' come from simulated data to the object. This makes it easy to compare the
-#' values.
+#' and \code{head}. Function \code{addSimulation} adds moments that come from
+#' simulated data to object$moments and adds a new element \code{object$seeds}
+#' containing the vector with \code{seeds} that were used for simulation. Adding
+#' simulated moments makes it easy to compare the results, i.e. with
+#' \code{plot}.
 #' @param x object of class \code{momApp}
 #' @param object object of class \code{momApp}
-#' @param ms object of class \code{\link[pdmpsim]multSim}} that contains simulated data
+#' @param ms object of class \code{\link[pdmpsim]{multSim}} that contains simulated data
 #' @param ... further arguments to the default method
 #' @name momApp-methods
+#' @examples 
+#' data(genePolyBF)
+#' a <- momApp(genePolyBF, maxOrder = 4, 
+#'             closure = c("normal", "zero", "lognormal"), 
+#'             centralize = c(TRUE, FALSE, FALSE))
+#' print(a)
+#' summary(a)
+#' 
+#' data(genePdmpBF)
+#' b <- addSimulation(a, multSim(genePdmpBF, seeds = 1:30))
+#' tail(b)
+#' plot(b, plotorder = c(1, 4))
 NULL
-
-#' @importFrom tidyr gather
-#' @importFrom ggplot2 ggplot aes geom_line facet_grid labs scale_color_discrete
-#' @rdname momApp-methods
-#' @method plot momApp
-#' @export
-plot.momApp <- function(x, ...){
-  
-  # to avoid the R CMD Check NOTE 'no visible binding for global variable ...'
-  time <- variable <- init <- descr <- NULL
-  
-  data <- tidyr::gather(x$moments, key = "variable", value = "value", 
-                        names(init(x$model)))
-  data$order <- factor(data$order)
-  
-  plot <- ggplot(data = data, aes(x = time, y = value)) + 
-    geom_line(aes(group = order, color = order)) +
-    facet_grid(rows = ggplot2::vars(variable), scales = "free") +
-    scale_color_discrete(name = "order of\nmoments") +
-    labs(subtitle = paste0(descr(x$model), "\n",
-                          format(x$model, short = FALSE, 
-                                 slots = c("parms", "init"), collapse = "\n")),
-         title = "Moment approximation",
-         caption = paste("Method for moment closure:", x$closure),
-         y = "")
-  
-  print(plot)
-  invisible(plot)
-  return(plot)
-}
 
 #' @rdname momApp-methods
 #' @export
 addSimulation <- function(x, ms){
+  msim <- NULL
+  for(m in seq_len(x$maxOrder)){
+    msim <- dplyr::bind_rows(msim, moments(ms, m))
+  }
+  msim <- cbind(method = "simulation",
+                msim)
+  suppressWarnings(
+    x$moments <- dplyr::bind_rows(x$moments, msim)
+  )
+  x$moments$method <- as.factor(x$moments$method)
+  x$seeds <- ms$seeds
+  return(x)
+}
+
+#' @param plotorder numerical vector specifying the orders for which
+#' moments shall be plotted.
+#' @param vars character vector specifying the variables
+#' for which moments shall be plotted.
+#' @rdname momApp-methods
+#' @export
+plot.momApp <- function(x, plotorder = 1:x$maxOrder, vars = names(init(x$model)), ...){
+  plotdata <- reshape2::melt(x$moments, 1:3, stringsAsFactors = TRUE)
+  plotdata <- subset(plotdata, order %in% plotorder)
+  plotdata <- subset(plotdata, variable %in% vars)
+  plotdata$variable <- as.character(plotdata$variable)
+
+  linetypes <- c(simulation = 1,
+                 `zero (raw)` = 2,
+                 `zero (central)` = 3,
+                 `normal (central)` = 4,
+                 gamma = 5,
+                 lognormal = 6)
   
+  mplot <- ggplot2::ggplot(data = plotdata, ggplot2::aes(x = time, y = value)) + 
+    ggplot2::geom_line(size = 1,
+                       ggplot2::aes(color = method, linetype = method)) +
+    ggplot2::scale_linetype_manual(values = linetypes) +
+    ggplot2::scale_color_manual(values = linetypes) +
+    ggplot2::theme(axis.title.x = ggplot2::element_blank(), 
+                   axis.title.y = ggplot2::element_blank()) + 
+    ggplot2::labs(
+      title = x$model@descr,
+      subtitle = format(x$model, slots = c("parms"), short = FALSE))
+  
+  methods <- levels(x$moments[, 1])
+
+  if("simulation" %in% methods & length(x$seeds) > 0){
+    mplot <- mplot +
+      ggplot2::labs(
+        caption = paste("number of simulations:", length(x$seeds)))
+  }
+  mplot <- mplot + 
+    ggplot2::facet_wrap(variable ~ order,
+                        scales = "free_y", nrow = length(x$model@init),
+                        labeller = ggplot2::label_bquote(cols = E(.(variable)^.(order))))
+  return(mplot)
 }
 
 #' @rdname momApp-methods
@@ -63,14 +103,14 @@ print.momApp <- function(x, ...){
       x$maxOrder, " leads to \n\n", sep = "")
   
   s <- NULL
+  methods <- levels(x$moments[, 1])
   
-  for(c in seq_along(x$closure)){
-    closureName <- names(x$out[c])
+  for(m in methods){
     
     # maximal Time for which all moments are real numbers
     maxTime <-  min(vapply(seq_len(x$maxOrder),
                            function(i){
-                              row <- max(which(x$moments[, 1] == closureName &
+                              row <- max(which(x$moments[, 1] == m &
                                                x$moments[, "order"] == i))
                               return(x$moments[row, "time"])
                            },
@@ -83,9 +123,7 @@ print.momApp <- function(x, ...){
     
     s <- dplyr::bind_rows(s,
                           x$moments[which(x$moments$time == maxTime &
-                                          x$moments[, 1] == closureName), ])
-    
-    
+                                          x$moments[, 1] == m), ])
   }
   rownames(s) <- NULL
   print(s[order(s$order), ], ...)
@@ -101,9 +139,10 @@ summary.momApp <- function(object, ...){
   cat(format(object$model, short = FALSE, collapse = "\n",
              slots = c("descr", "parms", "init")))
   for(i in 1:object$maxOrder){
-    for(c in seq_along(object$closure)){
-      cat(noquote("\n\n$moments, order = "), i, ", closure = ", names(object$out)[c], "\n")
-      rows <- which(object$moments$order == i & object$moments[, 1] == names(object$out)[c])
+    methods <- levels(object$moments[, 1]) 
+    for(m in methods){
+      cat(noquote("\n\n$moments, order = "), i, ", method = ", m, "\n")
+      rows <- which(object$moments$order == i & object$moments[, 1] == m)
       print(summary(object$moments[rows, -(1:3)], ...))
     }
   }
