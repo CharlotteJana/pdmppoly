@@ -130,7 +130,8 @@ analyseModel <- function(polyModel, model = polyModel, seeds = NULL,
   if(momApp){
     try({
       message("Approximate Moments")
-      ma <- momApp(polyModel, maxOrder = max(momentorder))
+      ma <- momApp(polyModel, maxOrder = max(momentorder),
+                   closure = closureMethods, centralize = closureCentral)
       ma <- addSimulation(ma, ms)
       saveRDS(ma, file = paste0(fname, "__moments.rda"))
     })
@@ -142,11 +143,11 @@ analyseModel <- function(polyModel, model = polyModel, seeds = NULL,
     message("Modality tests")
     modalities <- data.frame()
     
-    for(calcMethod in c("simulation", closureMethods)){
-      modalityMethod <- data.frame(time = fromtoby(times(model)))
+    for(calcMethod in levels(ma$moments$method)){
+      print(calcMethod)
       
       for(name in contVars){
-        print(contVars)
+        
         # evaluate or set values for 'lower' and 'upper'
         values <- subset(msData, variable == name, select = value)
         if(is.null(lower)) 
@@ -158,38 +159,29 @@ analyseModel <- function(polyModel, model = polyModel, seeds = NULL,
         else
           upper <- with(as.list(parms(model)), eval(upper))
         
-        print(lower)
-        print(upper)
-        
         # select moments
         m <- subset(ma$moments, method == calcMethod & order <= 4, 
                     select = c("time", "order", name))
         m <- tidyr::spread(m, order, name)
         m <- m[order(m$time),]
         m2 <- momcalc::is.unimodal(
-          lower = lower,
-          upper = upper,
-          moments = within(m, rm("time"))
+          lower = lower, upper = upper,
+          moments = m[, -1]
         )
-        # m2 <- apply(within(m, rm("time")), 1, 
-        #             function(row){
-        #               momcalc::is.unimodal(
-        #                 lower = lower, 
-        #                 upper = upper, 
-        #                 moments = row)
-        #             })
-        colname <- paste("modality of", name)
-        modalityMethod[, colname] <- factor(m2, levels = c( "4-b-unimodal",
-                                                            "not unimodal",
-                                                            "not existant",
-                                                            NA_character_))
-        modalityMethod[, "method"] <- calcMethod
+        modalName <- paste("modality of", name)
+        modalityMethod <- data.frame(time = m$time,
+                                     method = calcMethod,
+                                     variable = modalName,
+                                     value = factor(m2, levels = c( "4-b-unimodal",
+                                                                    "not unimodal",
+                                                                    "not existant",
+                                                                    NA_character_)))
+        print(tail(modalityMethod))
+        modalities <- dplyr::bind_rows(modalities, modalityMethod)
       }
-      modalities <- dplyr::bind_rows(modalities, modalityMethod)
     }
     modalities$method <- as.factor(modalities$method)
-    print(head(modalities))
-    modalities$method
+    modalities <- tidyr::spread(modalities, variable, value)
     saveRDS(modalities, file = paste0(fname, "__modality.rda"))
   }
     
@@ -300,8 +292,8 @@ analyseModel <- function(polyModel, model = polyModel, seeds = NULL,
     # plot (histogram over all simulations and times)
     if(!useCsv){
       try({
-        message("overview ", appendLF = FALSE)
-        suppressMessages(suppressWarnings(plot(ms)))
+        message("overview ")
+        plot(ms, discPlot = "line") # if you set discPlot = "smooth", you should suppress messages of ggsave
         ggplot2::ggsave(paste0(fname,"__plot.png"), dpi = 300, 
                         width = 20.4, height = 11, units = "cm")
       })
