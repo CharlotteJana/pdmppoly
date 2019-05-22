@@ -144,7 +144,6 @@ analyseModel <- function(polyModel, model = polyModel, seeds = NULL,
     modalities <- data.frame()
     
     for(calcMethod in levels(ma$moments$method)){
-      print(calcMethod)
       
       for(name in contVars){
         
@@ -168,20 +167,18 @@ analyseModel <- function(polyModel, model = polyModel, seeds = NULL,
           lower = lower, upper = upper,
           moments = m[, -1]
         )
-        modalName <- paste("modality of", name)
         modalityMethod <- data.frame(time = m$time,
                                      method = calcMethod,
-                                     variable = modalName,
-                                     value = factor(m2, levels = c( "4-b-unimodal",
+                                     variable = name,
+                                     modality = factor(m2, levels = c( "4-b-unimodal",
                                                                     "not unimodal",
                                                                     "not existant",
                                                                     NA_character_)))
-        print(tail(modalityMethod))
         modalities <- dplyr::bind_rows(modalities, modalityMethod)
       }
     }
     modalities$method <- as.factor(modalities$method)
-    modalities <- tidyr::spread(modalities, variable, value)
+    # modalities <- tidyr::spread(modalities, variable, value)
     saveRDS(modalities, file = paste0(fname, "__modality.rda"))
   }
     
@@ -274,14 +271,15 @@ analyseModel <- function(polyModel, model = polyModel, seeds = NULL,
         message("modality, ")
         timedist <- times(model)["by"]
         
-        ggplot(data = modalities, aes(x = time, y = method, color = `modality of f`)) + 
+        ggplot(data = modalities, aes(x = time, y = method, color = modality)) + 
           ggplot2::geom_segment(aes(xend = time + timedist, yend = method), 
-                                size = 20, lineend = "butt") +
+                                size = 10, lineend = "butt") +
           ggplot2::guides(colour = ggplot2::guide_legend(override.aes = list(size=5))) +
           ggplot2::labs(
             title = model@descr,
             subtitle = format(model, slots = c("parms"), short = FALSE),
-            caption = paste("Number of Simulations:", length(seeds)))
+            caption = paste("Number of Simulations:", length(seeds))) +
+          ggplot2::facet_wrap(~ variable, ncol = 1)
         
         ggplot2::ggsave(filename = paste0(fname,"__modality.png"), 
                         dpi = 300, width = 20.4, height = length(model@init)*5.5, 
