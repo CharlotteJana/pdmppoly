@@ -257,10 +257,8 @@ setMethod("momApp", signature(obj = "polyPdmpModel"),
      paste(cnames, r[row, 1:n], sep = "^", collapse = "*")
    ))
    contNames <- gsub("\\*?[^\\*\\(]+\\^0\\*?", "", contNames) # remove ^0
-   print(contNames)
    contNames <- gsub("\\^+1{1}\\*+", "\\*", contNames) # remove ^1 (part 1)
    contNames <- gsub("\\^+1{1}$", "", contNames) # remove ^1 (part 2)
-   print(contNames)
    discNames <- sapply(1:k, function(i) paste0("P(", dname, "=", states[i],")"))
    outNames <- NULL
    for(i in 1:k){

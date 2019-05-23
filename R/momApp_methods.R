@@ -54,7 +54,7 @@ addSimulation <- function(x, ms){
 #' for which moments shall be plotted.
 #' @rdname momApp-methods
 #' @export
-plot.momApp <- function(x, plotorder = 1:x$maxOrder, vars = names(init(x$model)), ...){
+plot.momApp <- function(x, plotorder = 1, vars = names(init(x$model)), ...){
   plotdata <- reshape2::melt(x$moments, 1:3, stringsAsFactors = TRUE)
   plotdata <- subset(plotdata, order %in% plotorder)
   plotdata <- subset(plotdata, variable %in% vars)

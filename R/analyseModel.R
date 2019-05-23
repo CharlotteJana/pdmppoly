@@ -141,44 +141,19 @@ analyseModel <- function(polyModel, model = polyModel, seeds = NULL,
     
   if(modality){
     message("Modality tests")
-    modalities <- data.frame()
     
-    for(calcMethod in levels(ma$moments$method)){
-      
-      for(name in contVars){
-        
-        # evaluate or set values for 'lower' and 'upper'
-        values <- subset(msData, variable == name, select = value)
-        if(is.null(lower)) 
-          lower <- min(values)
-        else
-          lower <- with(as.list(parms(model)), eval(lower))
-        if(is.null(upper)) 
-          upper <- max(values)
-        else
-          upper <- with(as.list(parms(model)), eval(upper))
-        
-        # select moments
-        m <- subset(ma$moments, method == calcMethod & order <= 4, 
-                    select = c("time", "order", name))
-        m <- tidyr::spread(m, order, name)
-        m <- m[order(m$time),]
-        m2 <- momcalc::is.unimodal(
-          lower = lower, upper = upper,
-          moments = m[, -1]
-        )
-        modalityMethod <- data.frame(time = m$time,
-                                     method = calcMethod,
-                                     variable = name,
-                                     modality = factor(m2, levels = c( "4-b-unimodal",
-                                                                    "not unimodal",
-                                                                    "not existant",
-                                                                    NA_character_)))
-        modalities <- dplyr::bind_rows(modalities, modalityMethod)
-      }
-    }
-    modalities$method <- as.factor(modalities$method)
-    # modalities <- tidyr::spread(modalities, variable, value)
+    # evaluate or set values for 'lower' and 'upper'
+    values <- subset(msData, variable == name, select = value)
+    if(is.null(lower)) 
+      lower <- min(values)
+    else
+      lower <- with(as.list(parms(model)), eval(lower))
+    if(is.null(upper)) 
+      upper <- max(values)
+    else
+      upper <- with(as.list(parms(model)), eval(upper))
+    
+    modalities <- modalityTest(ma, lower, upper)
     saveRDS(modalities, file = paste0(fname, "__modality.rda"))
   }
     
@@ -284,18 +259,18 @@ analyseModel <- function(polyModel, model = polyModel, seeds = NULL,
                         dpi = 300, width = 20.4, height = length(model@init)*5.5, 
                         units = "cm")
       })
-    }
     
     # plot (histogram over all simulations and times)
     if(!useCsv){
       try({
-        message("overview ")
+        message("overview ", appendLF = FALSE)
         plot(ms, discPlot = "line") # if you set discPlot = "smooth", you should suppress messages of ggsave
         ggplot2::ggsave(paste0(fname,"__plot.png"), dpi = 300, 
                         width = 20.4, height = 11, units = "cm")
       })
     }
   }
+
     
   #### end  ####
   message("All files are stored in ", dir)
