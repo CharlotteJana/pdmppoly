@@ -245,8 +245,10 @@ setMethod("momApp", signature(obj = "polyPdmpModel"),
       func <- function(lhs, state, parms){
         list(sapply(odeSystem[[c]], function(x) eval(x)))
       }
-      out[[closureName[c]]] <- ode(y = state, times = times, func = func, 
-                                   parms = obj@parms, method = obj@solver)
+      try({
+        out[[closureName[c]]] <- ode(y = state, times = times, func = func, 
+                                     parms = obj@parms, method = obj@solver)
+      })
     }
    
   ### create meaningful column names for out
@@ -255,7 +257,10 @@ setMethod("momApp", signature(obj = "polyPdmpModel"),
      paste(cnames, r[row, 1:n], sep = "^", collapse = "*")
    ))
    contNames <- gsub("\\*?[^\\*\\(]+\\^0\\*?", "", contNames) # remove ^0
-   contNames <- gsub("+\\^+1", "", contNames) # remove ^1
+   print(contNames)
+   contNames <- gsub("\\^+1{1}\\*+", "\\*", contNames) # remove ^1 (part 1)
+   contNames <- gsub("\\^+1{1}$", "", contNames) # remove ^1 (part 2)
+   print(contNames)
    discNames <- sapply(1:k, function(i) paste0("P(", dname, "=", states[i],")"))
    outNames <- NULL
    for(i in 1:k){
@@ -276,7 +281,7 @@ setMethod("momApp", signature(obj = "polyPdmpModel"),
    
    # moments of discrete variables
    colnames <- paste0("P(", dname, "=", states, ")")
-   for(c in seq_along(closure)){
+   for(c in seq_along(names(out))){
      for(j in 1:maxOrder){
       values <- rowSums(out[[c]][, colnames] %*% diag(states))
       rows <- which(moments$order == j & moments[, 1] == closureName[c])
@@ -287,19 +292,22 @@ setMethod("momApp", signature(obj = "polyPdmpModel"),
    # moments of order 1
    for(i in 1:n){
      colnames <- paste0("E(", cnames[i], "|", dname, "=", states, ")")
-     for(c in seq_along(closure)){
+     for(c in seq_along(names(out))){
        rows <- which(moments$order == 1 & moments[, 1] == closureName[c])
        moments[rows, cnames[i]] <- rowSums(out[[c]][, colnames])
      }
    }
    
+   print(names(out))
+   
    # moments of order > 1
    for(i in 1:n){
      for(j in 2:maxOrder){
       colnames <- paste0("E(", cnames[i], "^", j,"|", dname, "=", states, ")")
-      for(c in seq_along(closure)){
+      for(c in seq_along(names(out))){
         rows <- which(moments$order == j & moments[, 1] == closureName[c])
-        moments[rows, cnames[i]] <- rowSums(out[[c]][, colnames])
+        moments[rows, cnames[i]] <- tryCatch(rowSums(out[[c]][, colnames]),
+                                             error=function(cond) NA)
       }
      }
    }

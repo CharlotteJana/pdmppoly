@@ -2,10 +2,10 @@
 #t2: example in documentation
 #t1: useCsv = multSimCsv implementieren
 #t1: auskommentierten code mit manipulate bearbeiten
+#t2: ms mit übergeben, so dass nur modality berechnet wird ODER
+#    modality berechnungen auslagern
 #t3: model und polyModel vergleichen
-#t2: modality plot for every variable
-#t1: modality tests funktionieren nicht! (siehe plots)
-#t1: lower und upper müssen vektoren sein!
+#t1: modality tests funktionieren nicht! 
 
 #' Analyse a polynomial PDMP
 #' 
@@ -265,8 +265,7 @@ analyseModel <- function(polyModel, model = polyModel, seeds = NULL,
                       units = "cm")
     })
     
-    # modality (für mehrere variablen anpassen!)
-    if(modality){
+    # modality
       try({
         message("modality, ")
         timedist <- times(model)["by"]
