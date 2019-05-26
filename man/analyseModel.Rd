@@ -6,7 +6,7 @@
 \usage{
 analyseModel(polyModel, model = polyModel, seeds = NULL,
   dir = file.path(getwd(), "simulations"),
-  filenameprefix = descr(polyModel), momentorders = 1:4,
+  filenameprefix = descr(polyModel), momentorder = c(4, 10),
   plotorder = 1:4, plot = TRUE, modality = TRUE, sim = TRUE,
   momApp = TRUE, lower = NULL, upper = NULL, useCsv = FALSE,
   statistics = c("min", "max", "mean", "median", "sd"))
@@ -14,17 +14,25 @@ analyseModel(polyModel, model = polyModel, seeds = NULL,
 \arguments{
 \item{polyModel}{an object of class \code{\link{polyPdmpModel}}}
 
-\item{model}{the corresponding object of class \code{\link{pdmpModel}}}
+\item{model}{the corresponding object of class \code{\link{pdmpModel}}. It is
+used for simulation because the simulation of an object of class
+\code{pdmpModel} is faster than the simulation of an object of class
+\code{polyPdmpModel}.}
 
 \item{seeds}{number of seeds to be simulated}
 
-\item{dir}{string giving the directory where files will be stored.}
+\item{dir}{string giving the directory where all files will be stored.}
 
 \item{filenameprefix}{string. The name of each file saved by \code{analyseModel}
 will start with this string.}
 
-\item{plotorder}{vector giving all the orders of moments that shall be plotted
-with \code{\link{plotCompareMomApp}}. Defaults to 1:4.}
+\item{momentorder}{numerical vector. Each entry specifies the maximal order
+of moments that shall be calculated with \code{\link{momApp}}. The moment
+approximation will be performed for each entry seperately. 
+Defaults to c(4, 10).}
+
+\item{plotorder}{vector giving all the orders of moments that shall be plotted. 
+Defaults to 1:4.}
 
 \item{plot}{boolean variable. Should \code{analyseModel} generate plots?}
 
@@ -54,9 +62,6 @@ exceed the working storage.}
 \item{statistics}{character vector. Each entry should be the name of a function
 that can be applied over simulated data. It will be used by the functions
 \code{\link[pdmpsim]{plotStats}} and \code{\link[pdmpsim]{summarise_at}}.}
-
-\item{momentorder}{integer giving the maximal order of moments that shall 
-be calculated with \code{\link{momApp}}. Defaults to 10.}
 }
 \description{
 Perform all methods that are available for a polynomial PDMP:

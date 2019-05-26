@@ -12,8 +12,7 @@
 \usage{
 addSimulation(x, ms)
 
-plot.momApp(x, plotorder = 1:x$maxOrder, vars = names(init(x$model)),
-  ...)
+plot.momApp(x, plotorder = 1, vars = names(init(x$model)), ...)
 
 \method{print}{momApp}(x, ...)
 
@@ -26,7 +25,8 @@ plot.momApp(x, plotorder = 1:x$maxOrder, vars = names(init(x$model)),
 \arguments{
 \item{x}{object of class \code{momApp}}
 
-\item{ms}{object of class \code{\link[pdmpsim]{multSim}} that contains simulated data}
+\item{ms}{object of class \code{\link[pdmpsim]{multSim}} that contains 
+simulated data}
 
 \item{plotorder}{numerical vector specifying the orders for which
 moments shall be plotted.}

@@ -1,11 +1,8 @@
 #======== todo =================================================================
 #t2: example in documentation
 #t1: useCsv = multSimCsv implementieren
-#t1: auskommentierten code mit manipulate bearbeiten
-#t2: ms mit übergeben, so dass nur modality berechnet wird ODER
-#    modality berechnungen auslagern
-#t3: model und polyModel vergleichen
-#t1: modality tests funktionieren nicht! 
+#t3: simulierte daten direkt übergeben können
+#t1: mehrere werte für momentorder übergeben können
 
 #' Analyse a polynomial PDMP
 #' 
@@ -24,15 +21,20 @@
 #' or approximated moments.
 #' 
 #' @param polyModel an object of class \code{\link{polyPdmpModel}}
-#' @param model the corresponding object of class \code{\link{pdmpModel}}
+#' @param model the corresponding object of class \code{\link{pdmpModel}}. It is
+#'   used for simulation because the simulation of an object of class
+#'   \code{pdmpModel} is faster than the simulation of an object of class
+#'   \code{polyPdmpModel}.
 #' @param seeds number of seeds to be simulated
-#' @param dir string giving the directory where files will be stored.
+#' @param dir string giving the directory where all files will be stored.
 #' @param filenameprefix string. The name of each file saved by \code{analyseModel}
 #' will start with this string.
-#' @param momentorder integer giving the maximal order of moments that shall 
-#' be calculated with \code{\link{momApp}}. Defaults to 10.
-#' @param plotorder vector giving all the orders of moments that shall be plotted
-#' with \code{\link{plotCompareMomApp}}. Defaults to 1:4.
+#' @param momentorder numerical vector. Each entry specifies the maximal order
+#'   of moments that shall be calculated with \code{\link{momApp}}. The moment
+#'   approximation will be performed for each entry seperately. 
+#'   Defaults to c(4, 10).
+#' @param plotorder vector giving all the orders of moments that shall be plotted. 
+#' Defaults to 1:4.
 #' @param useCsv boolean variable. Should \code{analyseModel} use 
 #' \code{\link{multSim}} (if \code{FALSE}) or \code{\link{multSimCsv}} 
 #' (if \code{TRUE}) for simulation? Defaults to \code{FALSE}, because
@@ -55,7 +57,7 @@
 #' @param upper integer. Upper bound of the support of the distribution.
 #' This variable is only needed if \code{modality = TRUE}.
 #' @importFrom pdmpsim format multSim discStates getMultSimData descr
-#' @importFrom ggplot2 labs
+#' @importFrom ggplot2 labs aes ggplot
 #' @importFrom simecol "times<-" "init<-" "init" "parms"
 #' @importFrom grDevices dev.off dev.print png
 #' @importFrom momcalc is.unimodal
@@ -63,10 +65,16 @@
 analyseModel <- function(polyModel, model = polyModel, seeds = NULL, 
                          dir = file.path(getwd(), "simulations"), 
                          filenameprefix = descr(polyModel),
-                         momentorder = 4, plotorder = 1:4, 
+                         momentorder = c(4,10), plotorder = 1:4, 
                          plot = TRUE, modality = TRUE, sim = TRUE, momApp = TRUE,
                          lower = NULL, upper = NULL, useCsv = FALSE,
                          statistics = c("min", "max", "mean", "median", "sd")){
+  
+  if(!identical(sim(polyModel, outSlot = FALSE, seed = 20),
+                sim(model, outSlot = FALSE, seed = 20))){
+    stop("Simulation of 'polyModel' and 'model' differ, 
+          they do not represent the same PDMP.")
+  }
   
   #### variables ####
   initNames <- names(init(model))
@@ -143,15 +151,21 @@ analyseModel <- function(polyModel, model = polyModel, seeds = NULL,
     message("Modality tests")
     
     # evaluate or set values for 'lower' and 'upper'
-    values <- subset(msData, variable == name, select = value)
-    if(is.null(lower)) 
-      lower <- min(values)
-    else
-      lower <- with(as.list(parms(model)), eval(lower))
-    if(is.null(upper)) 
-      upper <- max(values)
-    else
-      upper <- with(as.list(parms(model)), eval(upper))
+    setLower <- is.null(lower)
+    setUpper <- is.null(upper)
+    for(i in seq_along(contVars)){
+      values <- subset(msData, variable == contVars[i], select = value)
+      if(setLower) 
+        lower[i] <- min(values)
+      else
+        lower <- with(as.list(parms(model)), eval(lower[i]))
+      if(setUpper) 
+        upper[i] <- max(values)
+      else
+        upper <- with(as.list(parms(model)), eval(upper[i]))
+    }
+    print(lower)
+    print(upper)
     
     modalities <- modalityTest(ma, lower, upper)
     saveRDS(modalities, file = paste0(fname, "__modality.rda"))

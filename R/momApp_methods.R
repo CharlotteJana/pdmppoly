@@ -1,5 +1,4 @@
 #======== todo =================================================================
-#t2 addSimulation: compare models
 
 #' Methods for objects of class \code{\link{momApp}}
 #' 
@@ -14,7 +13,8 @@
 #' \code{plot}.
 #' @param x object of class \code{momApp}
 #' @param object object of class \code{momApp}
-#' @param ms object of class \code{\link[pdmpsim]{multSim}} that contains simulated data
+#' @param ms object of class \code{\link[pdmpsim]{multSim}} that contains 
+#' simulated data
 #' @param ... further arguments to the default method
 #' @name momApp-methods
 #' @examples 
@@ -34,6 +34,13 @@ NULL
 #' @rdname momApp-methods
 #' @export
 addSimulation <- function(x, ms){
+  
+  if(!identical(sim(ms$model, outSlot = FALSE, seed = 10),
+                sim(x$model, outSlot = FALSE, seed = 10))){
+      stop("Simulation of 'x$model' and 'ms$model' differ, 
+           they do not represent the same PDMP.")
+  }
+  
   msim <- NULL
   for(m in seq_len(x$maxOrder)){
     msim <- dplyr::bind_rows(msim, moments(ms, m))

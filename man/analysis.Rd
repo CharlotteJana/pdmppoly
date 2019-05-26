@@ -2,12 +2,9 @@
 % Please edit documentation in R/analysis.R
 \name{analysis}
 \alias{analysis}
-\title{Analyse the gene regulation models used in PROM}
+\title{Analyse different polynomial PDMPs at once}
 \usage{
-analysis(data, model, polyModel, seeds = NULL, useCsv = FALSE,
-  dir = file.path(getwd(), "simulations"), subDirs = FALSE,
-  momentorders = 1:4, plotorder = 1:4, plot = TRUE,
-  modality = TRUE, sim = TRUE, lower = NULL, upper = NULL)
+analysis(data, model, polyModel, prefix, dir, subdirs, ...)
 }
 \arguments{
 \item{data}{a data.frame, see Details below}
@@ -16,32 +13,16 @@ analysis(data, model, polyModel, seeds = NULL, useCsv = FALSE,
 
 \item{polyModel}{the corresponding object of class \code{\link{polyPdmpModel}}}
 
-\item{seeds}{number of seeds to be simulated}
-
-\item{useCsv}{boolean variable indicating if \code{\link{multSim}} (if FALSE)
-or \code{\link{multSimCsv}} (if TRUE) should be used for simulation.}
-
 \item{dir}{string giving the directory where files will be stored.}
+
+\item{...}{additional parameters to function \code{\link{analyseModel}}.}
 
 \item{subDirs}{boolean variable indicating if subdirectories for every
 simulation shall be created. Defaults to FALSE.}
-
-\item{momentorders}{vector giving all the orders of moments that shall 
-be calculated. Defaults to 1:10.}
-
-\item{plotorder}{vector giving all the orders of moments that shall be plotted.
-Defaults to 1:4.}
-
-\item{plot}{boolean variable. Should \code{analysis} generate plots?}
-
-\item{sim}{boolean variable. Should \code{analysis} do the simulation
-or use already simulated data? In the latter case, it will use files
-stored at the same places where \code{analysis} would store the simulations.}
-
-\item{lower}{integer. Lower bound of the compact support of the distribution.}
-
-\item{upper}{integer. Upper bound of the compact support of the distribution.}
 }
 \description{
-Analyse the gene regulation models used in PROM
+Read a csv file which contains informations about the PDMPs
+and their simulation parameters. Analyse all PDMPs with
+\code{\link{analyseModel}} and save the resulting files in a 
+given directory.
 }
