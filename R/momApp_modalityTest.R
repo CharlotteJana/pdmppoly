@@ -48,7 +48,7 @@ plotModalities <- function(momApp, modalities = NULL,
   timedist <- times(momApp$model)["by"]
   
   plot <- ggplot(data = modalities, aes(x = time, y = method, color = modality)) + 
-          geom_segment(aes(xend = time + timedist, yend = method), size = 10, lineend = "butt") +
+          geom_segment(aes(xend = time + timedist, yend = method), size = 5, lineend = "butt") +
           guides(colour = ggplot2::guide_legend(override.aes = list(size=5))) +
           labs(
             title = descr(momApp$model),

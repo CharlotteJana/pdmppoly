@@ -9,7 +9,8 @@ analyseModel(polyModel, model = polyModel, seeds = NULL,
   filenameprefix = descr(polyModel), momentorder = c(4, 10),
   plotorder = 1:4, plot = TRUE, modality = TRUE, sim = TRUE,
   momApp = TRUE, lower = NULL, upper = NULL, useCsv = FALSE,
-  statistics = c("min", "max", "mean", "median", "sd"))
+  statistics = c("min", "max", "mean", "median", "sd"),
+  title = descr(model))
 }
 \arguments{
 \item{polyModel}{an object of class \code{\link{polyPdmpModel}}}

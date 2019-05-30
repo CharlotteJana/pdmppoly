@@ -2,7 +2,8 @@
 #t2: example in documentation
 #t1: useCsv = multSimCsv implementieren
 #t3: simulierte daten direkt übergeben können
-#t1: mehrere werte für momentorder übergeben können
+#t1: lower, upper mehrdimensional testen
+#v1: Titel der modality plots
 
 #' Analyse a polynomial PDMP
 #' 
@@ -68,7 +69,8 @@ analyseModel <- function(polyModel, model = polyModel, seeds = NULL,
                          momentorder = c(4,10), plotorder = 1:4, 
                          plot = TRUE, modality = TRUE, sim = TRUE, momApp = TRUE,
                          lower = NULL, upper = NULL, useCsv = FALSE,
-                         statistics = c("min", "max", "mean", "median", "sd")){
+                         statistics = c("min", "max", "mean", "median", "sd"),
+                         title = descr(model)){
   
   if(!identical(sim(polyModel, outSlot = FALSE, seed = 20),
                 sim(model, outSlot = FALSE, seed = 20))){
@@ -101,7 +103,6 @@ analyseModel <- function(polyModel, model = polyModel, seeds = NULL,
       ms <- readRDS(file = paste0(fname, ".rda"))
       message("Get MultSimData")
       msData <- readRDS(file = paste0(fname, "__multSimData.rda"))
-      moments <- readRDS(file = paste0(fname, "__moments.rda"))
       
       if(!all.equal(model, ms$model))
         stop("Simulation stored in ", paste0(fname, ".rda"),
@@ -135,14 +136,22 @@ analyseModel <- function(polyModel, model = polyModel, seeds = NULL,
   })
     
   #### moments ####
-  if(momApp){
-    try({
-      message("Approximate Moments")
-      ma <- momApp(polyModel, maxOrder = max(momentorder),
-                   closure = closureMethods, centralize = closureCentral)
-      ma <- addSimulation(ma, ms)
-      saveRDS(ma, file = paste0(fname, "__moments.rda"))
-    })
+  ma <- list()
+  for(i in seq_along(momentorder)){
+    if(momApp){
+      try({
+        message("Approximate Moments of order <= ", momentorder[i])
+        ma[[i]] <- momApp(polyModel, maxOrder = momentorder[i],
+                     closure = closureMethods, centralize = closureCentral)
+        ma[[i]] <- addSimulation(ma[[i]], ms)
+        saveRDS(ma, file = paste0(fname, "__moments_order<=", momentorder[i], ".rda"))
+      })
+    }
+    else{
+      try({
+        ma[[i]] <- readRDS(file = paste0(fname, "__moments_order<=", momentorder[i], ".rda"))
+      })
+    }
   }
   
   #### modality ####
@@ -167,8 +176,11 @@ analyseModel <- function(polyModel, model = polyModel, seeds = NULL,
     print(lower)
     print(upper)
     
-    modalities <- modalityTest(ma, lower, upper)
-    saveRDS(modalities, file = paste0(fname, "__modality.rda"))
+    modalities <- list()
+    for(i in seq_along(momentorder)){
+      modalities[[i]] <- modalityTest(ma[[i]], lower, upper)
+      saveRDS(modalities, file = paste0(fname, "__modality_order<=", momentorder[i], ".rda"))
+    }
   }
     
   ##### plots #####
@@ -181,7 +193,7 @@ analyseModel <- function(polyModel, model = polyModel, seeds = NULL,
       pdmpsim::plotTimes(msData,
                          vars = initNames,
                          plottype = "violin") +
-        ggplot2::labs(title = descr(model),
+        ggplot2::labs(title = title,
                       subtitle = paste0("Number of simulations: ",
                                         length(unique(msData$seed)), "\n",
                                         pdmpsim::format(model, short = F,
@@ -198,7 +210,7 @@ analyseModel <- function(polyModel, model = polyModel, seeds = NULL,
                          vars = initNames[!(initNames %in% discVars)],
                          nolo = 3,
                          plottype = "boxplot") +
-        ggplot2::labs(title = descr(model),
+        ggplot2::labs(title = title,
                       subtitle = paste0("Number of simulations: ",
                                         length(unique(msData$seed)), "\n",
                                         pdmpsim::format(model, short = F,
@@ -213,7 +225,8 @@ analyseModel <- function(polyModel, model = polyModel, seeds = NULL,
       message("statistics, ", appendLF = FALSE)
       pdmpsim::plotStats(msData,
                          vars = initNames[!(initNames %in% discVars)],
-                         funs = statistics)
+                         funs = statistics) +
+      ggplot2::labs(title = title)
       ggplot2::ggsave(filename = paste0(fname,"__statistics.png"), 
                       dpi = 300, width = 20.4, height = 11, units = "cm")
     })
@@ -222,7 +235,7 @@ analyseModel <- function(polyModel, model = polyModel, seeds = NULL,
     try({
       message("histogram, ", appendLF = FALSE)
       h <- hist(msData, t = times(model)["to"],
-                main = descr(model),
+                main = title,
                 sub = pdmpsim::format(model, short = F, slots = "parms"))
       ggplot2::ggsave(filename = paste0(fname,"__histogram.png"), plot = h, 
                       dpi = 300, width = 20.4, height = 11, units = "cm")
@@ -237,7 +250,7 @@ analyseModel <- function(polyModel, model = polyModel, seeds = NULL,
       times <- times[seq(1, length(times), length.out = 6)]
       times <- times[2:6]
       density(msData, t = times,
-              main = descr(model),
+              main = title,
               sub = pdmpsim::format(model, short = F, slots = "parms"))
       dev.print(png, filename = paste0(fname, "__densities.png"),
                 width = 20.4, height = 11, units = "cm", res = 140)
@@ -247,38 +260,37 @@ analyseModel <- function(polyModel, model = polyModel, seeds = NULL,
     # moments
     try({
       message("moments, ", appendLF = FALSE)
-      mplot <- plot(ma)
-
-      ggplot2::ggsave(filename = paste0(fname,"__moments.png"), plot = mplot, 
-                      dpi = 300, width = 20.4, height = length(model@init)*5.5, 
-                      units = "cm")
+      for(i in seq_along(momentorder)){
+        plot(ma[[i]]) + ggplot2::labs(title = paste0(title, " (closure for orders > ", momentorder[i],")"))
+  
+        ggplot2::ggsave(filename = paste0(fname, "__moments_order<=", momentorder[i], ".png"), 
+                        dpi = 300, width = 20.4, height = length(model@init)*5.5, 
+                        units = "cm")
+      }
     })
     
     # modality
       try({
-        message("modality, ")
+        message("modality, ", appendLF = FALSE)
         timedist <- times(model)["by"]
         
-        ggplot(data = modalities, aes(x = time, y = method, color = modality)) + 
-          ggplot2::geom_segment(aes(xend = time + timedist, yend = method), 
-                                size = 10, lineend = "butt") +
-          ggplot2::guides(colour = ggplot2::guide_legend(override.aes = list(size=5))) +
-          ggplot2::labs(
-            title = model@descr,
-            subtitle = format(model, slots = c("parms"), short = FALSE),
-            caption = paste("Number of Simulations:", length(seeds))) +
-          ggplot2::facet_wrap(~ variable, ncol = 1)
-        
-        ggplot2::ggsave(filename = paste0(fname,"__modality.png"), 
-                        dpi = 300, width = 20.4, height = length(model@init)*5.5, 
-                        units = "cm")
+        for(i in seq_along(momentorder)){
+          
+          plotModalities(ma[[i]], modalities = modalities[[i]]) +
+            ggplot2::labs(title = paste0(title, " (closure for orders > ", momentorder[i],")"))
+          
+          ggplot2::ggsave(filename = paste0(fname, "__modality_order<=", momentorder[i], ".png"), 
+                          dpi = 300, width = 20.4, height = length(model@init)*5.5, 
+                          units = "cm")
+        }
       })
     
     # plot (histogram over all simulations and times)
     if(!useCsv){
       try({
-        message("overview ", appendLF = FALSE)
-        plot(ms, discPlot = "line") # if you set discPlot = "smooth", you should suppress messages of ggsave
+        message("overview ")
+        plot(ms, discPlot = "line") + # if you set discPlot = "smooth", you should suppress messages of ggsave
+          ggplot2::labs(title = title)
         ggplot2::ggsave(paste0(fname,"__plot.png"), dpi = 300, 
                         width = 20.4, height = 11, units = "cm")
       })

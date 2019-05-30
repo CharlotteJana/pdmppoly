@@ -296,8 +296,6 @@ setMethod("momApp", signature(obj = "polyPdmpModel"),
      }
    }
    
-   print(names(out))
-   
    # moments of order > 1
    for(i in 1:n){
      for(j in 2:maxOrder){
