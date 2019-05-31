@@ -163,9 +163,9 @@ tail.momApp <- function(x, ...){
   cat("$moments\n")
   print(tail(x$moments, ...))
   cat("\n$out\n")
-  for(c in seq_along(x$closure)){
-    cat("\n$out$", names(x$out)[c], "\n\n", sep = "")
-    print(tail(x$out[[c]], ...))
+  for(closure in names(x$out)){
+    cat("\n$out$", closure, "\n\n", sep = "")
+    print(tail(x$out[[closure]], ...))
   }
 }
 
@@ -176,8 +176,8 @@ head.momApp <- function(x, ...){
   cat("$moments\n")
   print(head(x$moments, ...))
   cat("\n$out\n")
-  for(c in seq_along(x$closure)){
-    cat("\n$out$", names(x$out)[c], "\n\n", sep = "")
-    print(head(x$out[[c]], ...))
+  for(closure in names(x$out)){
+    cat("\n$out$", closure, "\n\n", sep = "")
+    print(head(x$out[[closure]], ...))
   }
 }
