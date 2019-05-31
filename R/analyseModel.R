@@ -4,6 +4,8 @@
 #t3: simulierte daten direkt übergeben können
 #t1: lower, upper mehrdimensional testen
 #v1: Titel der modality plots
+#t3: Ordner erstellen, falls es ihn noch nicht gibt
+#t1: lower und upper mit getSupports bestimmen
 
 #' Analyse a polynomial PDMP
 #' 
@@ -61,7 +63,6 @@
 #' @importFrom ggplot2 labs aes ggplot
 #' @importFrom simecol "times<-" "init<-" "init" "parms"
 #' @importFrom grDevices dev.off dev.print png
-#' @importFrom momcalc is.unimodal
 #' @export
 analyseModel <- function(polyModel, model = polyModel, seeds = NULL, 
                          dir = file.path(getwd(), "simulations"), 
@@ -173,6 +174,9 @@ analyseModel <- function(polyModel, model = polyModel, seeds = NULL,
       else
         upper <- with(as.list(parms(model)), eval(upper[i]))
     }
+    if(setLower)
+      lower <- c(lower, min(discStates(polyModel)[[1]]))
+      upper <- c(upper, max(discStates(polyModel)[[1]]))
     print(lower)
     print(upper)
     
@@ -213,22 +217,36 @@ analyseModel <- function(polyModel, model = polyModel, seeds = NULL,
         ggplot2::labs(title = title,
                       subtitle = paste0("Number of simulations: ",
                                         length(unique(msData$seed)), "\n",
-                                        pdmpsim::format(model, short = F,
+                                        pdmpsim::format(model, short = FALSE,
                                                         collapse = "\n",
                                                         slots = "parms")))
       ggplot2::ggsave(filename = paste0(fname,"__boxplot.png"), dpi = 300,
                       width = 20.4, height = 11, units = "cm")
     })
     
+    # first seeds
+    try({
+      message("single simulations, ", appendLF = FALSE)
+      pdmpsim::plotSeeds(msData, seeds = 1:4) +
+        ggplot2::labs(title = title,
+                      subtitle = pdmpsim::format(model, short = FALSE,
+                                                 collapse = "\n",
+                                                 slots = "parms"))
+      ggplot2::ggsave(filename = paste0(fname,"__singleSimulations.png"), 
+                      dpi = 300, width = 20.4, height = 11, units = "cm")
+    })
+    
     # statistics
     try({
       message("statistics, ", appendLF = FALSE)
-      pdmpsim::plotStats(msData,
-                         vars = initNames[!(initNames %in% discVars)],
-                         funs = statistics) +
-      ggplot2::labs(title = title)
-      ggplot2::ggsave(filename = paste0(fname,"__statistics.png"), 
-                      dpi = 300, width = 20.4, height = 11, units = "cm")
+      for(var in contVars){
+        pdmpsim::plotStats(msData,
+                           vars = var,
+                           funs = statistics) +
+        ggplot2::labs(title = title)
+        ggplot2::ggsave(filename = paste0(fname,"__statistics_", var, ".png"), 
+                        dpi = 300, width = 20.4, height = 11, units = "cm")
+      }
     })
     
     # histogram for last simulated time value

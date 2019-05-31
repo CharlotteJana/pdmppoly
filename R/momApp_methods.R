@@ -72,7 +72,8 @@ plot.momApp <- function(x, plotorder = 1, vars = names(init(x$model)), ...){
                  `zero (central)` = 3,
                  `normal (central)` = 4,
                  gamma = 5,
-                 lognormal = 6)
+                 lognormal = 6,
+                 `no closure` = 7)
   
   mplot <- ggplot2::ggplot(data = plotdata, ggplot2::aes(x = time, y = value)) + 
     ggplot2::geom_line(size = 1,

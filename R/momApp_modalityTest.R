@@ -1,28 +1,32 @@
-#t1 sollten -Inf und Inf als Werte zugelassen werden? Es ist ja ein kompakter Support gefordert
 #t1 lower und upper müssen vektoren sein, deren länge der anzahl von variablen entspricht
 
 #' @importFrom tidyr spread
-modalityTest <- function(momApp, lower = -Inf, upper = Inf, 
+#' @importFrom momcalc is.unimodal
+modalityTest <- function(momApp, lower, upper, 
                          vars = names(init(momApp$model))){
+  
+  
+  stopifnot(length(lower) == length(vars))
+  stopifnot(length(upper) == length(vars))
   
   modalities <- data.frame()
   
   for(calcMethod in unique(momApp$moments$method)){
 
-    for(name in vars){
+    for(i in seq_along(vars)){
       
       # select moments
       m <- subset(momApp$moments, method == calcMethod & order <= 4, 
-                  select = c("time", "order", name))
-      m <- tidyr::spread(m, order, name)
+                  select = c("time", "order", vars[i]))
+      m <- tidyr::spread(m, order, vars[i])
       m <- m[order(m$time),]
       m2 <- momcalc::is.unimodal(
-        lower = lower, upper = upper,
+        lower = lower[i], upper = upper[i],
         moments = m[, -1]
       )
       modalityMethod <- data.frame(time = m$time,
                                    method = calcMethod,
-                                   variable = name,
+                                   variable = vars[i],
                                    modality = factor(m2, levels = c( "4-b-unimodal",
                                                                      "not unimodal",
                                                                      "not existant",
