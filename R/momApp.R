@@ -1,5 +1,6 @@
 #======== todo =================================================================
 #t1 tests überarbeiten
+#t1 tests so dass gamma explodiert und lognormal NaNs liefert
 
 #' Moment approximation for polynomial PDMPs
 #' 
@@ -269,44 +270,53 @@ setMethod("momApp", signature(obj = "polyPdmpModel"),
    for(i in seq_len(length(out))){
      colnames(out[[i]]) <- outNames
    }
-
+   
   #### create data.frame with raw moments #####
     
-   moments <- expand.grid(method = closureName, 
-                          time = times, 
-                          order = 1:maxOrder)
-   moments[, names] <- NA
+   moments <- data.frame()
    
    # moments of discrete variables
    colnames <- paste0("P(", dname, "=", states, ")")
    for(c in seq_along(names(out))){
      for(j in 1:maxOrder){
-      values <- rowSums(out[[c]][, colnames] %*% diag(states))
-      rows <- which(moments$order == j & moments[, 1] == closureName[c])
-      moments[rows, dname] <- values
+       values <- data.frame(method = closureName[c], order = j, time = out[[c]][, "time"])
+       values[, dname] <- rowSums(out[[c]][, colnames] %*% diag(states^j))
+       moments <- rbind(moments, values)
      }
+   }
+   
+   for(name in cnames){
+     moments[, name] <- NA
    }
    
    # moments of order 1
    for(i in 1:n){
      colnames <- paste0("E(", cnames[i], "|", dname, "=", states, ")")
      for(c in seq_along(names(out))){
-       rows <- which(moments$order == 1 & moments[, 1] == closureName[c])
-       moments[rows, cnames[i]] <- rowSums(out[[c]][, colnames])
+       rows <- which(moments[, "order"] == 1 &
+                     moments[, "method"] == names(out)[c] &
+                     moments[, "time"] %in% out[[c]][, "time"])
+       moments[rows, cnames[i]]  <- tryCatch(rowSums(out[[c]][, colnames]),
+                                             error=function(cond) NA)
      }
    }
+   moments$method <- factor(moments$method)
+   moments$order <- factor(moments$order)
    
    # moments of order > 1
    for(i in 1:n){
      for(j in 2:maxOrder){
       colnames <- paste0("E(", cnames[i], "^", j,"|", dname, "=", states, ")")
       for(c in seq_along(names(out))){
-        rows <- which(moments$order == j & moments[, 1] == closureName[c])
-        moments[rows, cnames[i]] <- tryCatch(rowSums(out[[c]][, colnames]),
-                                             error=function(cond) NA)
+        rows <- which(moments[, "order"] == j &
+                      moments[, "method"] == names(out)[c] &
+                      moments[, "time"] %in% out[[c]][, "time"])
+        moments[rows, cnames[i]]  <- tryCatch(rowSums(out[[c]][, colnames]),
+                                              error=function(cond) NA)
       }
      }
    }
+   
    if(na.rm == TRUE)
      moments <- moments[!is.na(rowSums(moments[, -(1:3)])), ]
     
