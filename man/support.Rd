@@ -10,35 +10,39 @@
 \title{Return the support for gene regulation models}
 \usage{
 getSupport(model)
-
-plotSupport(ggplot = NULL, support)
 }
 \arguments{
 \item{model}{Object of class \code{pdmpModel} or \code{polyPdmp}. This has to
 be one of the previous mentioned models.}
-
-\item{ggplot}{Object of class ggplot. The bounds will be plotted onto this 
-object. If NULL, a new plot object will be created.}
-
-\item{support}{data.frame that has the same structure as the data.frame
-returned by \code{getSupport}.}
+}
+\value{
+A list with two entries named 'lower' and 'upper'. Both are data.frames
+containing the values of the lower / upper bound for each variable of the PDMP
+and each time value given in \code{times(model)}.
 }
 \description{
-In PROM, the support of the following gene regualtion models has been
-calculated: \code{[Model K][modelK]}, \code{[Model K2][modelK2]},
-\code{[Model F][modelF]}, \code{[Model KF][modelKF]}, 
-\code{[Model BF][modelBF]} and \code{[Model T][modelT]}.
-Method \code{getSupport} returns a data.frame with the lower and upper bounds
-of the support for every time value, method \code{plotSupport} adds these
-bounds as lines into a plot given as \code{ggplot} object.
-}
-\note{
-Method \code{plotSupport} currently only works for models with one
-continous variable.
+This package contains multiple PDMPs that simulate gene regulation
+mechanisms. They can be loaded with \code{data(model)} where \code{model}
+is one of the following: 
+\itemize{
+\item \code{\link{genePdmpK}}: gene regulation with constant activation
+\item \code{\link{genePdmpK2}}: gene regulation with constant activation, 
+transcription and translation are modeled seperately
+\item \code{\link{genePdmpF}}: gene regulation with positive feedback
+\item \code{\link{genePdmpBF}}: gene regulation with positive feedback
+and basal transcription rate
+\item \code{\link{genePdmpKF}}: gene regulation with constant activation
+and positive feedback
+\item \code{\link{toggleSwitch}}: toggle switch for two genes
+} 
+The distribution of each of these models has a compact support (see References
+for further details). Method \code{getSupport} returns a list with two data.frames 
+containing the lower and upper bounds of the support. They are time-depend 
+and are given for every variable of the model seperately.
 }
 \examples{
 data(genePolyT)
-getSupport(genePolyT) \%>\% head
+getSupport(genePolyT)
 
 data(genePdmpBF)
 ms <-  multSim(genePdmpBF, seeds = 1:4)

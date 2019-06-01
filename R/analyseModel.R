@@ -5,7 +5,7 @@
 #t1: lower, upper mehrdimensional testen
 #v1: Titel der modality plots
 #t3: Ordner erstellen, falls es ihn noch nicht gibt
-#t1: lower und upper mit getSupports bestimmen
+#t2: vergleich der modelle am anfang: mit kurzer zeit simulieren
 
 #' Analyse a polynomial PDMP
 #' 
@@ -145,7 +145,7 @@ analyseModel <- function(polyModel, model = polyModel, seeds = NULL,
         ma[[i]] <- momApp(polyModel, maxOrder = momentorder[i],
                      closure = closureMethods, centralize = closureCentral)
         ma[[i]] <- addSimulation(ma[[i]], ms)
-        saveRDS(ma, file = paste0(fname, "__moments_order<=", momentorder[i], ".rda"))
+        saveRDS(ma[[i]], file = paste0(fname, "__moments_order<=", momentorder[i], ".rda"))
       })
     }
     else{
@@ -155,34 +155,31 @@ analyseModel <- function(polyModel, model = polyModel, seeds = NULL,
     }
   }
   
+  str(ma)
+  
   #### modality ####
     
   if(modality){
     message("Modality tests")
     
-    # evaluate or set values for 'lower' and 'upper'
-    setLower <- is.null(lower)
-    setUpper <- is.null(upper)
-    for(i in seq_along(contVars)){
-      values <- subset(msData, variable == contVars[i], select = value)
-      if(setLower) 
-        lower[i] <- min(values)
-      else
-        lower <- with(as.list(parms(model)), eval(lower[i]))
-      if(setUpper) 
-        upper[i] <- max(values)
-      else
-        upper <- with(as.list(parms(model)), eval(upper[i]))
+    # set values for 'lower' and 'upper' if no values are provided
+    if(is.null(lower) | is.null(upper)){
+      for(i in seq_along(contVars)){
+        values <- subset(msData, variable == contVars[i], select = value)
+        if(is.null(lower)) 
+          lower[i] <- min(values)
+        if(is.null(upper)) 
+          upper[i] <- max(values)
+      }
+      if(is.null(lower))
+        lower <- c(lower, min(discStates(polyModel)[[1]]))
+      if(is.null(upper))
+        upper <- c(upper, max(discStates(polyModel)[[1]]))
     }
-    if(setLower)
-      lower <- c(lower, min(discStates(polyModel)[[1]]))
-      upper <- c(upper, max(discStates(polyModel)[[1]]))
-    print(lower)
-    print(upper)
     
     modalities <- list()
     for(i in seq_along(momentorder)){
-      modalities[[i]] <- modalityTest(ma[[i]], lower, upper)
+      modalities[[i]] <- modalityTest(ma[[i]], lower, upper, vars = contVars)
       saveRDS(modalities, file = paste0(fname, "__modality_order<=", momentorder[i], ".rda"))
     }
   }
