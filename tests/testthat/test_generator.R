@@ -1,6 +1,3 @@
-#======== todo =================================================================
-#s3 delete old code
-
 library(spray)
 context("generator")
 
@@ -271,45 +268,4 @@ test_that("generator works for constant polynomials", {
     EVGenerator(genePolyK2, m, states[i])}
   ))
   expect_true(is.zero(b))
-})
-
-###### alt #########
-
-test_that("old code", {
-  skip("old code not suited for a test")
-
-# define generator for every polyModel (from formal definition)
-formalGenerator <- function(nr, f){
-  
-  polyMod <- get(paste("polyModel", nr, sep = '')) # polyPdmp-model
-  funcdiff <- function(f, val1, val2){ # a help function
-    subs(f, arity(f), val1, TRUE)-subs(f, arity(f), val2, TRUE)
-  }
-  
-  function(discVar){
-    with(as.list(polyMod@parms),
-         switch(nr,
-                #models 1-6:
-                deriv(f,1)*linear(c(-b,a)) + (discVar*k10-(1-discVar)*k01)*funcdiff(f,0,1),
-                deriv(f,1)*linear(c(-b1, 0, a1)) + deriv(f,2)*linear(c(a2, -b2, 0)) + switch(discVar+1, -k01, k10)*funcdiff(f,0,1), # former modell 9
-                deriv(f,1)*linear(c(-b,a)) + switch(discVar+1, -k01, k10*lone(1,2))*funcdiff(f,0,1),
-                deriv(f,1)*linear(c(-b,a)) + switch(discVar+1, -k01*lone(1,2), k10)*funcdiff(f,0,1), # former modell 2
-                deriv(f,1)*(-b*lone(1,2) + switch(discVar+1, a0, a1)) + switch(discVar+1, -k01*lone(1,2), k10)*funcdiff(f,0,1),
-                deriv(f,1)*linear(c(-b,a)) + switch(discVar+1, -k01p*lone(1,2) - k01c*one(2), k10p+k10c)*funcdiff(f,0,1),
-                #model 7: #(nicht mehr aktuell)
-                deriv(f,1)*(-bA*lone(1,3) + switch(discVar, 0, aA, 0, aA)) + deriv(f,2)*(-bB*lone(2,3)+switch(discVar, 0, 0, aB, aB))
-                + switch(discVar, 
-                         k01A*funcdiff(f,3,1)+k01B*funcdiff(f,2,1),
-                         k01A*funcdiff(f,4,2)+k10B*lone(1,3)*funcdiff(f,1,2),
-                         k10A*lone(2,3)*funcdiff(f,1,3)+k01B*funcdiff(f,4,3),
-                         k10A*lone(2,3)*funcdiff(f,2,4)+k10B*lone(1,3)*funcdiff(f,3,4)
-                ),
-                #model 8:
-                deriv(f,1)*(linear(c(-2*k01, 0, 0),2) + linear(c(-b,2*k10,a))) + deriv(f,2)*(linear(c(k01, 0, 0),2) - k10*lone(2,3))
-                + switch(discVar+1, -k01*lone(2,3), k10)*funcdiff(f,0,1),
-         )
-    )
-  }
-}
-
 })

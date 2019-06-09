@@ -4,7 +4,7 @@ context("polyPdmpModel")
 
 #========== simplePdmp ================
 
-test_that("polyPdmpModel can be defined as pdmpModels - two jumptypes", {
+test_that("polyPdmpModel can be defined as pdmpModel - two jumptypes", {
   library(spray)
   simplePdmp <- pdmpModel(
     descr = "Model with two jumptypes",

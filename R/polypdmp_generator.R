@@ -1,5 +1,4 @@
 #======== todo =================================================================
-#v1 EVGenerator umbenennen
 
 #' @include polypdmp_class.R polypdmp_accessors.R
 NULL
@@ -157,5 +156,3 @@ EVGenerator <- function(obj, m, j){
   sum <- s1+s2+s3
   return(sum)
 }
-
-
