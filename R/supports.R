@@ -52,7 +52,7 @@ getSupport <- function(model){
       data$lower[, "f1"] <- f1*exp(-b1*t)
       data$upper[, "f1"] <- f1*exp(-b1*t) + a1/b1*(1-exp(-b1*t))
       data$lower[, "f2"] <- f2*exp(-b2*t) + (exp(-b2*t) - exp(-b1*t))*(f1*a2)/(b2-b1)
-      data$upper[, "f2"] <- data$lower2 + (a1*a2)/(b2-b1)*(b1*(1-exp(-b2*t))-b2*(1-exp(-b1*t)))
+      data$upper[, "f2"] <- data$lower[, "f2"] + (a1*a2)/(b1*b2*(b2-b1))*(b2*(1-exp(-b1*t))-b1*(1-exp(-b2*t)))
       data$lower[, "d"] <- 0
       data$upper[, "d"] <- 1
       return(data)
