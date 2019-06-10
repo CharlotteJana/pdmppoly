@@ -8,9 +8,8 @@ analyseModel(polyModel, model = polyModel, seeds = NULL,
   dir = file.path(getwd(), "simulations"),
   filenameprefix = descr(polyModel), momentorder = c(4, 10),
   plotorder = 1:4, plot = TRUE, modality = TRUE, sim = TRUE,
-  momApp = TRUE, lower = NULL, upper = NULL, useCsv = FALSE,
-  statistics = c("min", "max", "mean", "median", "sd"),
-  title = descr(model))
+  momApp = TRUE, lower = NULL, upper = NULL, statistics = c("min",
+  "max", "mean", "median", "sd"), title = descr(model))
 }
 \arguments{
 \item{polyModel}{an object of class \code{\link{polyPdmpModel}}}
@@ -48,17 +47,27 @@ Furthermore, no value for parameter \code{seeds} is necessary.}
 \item{momApp}{boolean variable. Should \code{analyseModel} calculate moments
 with \code{\link{momApp}}?}
 
-\item{lower}{integer. Lower bound of the support of the distribution.
-This variable is only needed if \code{modality = TRUE}.}
+\item{lower}{numeric vector or matrix or data.frame specifying the lower
+bounds of the compact distribution that determines the law of the PDMP. #'
+It is an argument to function \code{\link{modalityTest}} and only needed if
+\code{modality = TRUE}. If \code{upper} . If \code{lower} is a vector, the
+i-th entry should give the lower bound of the i-th continous variable given
+in \code{init(model)}, independent of a time value. If \code{lower} is a
+matrix or data.frame, it should have a column named \code{time} containing
+all time values specified in \code{times(model)}. The other column names
+should be identical to the continous variables of the PDMP and contain the
+lower bounds for the corresponding variable and time value.}
 
-\item{upper}{integer. Upper bound of the support of the distribution.
-This variable is only needed if \code{modality = TRUE}.}
-
-\item{useCsv}{boolean variable. Should \code{analyseModel} use 
-\code{\link{multSim}} (if \code{FALSE}) or \code{\link{multSimCsv}} 
-(if \code{TRUE}) for simulation? Defaults to \code{FALSE}, because
-function \code{multSimCsv} is only necessary for huge simulations that 
-exceed the working storage.}
+\item{upper}{numeric vector or matrix or data.frame specifying the upper
+bounds of the compact distribution that determines the law of the PDMP. It
+is an argument to function \code{\link{modalityTest}} and only needed if
+\code{modality = TRUE}. If \code{upper} is a vector, the i-th entry should
+give the upper bound of the i-th continous variable given in
+\code{init(model)}, independent of a time value. If \code{upper} is a
+matrix or data.frame, it should have a column named \code{time} containing
+all time values specified in \code{times(model)}. The other column names
+should be identical to the continous variables of the PDMP and contain the
+upper bounds for the corresponding variable and time value.}
 
 \item{statistics}{character vector. Each entry should be the name of a function
 that can be applied over simulated data. It will be used by the functions

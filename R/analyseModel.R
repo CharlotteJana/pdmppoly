@@ -1,10 +1,9 @@
 #======== todo =================================================================
 #t2: example in documentation
-#t1: useCsv = multSimCsv implementieren
 #t3: simulierte daten direkt übergeben können
 #t1: lower, upper mehrdimensional testen
 #v1: Titel der modality plots
-#t3: Ordner erstellen, falls es ihn noch nicht gibt
+#t3: statistics nicht jedes mal berechnen
 #t2: vergleich der modelle am anfang: mit kurzer zeit simulieren
 
 #' Analyse a polynomial PDMP
@@ -38,11 +37,11 @@
 #'   Defaults to c(4, 10).
 #' @param plotorder vector giving all the orders of moments that shall be plotted. 
 #' Defaults to 1:4.
-#' @param useCsv boolean variable. Should \code{analyseModel} use 
-#' \code{\link{multSim}} (if \code{FALSE}) or \code{\link{multSimCsv}} 
-#' (if \code{TRUE}) for simulation? Defaults to \code{FALSE}, because
-#' function \code{multSimCsv} is only necessary for huge simulations that 
-#' exceed the working storage.
+#  @param useCsv boolean variable. Should \code{analyseModel} use 
+#  \code{\link{multSim}} (if \code{FALSE}) or \code{\link{multSimCsv}} 
+#  (if \code{TRUE}) for simulation? Defaults to \code{FALSE}, because
+#  function \code{multSimCsv} is only necessary for huge simulations that 
+#  exceed the working storage.
 #' @param statistics character vector. Each entry should be the name of a function
 #' that can be applied over simulated data. It will be used by the functions
 #' \code{\link[pdmpsim]{plotStats}} and \code{\link[pdmpsim]{summarise_at}}.
@@ -55,10 +54,26 @@
 #' with \code{\link{momApp}}?
 #' @param modality boolean variable. Should \code{analyseModel} test if the 
 #' distribution is unimodal with \code{\link{is.unimodal}}?
-#' @param lower integer. Lower bound of the support of the distribution.
-#' This variable is only needed if \code{modality = TRUE}.
-#' @param upper integer. Upper bound of the support of the distribution.
-#' This variable is only needed if \code{modality = TRUE}.
+#'@param lower numeric vector or matrix or data.frame specifying the lower
+#'  bounds of the compact distribution that determines the law of the PDMP. #'
+#'  It is an argument to function \code{\link{modalityTest}} and only needed if
+#'  \code{modality = TRUE}. If \code{upper} . If \code{lower} is a vector, the
+#'  i-th entry should give the lower bound of the i-th continous variable given
+#'  in \code{init(model)}, independent of a time value. If \code{lower} is a
+#'  matrix or data.frame, it should have a column named \code{time} containing
+#'  all time values specified in \code{times(model)}. The other column names
+#'  should be identical to the continous variables of the PDMP and contain the
+#'  lower bounds for the corresponding variable and time value.
+#' @param upper numeric vector or matrix or data.frame specifying the upper
+#'   bounds of the compact distribution that determines the law of the PDMP. It
+#'   is an argument to function \code{\link{modalityTest}} and only needed if
+#'   \code{modality = TRUE}. If \code{upper} is a vector, the i-th entry should
+#'   give the upper bound of the i-th continous variable given in
+#'   \code{init(model)}, independent of a time value. If \code{upper} is a
+#'   matrix or data.frame, it should have a column named \code{time} containing
+#'   all time values specified in \code{times(model)}. The other column names
+#'   should be identical to the continous variables of the PDMP and contain the
+#'   upper bounds for the corresponding variable and time value.
 #' @importFrom pdmpsim format multSim discStates getMultSimData descr
 #' @importFrom ggplot2 labs aes ggplot
 #' @importFrom simecol "times<-" "init<-" "init" "parms"
@@ -69,7 +84,7 @@ analyseModel <- function(polyModel, model = polyModel, seeds = NULL,
                          filenameprefix = descr(polyModel),
                          momentorder = c(4,10), plotorder = 1:4, 
                          plot = TRUE, modality = TRUE, sim = TRUE, momApp = TRUE,
-                         lower = NULL, upper = NULL, useCsv = FALSE,
+                         lower = NULL, upper = NULL, 
                          statistics = c("min", "max", "mean", "median", "sd"),
                          title = descr(model)){
   
@@ -86,7 +101,9 @@ analyseModel <- function(polyModel, model = polyModel, seeds = NULL,
   contVars <- setdiff(initNames, discVars)
   closureMethods <- c("zero", "zero", "normal", "lognormal", "gamma")
   closureCentral <- c(TRUE, FALSE, TRUE, FALSE, FALSE)
+  
   fname <- file.path(dir, filenameprefix)
+  if(!dir.exists(dir)) dir.create(dir)
   
   # to avoid the R CMD Check NOTE 'no visible binding for global variable ...'
   variable <- method <- time <- E <- . <- NULL
@@ -95,36 +112,31 @@ analyseModel <- function(polyModel, model = polyModel, seeds = NULL,
                                 slots = c("descr", "parms", "init", "times")))
     
   #### simulation ####
-  if(useCsv){
+  if(!sim){ # load existing simulated data
     
+    ms <- readRDS(file = paste0(fname, "__simulations.rda"))
+    message("Get MultSimData")
+    msData <- readRDS(file = paste0(fname, "__multSimData.rda"))
+    
+    if(!all.equal(model, ms$model))
+      stop("Simulation stored in ", paste0(fname, "__simulatons.rda"),
+           " was done with another model or other model parameters.")
+    if(is.null(seeds))
+      seeds <- ms$seeds
+    if(!identical(seeds, ms$seeds))
+      stop("Simulation stored in ", paste0(fname, "__simulations.rda"),
+           " was done with different seeds.")
   }
   else{
-    if(!sim){ # load existing simulated data
-      
-      ms <- readRDS(file = paste0(fname, ".rda"))
-      message("Get MultSimData")
-      msData <- readRDS(file = paste0(fname, "__multSimData.rda"))
-      
-      if(!all.equal(model, ms$model))
-        stop("Simulation stored in ", paste0(fname, ".rda"),
-             " was done with another model or other model parameters.")
-      if(is.null(seeds))
-        seeds <- ms$seeds
-      if(!identical(seeds, ms$seeds))
-        stop("Simulation stored in ", paste0(fname, ".rda"),
-             " was done with different seeds.")
-    }
-    else{
-      ### simulation
-      ms <- multSim(model, seeds)
-      saveRDS(ms, file = paste0(fname, ".rda"))
-      
-      message("Get MultSimData")
-      try({
-        msData <- getMultSimData(ms)
-        saveRDS(msData, file = paste0(fname, "__multSimData.rda"))
-      })
-    }
+    ### simulation
+    ms <- multSim(model, seeds)
+    saveRDS(ms, file = paste0(fname, "__simulations.rda"))
+    
+    message("Get MultSimData")
+    try({
+      msData <- getMultSimData(ms)
+      saveRDS(msData, file = paste0(fname, "__multSimData.rda"))
+    })
   }
   
   ### statistics 
@@ -149,13 +161,15 @@ analyseModel <- function(polyModel, model = polyModel, seeds = NULL,
       })
     }
     else{
-      try({
-        ma[[i]] <- readRDS(file = paste0(fname, "__moments_order<=", momentorder[i], ".rda"))
-      })
+      mafile <- paste0(fname, "__moments_order<=", momentorder[i], ".rda")
+      if(file.exists(mafile))
+        try({
+          ma[[i]] <- readRDS(file = mafile)
+        })
+      else
+        warning("file ", mafile, " doesn't exist.")
     }
   }
-  
-  str(ma)
   
   #### modality ####
     
@@ -163,24 +177,33 @@ analyseModel <- function(polyModel, model = polyModel, seeds = NULL,
     message("Modality tests")
     
     # set values for 'lower' and 'upper' if no values are provided
-    if(is.null(lower) | is.null(upper)){
+    setLower <- is.null(lower)
+    setUpper <- is.null(upper)
+    if(setLower | setUpper){
       for(i in seq_along(contVars)){
         values <- subset(msData, variable == contVars[i], select = value)
-        if(is.null(lower)) 
+        if(setLower) 
           lower[i] <- min(values)
-        if(is.null(upper)) 
+        if(setUpper) 
           upper[i] <- max(values)
       }
-      if(is.null(lower))
-        lower <- c(lower, min(discStates(polyModel)[[1]]))
-      if(is.null(upper))
-        upper <- c(upper, max(discStates(polyModel)[[1]]))
     }
     
     modalities <- list()
     for(i in seq_along(momentorder)){
       modalities[[i]] <- modalityTest(ma[[i]], lower, upper, vars = contVars)
-      saveRDS(modalities, file = paste0(fname, "__modality_order<=", momentorder[i], ".rda"))
+      saveRDS(modalities[[i]], file = paste0(fname, "__modality_order<=", momentorder[i], ".rda"))
+    }
+  }
+  else{
+    modalities <- list()
+    for(i in seq_along(momentorder)){
+      modfile <- paste0(fname, "__modality_order<=", momentorder[i], ".rda")
+      if(file.exists(modfile)){
+        try({
+          modalities[[i]] <- readRDS(file = modfile)
+        })
+      }
     }
   }
     
@@ -252,9 +275,8 @@ analyseModel <- function(polyModel, model = polyModel, seeds = NULL,
       h <- hist(msData, t = times(model)["to"],
                 main = title,
                 sub = pdmpsim::format(model, short = F, slots = "parms"))
-      ggplot2::ggsave(filename = paste0(fname,"__histogram.png"), plot = h, 
-                      dpi = 300, width = 20.4, height = 11, units = "cm")
-      
+      dev.print(png, filename = paste0(fname, "__histogram.png"),
+                width = 20.4, height = 11, units = "cm", res = 140)
       dev.off()
     })
     
@@ -301,15 +323,13 @@ analyseModel <- function(polyModel, model = polyModel, seeds = NULL,
       })
     
     # plot (histogram over all simulations and times)
-    if(!useCsv){
-      try({
-        message("overview ")
-        plot(ms, discPlot = "line") + # if you set discPlot = "smooth", you should suppress messages of ggsave
-          ggplot2::labs(title = title)
-        ggplot2::ggsave(paste0(fname,"__plot.png"), dpi = 300, 
-                        width = 20.4, height = 11, units = "cm")
-      })
-    }
+    try({
+      message("plot ")
+      plot(ms, discPlot = "line") + # if you set discPlot = "smooth", you should suppress messages of ggsave
+        ggplot2::labs(title = title)
+      ggplot2::ggsave(paste0(fname,"__plot.png"), dpi = 300, 
+                      width = 20.4, height = 11, units = "cm")
+    })
   }
 
     
