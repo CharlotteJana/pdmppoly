@@ -24,15 +24,20 @@ test_that("'modalityTest' allows different inputs for 'lower' and 'upper'", {
   expect_identical(res1, res2)
   expect_identical(res3, res4)
   expect_identical(tail(res1), tail(res3))
-  expect_equal(dplyr::mutate_if(subset(res1, time == 10), 
+  
+  moments <- t(subset(ma$moments, time == 10)[, 5:4])
+  modality <- is.unimodal(moments, lower = c(0, 0), upper = c(35, 1))
+  suppressWarnings(
+  expect_equal(dplyr::mutate_if(subset(res4, time == 10), 
                                 is.factor,
                                 as.character), 
                dplyr::mutate_if(data.frame(time = 10, 
                                            method = "zero (central)",
                                            variable = c("f", "d"), 
-                                           modality = "not existant"),
+                                           modality = modality),
                                 is.factor,
                                 as.character))
+  )
 })
 
 test_that("argument 'vars' of 'modalityTest' works as expected", {
