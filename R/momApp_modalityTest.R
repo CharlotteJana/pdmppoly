@@ -69,9 +69,9 @@ modalityTest <- function(momApp, lower, upper,
         m2$order <- "lower"
       }
       else{
-        m2 <- data.frame("time" = fromtoby(times(momApp$model)),
+        m2 <- expand.grid("time" = fromtoby(times(momApp$model)),
                          "order" = "lower",
-                         "vars" = lower)
+                         "vars" = lower[i])
         colnames(m2)[3] <- vars[i]
       }
       m <- rbind(m, m2)
@@ -82,9 +82,9 @@ modalityTest <- function(momApp, lower, upper,
         m2$order <- "upper"
       }
       else{
-        m2 <- data.frame("time" = fromtoby(times(momApp$model)),
-                         "order" = "upper",
-                         "vars" = upper)
+        m2 <- expand.grid("time" = fromtoby(times(momApp$model)),
+                          "order" = "upper",
+                          "vars" = upper[i])
         colnames(m2)[3] <- vars[i]
       }
       m <- rbind(m, m2)

@@ -41,14 +41,14 @@ getSupport <- function(model){
   data$upper <- data.frame(time = t)
   data <- with(as.list(c(model@parms, model@init)),{
     
-    if(str_detect(descr(model), "Model K:")){
+    if(str_detect(descr(model), "K\\b")){ # \\b stands for word boundary in a regexp
       data$lower[, "f"] <- f*exp(-b*t)
       data$upper[, "f"] <- f*exp(-b*t) + a/b*(1-exp(-b*t))
       data$lower[, "d"] <- 0
       data$upper[, "d"] <- 1
       return(data)
     }
-    if(str_detect(descr(model), "Model K2:")){
+    if(str_detect(descr(model), "K2\\b")){
       data$lower[, "f1"] <- f1*exp(-b1*t)
       data$upper[, "f1"] <- f1*exp(-b1*t) + a1/b1*(1-exp(-b1*t))
       data$lower[, "f2"] <- f2*exp(-b2*t) + (exp(-b2*t) - exp(-b1*t))*(f1*a2)/(b2-b1)
@@ -57,28 +57,28 @@ getSupport <- function(model){
       data$upper[, "d"] <- 1
       return(data)
     }
-    if(str_detect(descr(model), "Model F:")){
+    if(str_detect(descr(model), "[^BKD]F\\b")){
       data$lower[, "f"] <- f*exp(-b*t)
       data$upper[, "f"] <- f*exp(-b*t) + a/b*(1-exp(-b*t))
       data$lower[, "d"] <- 0
       data$upper[, "d"] <- 1
       return(data)
     }
-    if(str_detect(descr(model), "Model KF:")){
+    if(str_detect(descr(model), "KF\\b")){
       data$lower[, "f"] <- f*exp(-b*t)
       data$upper[, "f"] <- f*exp(-b*t) + a/b*(1-exp(-b*t))
       data$lower[, "d"] <- 0
       data$upper[, "d"] <- 1
       return(data)
     }
-    if(str_detect(descr(model), "Model BF:")){
+    if(str_detect(descr(model), "BF\\b")){
       data$lower[, "f"] <- f*exp(-b*t) + a0/b*(1-exp(-b*t))
       data$upper[, "f"] <- f*exp(-b*t) + a1/b*(1-exp(-b*t))
       data$lower[, "d"] <- 0
       data$upper[, "d"] <- 1
       return(data)
     }
-    if(str_detect(descr(model), "Model T:")){
+    if(str_detect(descr(model), "T\\b")){
       data$lower[, "fA"] <- fA*exp(-bA*t)
       data$lower[, "fB"] <- fB*exp(-bB*t)
       data$upper[, "fA"] <- fA*exp(-bA*t) + aA/bA*(1-exp(-bA*t))

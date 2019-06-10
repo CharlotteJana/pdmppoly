@@ -44,7 +44,4 @@ and are given for every variable of the model seperately.
 data(genePolyT)
 getSupport(genePolyT)
 
-data(genePdmpBF)
-ms <-  multSim(genePdmpBF, seeds = 1:4)
-plotSupport(ggplot = plotSeeds(ms, 1:4), data = getSupport(genePdmpBF))
 }

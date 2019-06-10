@@ -1,6 +1,7 @@
 #======== todo =================================================================
 #t1 tests überarbeiten
 #t1 tests so dass gamma explodiert und lognormal NaNs liefert
+#t1 maxOrder oder maxorder - das Argument sollte überall gleich heißen!
 
 #' Moment approximation for polynomial PDMPs
 #' 
@@ -300,9 +301,7 @@ setMethod("momApp", signature(obj = "polyPdmpModel"),
                                              error=function(cond) NA)
      }
    }
-   moments$method <- factor(moments$method)
-   moments$order <- factor(moments$order)
-   
+
    # moments of order > 1
    for(i in 1:n){
      for(j in 2:maxOrder){
@@ -316,6 +315,9 @@ setMethod("momApp", signature(obj = "polyPdmpModel"),
       }
      }
    }
+   
+   moments$method <- factor(moments$method)
+   # moments$order <- factor(moments$order)
    
    if(na.rm == TRUE)
      moments <- moments[!is.na(rowSums(moments[, -(1:3)])), ]
