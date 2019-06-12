@@ -1,6 +1,5 @@
 #======== todo =================================================================
 #t1 References: meine Promotion
-#t2 Tests für getSupport
 
 #' Return the support for gene regulation models
 #' 
