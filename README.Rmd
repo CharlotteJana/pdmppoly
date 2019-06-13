@@ -8,7 +8,7 @@ output: github_document
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
-  fig.path = "README_figs/README-"
+  fig.path = "man/figures/README-"
 )
 ```
 
@@ -30,14 +30,6 @@ You can install pdmppoly from github with:
 devtools::install_github("CharlotteJana/pdmppoly")
 ```
 
-## Contribution
-
-blabla
-
-## License 
-
-blabla 
-
 ## Polynomial PDMPs
 
 A *polynomial PDMP* is a piecewise deterministic Markov process (PDMP), whose
@@ -45,8 +37,8 @@ dynamics and rates are all polynomials, depending on the different variables
 and parameters of the PDMP.
 
 A polynomial PDMP in `pdmppoly` is represented by an object of class `polyPdmpModel`.
-This class is very similar to class `pdmpModel` of package `pdmpsim` and every method provided by `pdmpsim` can be applied to `polyPdmpModel`-objects.
-The polynomials appear in the new slots `dynfunc` and `ratefunc`. They are defined using package `spray` and internally represented as sparse coefficient matrices.
+This class is very similar to class `pdmpModel` of package [pdmpsim](https://github.com/CharlotteJana/pdmpsim) and every method provided by [pdmpsim](https://github.com/CharlotteJana/pdmpsim) can be applied to `polyPdmpModel`-objects.
+The polynomials appear in the new slots `dynfunc` and `ratefunc`. They are defined using package [spray](https://github.com/RobinHankin/spray.git) and internally represented as sparse coefficient matrices.
 
 This is a simple example modelling gene expression with positive feedback:
 
@@ -138,3 +130,7 @@ Package `pdmppoly` provides a function `analyseModel` that analyses a polynomial
 * calculates statistics such as mean, sd, median, etc. ,
 * performs moment approximation with all available closure methods,
 * tests if the distribution is unimodal and plots the result.
+
+## License
+
+GPL 2 or higher

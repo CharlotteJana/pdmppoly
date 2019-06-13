@@ -11,6 +11,8 @@ Description: Calculate the moments of piecewise deterministic markov processes
     If the ode system is not closed, it is modified leading to approximated
     results for the moments.
 License: GPL(>= 2)
+URL: https://github.com/CharlotteJana/pdmppoly
+BugReports: https://github.com/CharlotteJana/pdmppoly/issues
 Encoding: UTF-8
 LazyData: true
 Depends: R (>= 2.10), methods, pdmpsim, spray
@@ -26,7 +28,8 @@ Imports: deSolve,
     tidyr
 Suggests: testthat
 RdMacros: Rdpack
-Remotes: CharlotteJana/pdmpsim
+Remotes: CharlotteJana/pdmpsim,
+    CharlotteJana/momcalc
 RoxygenNote: 6.1.1
 Collate: 
     'analyseModel.R'

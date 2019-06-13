@@ -1,4 +1,5 @@
 #======== note =================================================================
+#t3 pull_request for package spray (https://github.com/RobinHankin/spray/)
 # set options(polyform = TRUE) to view polynomials instead of spray matrices
 
 #' Increase arity of a spray object
@@ -14,7 +15,7 @@
 #' same arity. This is where function \code{increase_arity} comes into play. It
 #' can increase the arity of a polynomial/spray object by adding new variables.
 #' This means essentially inserting new columns with zeros in the index matrix
-#' of the spray object. Parameter \code{additionalCols} defines the columnindex
+#' of the spray object. The argument \code{position} defines the columnindex
 #' of these additinoal columns.
 #' @param S spray object that shall have a new arity
 #' @param position column indexes where to add new variables
