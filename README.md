@@ -27,22 +27,23 @@ A polynomial PDMP in `pdmppoly` is represented by an object of class `polyPdmpMo
 This is a simple example modelling gene expression with positive feedback:
 
 ``` r
-genePolyF <- new("polyPdmpModel",
-     descr = "Gene regulation with positive feedback",
-     parms = list(b = 0.2, a = 7, k10 = 0.04, k01 = 0.02), 
-     init = c(f = 1, d = 1), 
-     discStates = list(d = 0:1),
-     dynpolys = quote(list(
-       list(overall = linear(c(-b,a)))
-     )),
-     ratepolys = quote(list(  
-       list(k01*lone(1,2), k10)
-     )),
-     jumpfunc = function(t, x, parms, jtype) {
-       c(x[1], 1 - x[2])
-     }, 
-     times = c(from = 0, to = 100, by = 0.1), 
-     solver = "lsodar")
+genePolyBF <- new("polyPdmpModel",
+                  descr = "Gene regulation with positive feedback",
+                  parms = list(b = 0.5, a0 = 1, a1 = 3, k10 = 1, k01 = 0.5), 
+                  init = c(f = 1, d = 1), 
+                  discStates = list(d = 0:1),
+                  dynpolys = quote(list(
+                    list(overall = -b*lone(1,2),
+                         specific = list(a0, a1))
+                  )),
+                  ratepolys = quote(list(  
+                    list(k01*lone(1,2), k10)
+                  )),
+                  jumpfunc = function(t, x, parms, jtype) {
+                    c(x[1], 1 - x[2])
+                  }, 
+                  times = c(from = 0, to = 25, by = 0.1), 
+                  solver = "lsodar")
 ```
 
 Moment calculation
@@ -56,26 +57,42 @@ Function `momApp` calculates the moments of the distribution of of a polynomial 
 -   `closure = "gamma"`: Replace with moments of a gamma distribution
 
 ``` r
-mom <- momApp(genePolyF, maxOrder = 4,
-              closure = c("zero", "normal"), 
-              centralize = c(FALSE, TRUE))
+mom <- momApp(genePolyBF, maxOrder = 8,
+              closure = c("zero", "normal", "zero"), 
+              centralize = c(FALSE, TRUE, TRUE))
 mom
 #> Model: 
 #> Description: Gene regulation with positive feedback
-#> Parameters: b = 0.2, a = 7, k10 = 0.04, k01 = 0.02
+#> Parameters: b = 0.5, a0 = 1, a1 = 3, k10 = 1, k01 = 0.5
 #> Initial Values: f = 1, d = 1
 #> 
-#> Moment approximation for moments of order > 4 leads to 
+#> Moment approximation for moments of order > 8 leads to 
 #> 
-#>             method order time         d            f
-#> 1       zero (raw)     1  100 0.2390481     6.033003
-#> 5 normal (central)     1  100 0.2489663     6.271148
-#> 2       zero (raw)     2  100 0.2390481   129.849214
-#> 6 normal (central)     2  100 0.2489663   133.903212
-#> 3       zero (raw)     3  100 0.2390481  3336.182682
-#> 7 normal (central)     3  100 0.2489663  3359.004623
-#> 4       zero (raw)     4  100 0.2390481 82816.448562
-#> 8 normal (central)     4  100 0.2489663 79945.177925
+#>              method order time         d            f
+#> 1        zero (raw)     1   25 0.6209922 4.484764e+00
+#> 9  normal (central)     1   25 0.6792388 4.716683e+00
+#> 17   zero (central)     1   25 0.6792388 4.716683e+00
+#> 2        zero (raw)     2   25 0.6209922 2.194537e+01
+#> 10 normal (central)     2   25 0.6792388 2.286486e+01
+#> 18   zero (central)     2   25 0.6792388 2.286486e+01
+#> 3        zero (raw)     3   25 0.6209922 1.076902e+02
+#> 11 normal (central)     3   25 0.6792388 1.131856e+02
+#> 19   zero (central)     3   25 0.6792388 1.131856e+02
+#> 4        zero (raw)     4   25 0.6209922 5.468273e+02
+#> 12 normal (central)     4   25 0.6792388 5.704221e+02
+#> 20   zero (central)     4   25 0.6792388 5.704221e+02
+#> 5        zero (raw)     5   25 0.6209922 2.773017e+03
+#> 13 normal (central)     5   25 0.6792388 2.916249e+03
+#> 21   zero (central)     5   25 0.6792388 2.916249e+03
+#> 6        zero (raw)     6   25 0.6209922 1.452112e+04
+#> 14 normal (central)     6   25 0.6792388 1.510106e+04
+#> 22   zero (central)     6   25 0.6792388 1.510106e+04
+#> 7        zero (raw)     7   25 0.6209922 7.470581e+04
+#> 15 normal (central)     7   25 0.6792388 7.898200e+04
+#> 23   zero (central)     7   25 0.6792388 7.898200e+04
+#> 8        zero (raw)     8   25 0.6209922 4.061504e+05
+#> 16 normal (central)     8   25 0.6792388 4.172857e+05
+#> 24   zero (central)     8   25 0.6792388 4.172857e+05
 ```
 
 ``` r

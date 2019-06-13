@@ -47,22 +47,23 @@ library(pdmppoly)
 ```
 
 ```{r}
-genePolyF <- new("polyPdmpModel",
-     descr = "Gene regulation with positive feedback",
-     parms = list(b = 0.2, a = 7, k10 = 0.04, k01 = 0.02), 
-     init = c(f = 1, d = 1), 
-     discStates = list(d = 0:1),
-     dynpolys = quote(list(
-       list(overall = linear(c(-b,a)))
-     )),
-     ratepolys = quote(list(  
-       list(k01*lone(1,2), k10)
-     )),
-     jumpfunc = function(t, x, parms, jtype) {
-       c(x[1], 1 - x[2])
-     }, 
-     times = c(from = 0, to = 100, by = 0.1), 
-     solver = "lsodar")
+genePolyBF <- new("polyPdmpModel",
+                  descr = "Gene regulation with positive feedback",
+                  parms = list(b = 0.5, a0 = 1, a1 = 3, k10 = 1, k01 = 0.5), 
+                  init = c(f = 1, d = 1), 
+                  discStates = list(d = 0:1),
+                  dynpolys = quote(list(
+                    list(overall = -b*lone(1,2),
+                         specific = list(a0, a1))
+                  )),
+                  ratepolys = quote(list(  
+                    list(k01*lone(1,2), k10)
+                  )),
+                  jumpfunc = function(t, x, parms, jtype) {
+                    c(x[1], 1 - x[2])
+                  }, 
+                  times = c(from = 0, to = 25, by = 0.1), 
+                  solver = "lsodar")
 
 ```
 
@@ -81,9 +82,9 @@ The moments to replace can be raw or central moments, depending on the argument
 * `closure = "gamma"`: Replace with moments of a gamma distribution
 
 ```{r, warning=FALSE}
-mom <- momApp(genePolyF, maxOrder = 4,
-              closure = c("zero", "normal"), 
-              centralize = c(FALSE, TRUE))
+mom <- momApp(genePolyBF, maxOrder = 8,
+              closure = c("zero", "normal", "zero"), 
+              centralize = c(FALSE, TRUE, TRUE))
 mom
 ```
 
@@ -97,10 +98,15 @@ The results of `momApp` are approximated values of the moments of the distributi
 To test their accuracy, it is best to simulate the model multiple times, calculate the empirical moments and compare them with the approximated moments.
 
 ```{r, eval=FALSE}
-simulations <- multSim(genePolyF, seeds = 1:30)
+simulations <- multSim(genePolyBF, seeds = 1:300)
 mom <- addSimulation(mom, simulations)
-plot(mom, plotorder = 1:4, vars = "f")
+plot(mom, plotorder = 1)
 ```
+
+The simulation needs some time. It would be faster, if the model was defined
+as object of class `pdmpModel`. These are the results:
+
+![](https://github.com/CharlotteJana/pdmppoly/man/figures/compareMoments.png)
 
 ## Test if the distribution is unimodal
 
