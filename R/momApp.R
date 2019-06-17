@@ -1,7 +1,6 @@
 #======== todo =================================================================
 #t1 tests überarbeiten
 #t1 tests so dass gamma explodiert und lognormal NaNs liefert
-#t1 maxOrder oder maxorder - das Argument sollte überall gleich heißen!
 
 #' Moment approximation for polynomial PDMPs
 #' 
@@ -25,7 +24,7 @@
 #' be replaced by fixed values.
 #' 
 #' @param obj object of class \code{\link{polyPdmpModel}}.
-#' @param maxOrder integer defining the highest order of moments that are
+#' @param maxorder integer defining the highest order of moments that are
 #'   considered. Higher orders are droped and replaced by fixed values. The
 #'   replacement method is specified in parameter \code{closure}.
 #' @param closure character vector. Every entry defines one possibility of
@@ -48,13 +47,13 @@
 #'   understandable.
 #' \item \code{moments}: a data.frame with the resulting raw moments.
 # #' of the same structure as the result of function \code{\link[pdmpsim]{moments}} in package \pkg{pdmpsim}.
-#' \item \code{maxOrder}: value of parameter \code{maxOrder}
+#' \item \code{maxorder}: value of parameter \code{maxorder}
 #' \item \code{closure}: value of parameter \code{closure}
 #' \item \code{centralize}: value of parameter \code{centralize}
 #' }
 #' @examples 
 #' data(genePolyBF)
-#' a <- momApp(genePolyBF, maxOrder = 4)
+#' a <- momApp(genePolyBF, maxorder = 4)
 #' plot(a)
 #' print(a)
 #' summary(a)
@@ -70,7 +69,7 @@
 #' @importFrom momcalc extractCov extractMean
 #' @export
 setGeneric("momApp",
-           function(obj, maxOrder = 4, na.rm = TRUE,
+           function(obj, maxorder = 4, na.rm = TRUE,
                     closure = c("zero", "zero", "normal", "lognormal", "gamma"),
                     centralize = c(TRUE, FALSE, TRUE, FALSE, FALSE))
              standardGeneric("momApp"))
@@ -78,7 +77,7 @@ setGeneric("momApp",
 #' @rdname momApp
 #' @export
 setMethod("momApp", signature(obj = "polyPdmpModel"), 
-          function(obj, maxOrder = 4, na.rm = TRUE,
+          function(obj, maxorder = 4, na.rm = TRUE,
                    closure = c("zero", "zero", "normal", "lognormal", "gamma"),
                    centralize = c(TRUE, FALSE, TRUE, FALSE, FALSE)){
   
@@ -96,9 +95,9 @@ setMethod("momApp", signature(obj = "polyPdmpModel"),
   ###### create all moment combinations that are needed ######
   
     # r = all moment combinations that are needed
-    r <- data.frame(sapply(1:n, function(i) i = 0:maxOrder))
+    r <- data.frame(sapply(1:n, function(i) i = 0:maxorder))
     r <- expand.grid(r)
-    if(n > 1) r <- r[which(rowSums(r) >= 0 & rowSums(r[,1:n]) <= maxOrder), ]
+    if(n > 1) r <- r[which(rowSums(r) >= 0 & rowSums(r[,1:n]) <= maxorder), ]
     dimnames(r) <- list(1:nrow(r), cnames)
     
     # create k indicator variables that indicate the state of the discrete var
@@ -279,7 +278,7 @@ setMethod("momApp", signature(obj = "polyPdmpModel"),
    # moments of discrete variables
    colnames <- paste0("P(", dname, "=", states, ")")
    for(c in seq_along(names(out))){
-     for(j in 1:maxOrder){
+     for(j in 1:maxorder){
        values <- data.frame(method = closureName[c], order = j, time = out[[c]][, "time"])
        values[, dname] <- rowSums(out[[c]][, colnames] %*% diag(states^j))
        moments <- rbind(moments, values)
@@ -304,7 +303,7 @@ setMethod("momApp", signature(obj = "polyPdmpModel"),
 
    # moments of order > 1
    for(i in 1:n){
-     for(j in 2:maxOrder){
+     for(j in 2:maxorder){
       colnames <- paste0("E(", cnames[i], "^", j,"|", dname, "=", states, ")")
       for(c in seq_along(names(out))){
         rows <- which(moments[, "order"] == j &
@@ -327,7 +326,7 @@ setMethod("momApp", signature(obj = "polyPdmpModel"),
   result <- structure(list(model = obj, 
                            moments = moments,
                            out = out,
-                           maxOrder = maxOrder,
+                           maxorder = maxorder,
                            closure = closure,
                            centralize = centralize
                            ), class = "momApp")

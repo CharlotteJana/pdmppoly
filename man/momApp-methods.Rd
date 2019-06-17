@@ -51,7 +51,7 @@ simulated moments makes it easy to compare the results, i.e. with
 }
 \examples{
 data(genePolyBF)
-a <- momApp(genePolyBF, maxOrder = 4, 
+a <- momApp(genePolyBF, maxorder = 4, 
             closure = c("normal", "zero", "lognormal"), 
             centralize = c(TRUE, FALSE, FALSE))
 print(a)

@@ -1,5 +1,5 @@
 #======== todo =================================================================
-# v1: verschiedene Ergebnisse von 2b/4b-unimodal für momApp(genePolyF, maxOrder = 4, closure = "zero", centralize = TRUE)
+# v1: verschiedene Ergebnisse von 2b/4b-unimodal für momApp(genePolyF, maxorder = 4, closure = "zero", centralize = TRUE)
 
 context("modalityTest")
 
@@ -7,7 +7,7 @@ data(genePolyF)
 init(genePolyF) <- c(f = 0, d = 1)
 times(genePolyF) <- c(from = 0, to = 500, by = 1)
 
-ma <- momApp(genePolyF, maxOrder = 4, closure = "zero", centralize = TRUE)
+ma <- momApp(genePolyF, maxorder = 4, closure = "zero", centralize = TRUE)
 sup <- getSupport(genePolyF)
 
 test_that("'modalityTest' allows different inputs for 'lower' and 'upper'", {

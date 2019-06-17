@@ -19,7 +19,7 @@
 #' @name momApp-methods
 #' @examples 
 #' data(genePolyBF)
-#' a <- momApp(genePolyBF, maxOrder = 4, 
+#' a <- momApp(genePolyBF, maxorder = 4, 
 #'             closure = c("normal", "zero", "lognormal"), 
 #'             centralize = c(TRUE, FALSE, FALSE))
 #' print(a)
@@ -42,7 +42,7 @@ addSimulation <- function(x, ms){
   }
   
   msim <- NULL
-  for(m in seq_len(x$maxOrder)){
+  for(m in seq_len(x$maxorder)){
     msim <- dplyr::bind_rows(msim, moments(ms, m))
   }
   msim <- cbind(method = "simulation",
@@ -108,7 +108,7 @@ print.momApp <- function(x, ...){
              slots = c("descr", "parms", "init")))
   
   cat("\n\nMoment approximation for moments of order > ",
-      x$maxOrder, " leads to \n\n", sep = "")
+      x$maxorder, " leads to \n\n", sep = "")
   
   s <- NULL
   methods <- levels(x$moments[, 1])
@@ -116,7 +116,7 @@ print.momApp <- function(x, ...){
   for(m in methods){
     
     # maximal Time for which all moments are real numbers
-    maxTime <-  min(vapply(seq_len(x$maxOrder),
+    maxTime <-  min(vapply(seq_len(x$maxorder),
                            function(i){
                               row <- max(which(x$moments[, 1] == m &
                                                x$moments[, "order"] == i))
@@ -127,7 +127,7 @@ print.momApp <- function(x, ...){
     # cat("\n\nMoment approximation at time t = ", maxTime, " \nwith ",
     #     "moment closure method \"", x$closure[c], "\"\nfor ",
     #     ifelse(x$centralize[c], "centralized", "raw"), " moments of order > ",
-    #      x$maxOrder, ": \n\n", sep = "")
+    #      x$maxorder, ": \n\n", sep = "")
     
     s <- dplyr::bind_rows(s,
                           x$moments[which(x$moments$time == maxTime &
@@ -140,13 +140,13 @@ print.momApp <- function(x, ...){
 #' @rdname momApp-methods
 #' @export
 summary.momApp <- function(object, ...){
-  cat(noquote("\n$maxOrder \t"), object$maxOrder)
+  cat(noquote("\n$maxorder \t"), object$maxorder)
   cat(noquote("\n$closure \t"), object$closure)
   cat(noquote("\n$centralize\t"), object$centralize)
   cat(noquote("\n$model \n"))
   cat(format(object$model, short = FALSE, collapse = "\n",
              slots = c("descr", "parms", "init")))
-  for(i in 1:object$maxOrder){
+  for(i in 1:object$maxorder){
     methods <- levels(object$moments[, 1]) 
     for(m in methods){
       cat(noquote("\n\n$moments, order = "), i, ", method = ", m, "\n")

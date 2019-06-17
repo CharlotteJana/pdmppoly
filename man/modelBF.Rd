@@ -45,7 +45,7 @@ library(spray)
 
 genePdmpBF <- new("pdmpModel",
                   descr = "Model BF: positive feedback with basal transcription",
-                  parms = list(b = 0.2, a0 = 1, a1 = 7, k10 = 0.02, k01 = 0.02), 
+                  parms = list(b = 0.5, a0 = 1, a1 = 3, k10 = 1, k01 = 0.5), 
                   init = c(f = 1, d = 1),
                   discStates = list(d = 0:1),
                   dynfunc = function(t, x, parms) {
@@ -67,7 +67,7 @@ genePdmpBF <- new("pdmpModel",
 
 genePolyBF <- new("polyPdmpModel",
                   descr = "Model BF: pos. feedback with basal transcription (polynomial version)",
-                  parms = list(b = 0.2, a0 =1, a1 = 7, k10 = 0.02, k01 = 0.02), 
+                  parms = list(b = 0.5, a0 = 1, a1 = 3, k10 = 1, k01 = 0.5), 
                   init = c(f = 1, d = 1), 
                   discStates = list(d = 0:1),
                   dynpolys = quote(list(

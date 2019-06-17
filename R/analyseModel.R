@@ -1,10 +1,7 @@
 #======== todo =================================================================
 #t2: example in documentation
-#t3: simulierte daten direkt übergeben können
-#t1: lower, upper mehrdimensional testen
-#v1: Titel der modality plots
-#t3: statistics nicht jedes mal berechnen
-#t2: vergleich der modelle am anfang: mit kurzer zeit simulieren
+#v1: title of modality plots
+#t2: throw warning if funs is not identical to previous calculated statistics?
 
 #' Analyse a polynomial PDMP
 #' 
@@ -42,7 +39,7 @@
 #  (if \code{TRUE}) for simulation? Defaults to \code{FALSE}, because
 #  function \code{multSimCsv} is only necessary for huge simulations that 
 #  exceed the working storage.
-#' @param statistics character vector. Each entry should be the name of a function
+#' @param funs character vector. Each entry should be the name of a function
 #' that can be applied over simulated data. It will be used by the functions
 #' \code{\link[pdmpsim]{plotStats}} and \code{\link[pdmpsim]{summarise_at}}.
 #' @param plot boolean variable. Should \code{analyseModel} generate plots?
@@ -52,6 +49,9 @@
 #' Furthermore, no value for parameter \code{seeds} is necessary.
 #' @param momApp boolean variable. Should \code{analyseModel} calculate moments
 #' with \code{\link{momApp}}?
+#' @param statistics boolean variable. Should \code{analyseModel} calculate statistics
+#' with \code{\link{summarise_at}}? The functions that shall be applied on the data
+#' can be specified with the argument \code{funs}. 
 #' @param modality boolean variable. Should \code{analyseModel} test if the 
 #' distribution is unimodal with \code{\link{is.unimodal}}?
 #'@param lower numeric vector or matrix or data.frame specifying the lower
@@ -83,13 +83,19 @@ analyseModel <- function(polyModel, model = polyModel, seeds = NULL,
                          dir = file.path(getwd(), "simulations"), 
                          filenameprefix = descr(polyModel),
                          momentorder = c(4,10), plotorder = 1:4, 
-                         plot = TRUE, modality = TRUE, sim = TRUE, momApp = TRUE,
-                         lower = NULL, upper = NULL, 
-                         statistics = c("min", "max", "mean", "median", "sd"),
+                         plot = TRUE, modality = TRUE, sim = TRUE, statistics = TRUE,
+                         momApp = TRUE, lower = NULL, upper = NULL, 
+                         funs = c("min", "max", "mean", "median", "sd"),
                          title = descr(model)){
   
-  if(!identical(sim(polyModel, outSlot = FALSE, seed = 20),
-                sim(model, outSlot = FALSE, seed = 20))){
+  # test if model and polyModel are identical
+  compareTime <- c(from = 0, to = 10, by = 0.2)
+  comparePoly <- polyModel
+  comparePdmp <- model
+  times(comparePoly) <- compareTime
+  times(comparePdmp) <- compareTime
+  if(!identical(sim(comparePoly, outSlot = FALSE, seed = 20),
+                sim(comparePdmp, outSlot = FALSE, seed = 20))){
     stop("Simulation of 'polyModel' and 'model' differ, 
           they do not represent the same PDMP.")
   }
@@ -140,13 +146,15 @@ analyseModel <- function(polyModel, model = polyModel, seeds = NULL,
   }
   
   ### statistics 
-  try({
-    stats <- pdmpsim::summarise_at(
-      msData,
-      .vars = initNames,
-      .funs = statistics)
-    saveRDS(stats, paste0(fname,"__statistics.rda"))
-  })
+  if(statistics){
+    try({
+      stats <- pdmpsim::summarise_at(
+        msData,
+        .vars = initNames,
+        .funs = funs)
+      saveRDS(stats, paste0(fname,"__statistics.rda"))
+    })
+  }
     
   #### moments ####
   ma <- list()
@@ -154,7 +162,7 @@ analyseModel <- function(polyModel, model = polyModel, seeds = NULL,
     if(momApp){
       try({
         message("Approximate Moments of order <= ", momentorder[i])
-        ma[[i]] <- momApp(polyModel, maxOrder = momentorder[i],
+        ma[[i]] <- momApp(polyModel, maxorder = momentorder[i],
                      closure = closureMethods, centralize = closureCentral)
         ma[[i]] <- addSimulation(ma[[i]], ms)
         saveRDS(ma[[i]], file = paste0(fname, "__moments_order<=", momentorder[i], ".rda"))
@@ -262,7 +270,7 @@ analyseModel <- function(polyModel, model = polyModel, seeds = NULL,
       for(var in contVars){
         pdmpsim::plotStats(msData,
                            vars = var,
-                           funs = statistics) +
+                           funs = funs) +
         ggplot2::labs(title = title)
         ggplot2::ggsave(filename = paste0(fname,"__statistics_", var, ".png"), 
                         dpi = 300, width = 20.4, height = 11, units = "cm")

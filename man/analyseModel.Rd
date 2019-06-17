@@ -8,8 +8,8 @@ analyseModel(polyModel, model = polyModel, seeds = NULL,
   dir = file.path(getwd(), "simulations"),
   filenameprefix = descr(polyModel), momentorder = c(4, 10),
   plotorder = 1:4, plot = TRUE, modality = TRUE, sim = TRUE,
-  momApp = TRUE, lower = NULL, upper = NULL, statistics = c("min",
-  "max", "mean", "median", "sd"), title = descr(model))
+  statistics = TRUE, momApp = TRUE, lower = NULL, upper = NULL,
+  funs = c("min", "max", "mean", "median", "sd"), title = descr(model))
 }
 \arguments{
 \item{polyModel}{an object of class \code{\link{polyPdmpModel}}}
@@ -44,6 +44,10 @@ or use already simulated data? In the latter case, it will use files
 stored at the same places where \code{analyseModel} would store the simulations.
 Furthermore, no value for parameter \code{seeds} is necessary.}
 
+\item{statistics}{boolean variable. Should \code{analyseModel} calculate statistics
+with \code{\link{summarise_at}}? The functions that shall be applied on the data
+can be specified with the argument \code{funs}.}
+
 \item{momApp}{boolean variable. Should \code{analyseModel} calculate moments
 with \code{\link{momApp}}?}
 
@@ -69,7 +73,7 @@ all time values specified in \code{times(model)}. The other column names
 should be identical to the continous variables of the PDMP and contain the
 upper bounds for the corresponding variable and time value.}
 
-\item{statistics}{character vector. Each entry should be the name of a function
+\item{funs}{character vector. Each entry should be the name of a function
 that can be applied over simulated data. It will be used by the functions
 \code{\link[pdmpsim]{plotStats}} and \code{\link[pdmpsim]{summarise_at}}.}
 }

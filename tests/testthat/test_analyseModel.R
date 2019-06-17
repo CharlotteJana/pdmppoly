@@ -1,6 +1,3 @@
-#======== todo =================================================================
-#t2 statistics unterscheiden <- warnung geben?
-
 context("analyseModel")
 
 tmp <- tempfile()
@@ -16,7 +13,19 @@ test_that("'analyseModel' creates correct files", {
   analyseModel(polyModel = genePolyK2, model = genePdmpK2,
                seeds = 1:3, dir = tmp, momentorder = NULL,
                sim = TRUE, plot = FALSE, modality = FALSE,
-               momApp = FALSE, statistics = c("min", "max"))
+               momApp = FALSE, statistics = FALSE)
+  
+  expect_identical(list.files(tmp),
+                   c("testK2__multSimData.rda", 
+                     "testK2__simulations.rda"))
+  
+  # statistics = TRUE
+  
+  analyseModel(polyModel = genePolyK2, model = genePdmpK2,
+               seeds = 1:3, dir = tmp, momentorder = NULL,
+               sim = TRUE, plot = FALSE, modality = FALSE,
+               momApp = FALSE, statistics = TRUE,
+               funs = c("min", "max"))
   
   expect_identical(list.files(tmp),
                    c("testK2__multSimData.rda", 
@@ -27,7 +36,7 @@ test_that("'analyseModel' creates correct files", {
   analyseModel(polyModel = genePolyK2, model = genePdmpK2,
                seeds = 1:3, dir = tmp, momentorder = c(4, 5),
                sim = FALSE, plot = FALSE, modality = FALSE,
-               momApp = TRUE, statistics = c("min", "max"))
+               momApp = TRUE, statistics = FALSE)
   
   expect_identical(list.files(tmp),
                    c("testK2__moments_order<=4.rda",
@@ -40,9 +49,9 @@ test_that("'analyseModel' creates correct files", {
   suppressWarnings(
     analyseModel(polyModel = genePolyK2, model = genePdmpK2,
                  seeds = 1:3, dir = tmp, momentorder = c(4, 5),
-                 sim = FALSE, plot = FALSE, modality = TRUE,
-                 lower = NULL, upper = getSupport(genePdmpK2)$upper,
-                 momApp = FALSE, statistics = c("min", "max"))
+                 sim = FALSE, plot = FALSE, statistics = FALSE,
+                 modality = TRUE, momApp = FALSE,
+                 lower = NULL, upper = getSupport(genePdmpK2)$upper)
   )
   
   expect_identical(list.files(tmp),
@@ -58,7 +67,8 @@ test_that("'analyseModel' creates correct files", {
   analyseModel(polyModel = genePolyK2, model = genePdmpK2,
                seeds = 1:3, dir = tmp, momentorder = c(4, 5),
                sim = FALSE, plot = TRUE, modality = FALSE,
-               momApp = FALSE, statistics = c("min", "max"))
+               statistics = FALSE, momApp = FALSE, 
+               funs = c("min", "max"))
   
   expect_identical(list.files(tmp),
                    c("testK2__boxplot.png",
@@ -89,14 +99,14 @@ test_that("'analyseModel' throws errors and warnings", {
                               seeds = 1:3, dir = tmp, momentorder = 10,
                               sim = FALSE, plot = FALSE, modality = FALSE,
                               lower = NULL, upper = getSupport(genePdmpK2)$upper,
-                              momApp = FALSE, statistics = c("min", "max")),
+                              momApp = FALSE, statistics = FALSE),
                  regexp = "*moments_order<=10*")
   
   # change in seeds without new simulation
   expect_error(analyseModel(polyModel = genePolyK2, model = genePdmpK2,
                             seeds = 1:5, dir = tmp, momentorder = 4,
                             sim = FALSE, plot = FALSE, modality = FALSE,
-                            momApp = FALSE, statistics = c("min", "max")))
+                            momApp = FALSE, statistics = FALSE))
   
   # change of model parameters
   parms(genePolyK2)[["b2"]] <- parms(genePolyK2)[["b2"]] + 1

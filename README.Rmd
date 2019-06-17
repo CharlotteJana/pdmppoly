@@ -82,7 +82,7 @@ The moments to replace can be raw or central moments, depending on the argument
 * `closure = "gamma"`: Replace with moments of a gamma distribution
 
 ```{r, warning=FALSE}
-mom <- momApp(genePolyBF, maxOrder = 8,
+mom <- momApp(genePolyBF, maxorder = 8,
               closure = c("zero", "normal", "zero"), 
               centralize = c(FALSE, TRUE, TRUE))
 mom

@@ -57,7 +57,7 @@ Function `momApp` calculates the moments of the distribution of of a polynomial 
 -   `closure = "gamma"`: Replace with moments of a gamma distribution
 
 ``` r
-mom <- momApp(genePolyBF, maxOrder = 8,
+mom <- momApp(genePolyBF, maxorder = 8,
               closure = c("zero", "normal", "zero"), 
               centralize = c(FALSE, TRUE, TRUE))
 mom
