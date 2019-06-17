@@ -1,7 +1,3 @@
-#======== todo =================================================================
-#t1 tests überarbeiten
-#t1 tests so dass gamma explodiert und lognormal NaNs liefert
-
 #' Moment approximation for polynomial PDMPs
 #' 
 #' This function calculates the raw moments of a polynomial PDMP. 
@@ -116,7 +112,9 @@ setMethod("momApp", signature(obj = "polyPdmpModel"),
     
     #calculate EVGenerator to every moment combination 
     odeList <- lapply(1:nrow(lhs), function(c)
-      EVGenerator(obj, m = lhs[c,1:n], j = states[which(lhs[c, (n+1):(n+k)] == 1)]))
+      EVGenerator(obj, 
+                  m = lhs[c,1:n], 
+                  j = states[which(lhs[c, (n+1):(n+k)] == 1)]))
     
     matchingRows <- lapply(odeList, function(ode){
       sapply(1:nrow(index(ode)), 
@@ -126,13 +124,14 @@ setMethod("momApp", signature(obj = "polyPdmpModel"),
   ###### check for missing ode's and eventually perform moment closure ######
     
     # rowsToChange = index of ode's that contain moments which are not in lhs
-    rowsToChange <- which(sapply(1:length(matchingRows), function(row) anyNA(matchingRows[[row]])))
+    rowsToChange <- which(sapply(1:length(matchingRows), 
+                                 function(row) anyNA(matchingRows[[row]])))
     
     if(length(rowsToChange) == 0){
       lhsFull <- lhs
       closure <- "no closure"
       centralize <- NA
-      closureName <- "no closure" # value of column 'closure' in the final result
+      closureName <- "no closure" # value of column closure in the final result
     }
     else{
       
@@ -162,8 +161,10 @@ setMethod("momApp", signature(obj = "polyPdmpModel"),
       for(i in 1:nrow(lhsMissing)){
         missingRow <- lhsMissing[i, ]
         indicatorIndex <- which(missingRow[(n+1):(n+k)] == 1)
-        indicatorLhs <- lhs[k*(1:(nrow(lhs)/k)-1) + indicatorIndex, 1:n, drop = FALSE]
-        stateList <- lapply(rownames(indicatorLhs), function(name) bquote(state[.(as.numeric(name))]))
+        indicatorLhs <- lhs[k*(1:(nrow(lhs)/k)-1) + indicatorIndex, 1:n, 
+                            drop = FALSE]
+        stateList <- lapply(rownames(indicatorLhs), 
+                            function(name) bquote(state[.(as.numeric(name))]))
         mList <- momcalc::momentList(rawMomentOrders = indicatorLhs, 
                                      rawMoments = stateList, 
                                      warnings = FALSE)
@@ -174,19 +175,24 @@ setMethod("momApp", signature(obj = "polyPdmpModel"),
           
           # define closureName
           if(closure[c] == "zero")
-            closureName[c] <- paste0("zero (", ifelse(centralize[c], "central", "raw"), ")")
+            closureName[c] <- paste0("zero (", ifelse(centralize[c], 
+                                                      "central", 
+                                                      "raw"), ")")
           else
             closureName[c] <- closure[c]
           if(closure[c] == "normal" & centralize[c])
             closureName[c] <- "normal (central)"
           
           if(closure[c] == "normal" & !centralize[c])
-            stop("Closure method 'normal' is only implemented for centralized moments.")
+            stop("Closure method 'normal' is only implemented for ", 
+                 "centralized moments.")
           if(closure[c] %in% c("lognormal", "gamma") & centralize[c]){
-            stop("Closure method '", closure[c], "' is only implemented for raw moments.")
+            stop("Closure method '", closure[c], "' is only implemented for ",
+                 "raw moments.")
           }
           
-          # centralize ode's which contain missing moments and perform moment closure OR
+          # centralize ode's which contain missing moments 
+          # and perform moment closure OR
           if(centralize[c]){ 
   
             mListExpanded <- momcalc::transformMoment(order = missingRow[1:n],
@@ -194,7 +200,8 @@ setMethod("momApp", signature(obj = "polyPdmpModel"),
                                                       closure = closure[c],
                                                       momentList = mList)
             
-            a <- prodlim::row.match(missingRow[1:n], mListExpanded$rawMomentOrders)
+            a <- prodlim::row.match(missingRow[1:n], 
+                                    mListExpanded$rawMomentOrders)
             missingMoments[[c]][[i]] <- mListExpanded$rawMoments[[a]]
           }
           else{ # perform moment closure directly
@@ -206,9 +213,10 @@ setMethod("momApp", signature(obj = "polyPdmpModel"),
               cov <- momcalc::extractCov(mList)
               mean <- momcalc::extractMean(mList)
             }
-            missingMoments[[c]][[i]] <- momcalc::symbolicMoments(distribution = closure[c],
-                                                                 missingOrders = missingRow[1:n],
-                                                                 cov = cov, mean = mean)[[1]]
+            m <- momcalc::symbolicMoments(distribution = closure[c],
+                                          missingOrders = missingRow[1:n],
+                                          cov = cov, mean = mean)[[1]]
+            missingMoments[[c]][[i]] <- m
           }
         }
       }
@@ -220,7 +228,8 @@ setMethod("momApp", signature(obj = "polyPdmpModel"),
       for(j in seq_len(nrow(lhs))){
         list <- lapply(seq_along(matchingRows[[j]]), function(i){
           momentIndex <- matchingRows[[j]][[i]]
-          momentIsMissing <- identical(rownames(lhsFull)[momentIndex], "missing")
+          momentIsMissing <- identical(rownames(lhsFull)[momentIndex], 
+                                       "missing")
           if(momentIsMissing){
             h <-  prodlim::row.match(lhsFull[momentIndex, ], lhsMissing)
             return(bquote(.(value(odeList[[j]])[i])*(.(missingMoments[[c]][[h]]))))
@@ -279,7 +288,9 @@ setMethod("momApp", signature(obj = "polyPdmpModel"),
    colnames <- paste0("P(", dname, "=", states, ")")
    for(c in seq_along(names(out))){
      for(j in 1:maxorder){
-       values <- data.frame(method = closureName[c], order = j, time = out[[c]][, "time"])
+       values <- data.frame(method = closureName[c], 
+                            order = j, 
+                            time = out[[c]][, "time"])
        values[, dname] <- rowSums(out[[c]][, colnames] %*% diag(states^j))
        moments <- rbind(moments, values)
      }

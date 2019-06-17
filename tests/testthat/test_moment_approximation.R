@@ -1,6 +1,6 @@
 #======== todo =================================================================
 #t2 tests mit verschiedenen closure methoden
-#t1 tests anpassen
+#t1 tests so dass gamma explodiert und lognormal NaNs liefert
 
 context("moment approximation")
 
