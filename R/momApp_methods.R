@@ -1,5 +1,3 @@
-#======== todo =================================================================
-
 #' Methods for objects of class \code{\link{momApp}}
 #' 
 #' Objects of class momApp occur as results of function \code{\link{momApp}}.
@@ -13,7 +11,7 @@
 #' \code{plot}.
 #' @param x object of class \code{momApp}
 #' @param object object of class \code{momApp}
-#' @param ms object of class \code{\link[pdmpsim]{multSim}} that contains 
+#' @param multSim object of class \code{\link[pdmpsim]{multSim}} that contains 
 #' simulated data
 #' @param ... further arguments to the default method
 #' @name momApp-methods
@@ -33,17 +31,17 @@ NULL
 
 #' @rdname momApp-methods
 #' @export
-addSimulation <- function(x, ms){
+addSimulation <- function(x, multSim){
   
-  if(!identical(sim(ms$model, outSlot = FALSE, seed = 10),
+  if(!identical(sim(multSim$model, outSlot = FALSE, seed = 10),
                 sim(x$model, outSlot = FALSE, seed = 10))){
-      stop("Simulation of 'x$model' and 'ms$model' differ, 
+      stop("Simulation of 'x$model' and 'multSim$model' differ, 
            they do not represent the same PDMP.")
   }
   
   msim <- NULL
   for(m in seq_len(x$maxorder)){
-    msim <- dplyr::bind_rows(msim, moments(ms, m))
+    msim <- dplyr::bind_rows(msim, moments(multSim, m))
   }
   msim <- cbind(method = "simulation",
                 msim)
@@ -51,7 +49,7 @@ addSimulation <- function(x, ms){
     x$moments <- dplyr::bind_rows(x$moments, msim)
   )
   x$moments$method <- as.factor(x$moments$method)
-  x$seeds <- ms$seeds
+  x$seeds <- multSim$seeds
   return(x)
 }
 
@@ -95,8 +93,8 @@ plot.momApp <- function(x, plotorder = 1, vars = names(init(x$model)), ...){
   }
   mplot <- mplot + 
     ggplot2::facet_wrap(variable ~ order,
-                        scales = "free_y", nrow = length(x$model@init),
-                        labeller = ggplot2::label_bquote(cols = E(.(variable)^.(order))))
+              scales = "free_y", nrow = length(x$model@init),
+              labeller = ggplot2::label_bquote(cols = E(.(variable)^.(order))))
   return(mplot)
 }
 
@@ -123,11 +121,6 @@ print.momApp <- function(x, ...){
                               return(x$moments[row, "time"])
                            },
                     numeric(1)))
-
-    # cat("\n\nMoment approximation at time t = ", maxTime, " \nwith ",
-    #     "moment closure method \"", x$closure[c], "\"\nfor ",
-    #     ifelse(x$centralize[c], "centralized", "raw"), " moments of order > ",
-    #      x$maxorder, ": \n\n", sep = "")
     
     s <- dplyr::bind_rows(s,
                           x$moments[which(x$moments$time == maxTime &

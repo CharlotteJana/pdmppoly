@@ -1,7 +1,7 @@
 #======== todo =================================================================
 #t2: example in documentation
 #v1: title of modality plots
-#t2: throw warning if funs is not identical to previous calculated statistics?
+#t2: throw warning if 'funs' is not identical to previous calculated statistics?
 
 #' Analyse a polynomial PDMP
 #' 
