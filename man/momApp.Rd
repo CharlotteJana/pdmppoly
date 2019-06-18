@@ -9,18 +9,18 @@
 \alias{momApp,polyPdmpModel-method}
 \title{Moment approximation for polynomial PDMPs}
 \usage{
-momApp(obj, maxOrder = 4, na.rm = TRUE, closure = c("zero", "zero",
+momApp(obj, maxorder = 4, na.rm = TRUE, closure = c("zero", "zero",
   "normal", "lognormal", "gamma"), centralize = c(TRUE, FALSE, TRUE,
   FALSE, FALSE))
 
-\S4method{momApp}{polyPdmpModel}(obj, maxOrder = 4, na.rm = TRUE,
+\S4method{momApp}{polyPdmpModel}(obj, maxorder = 4, na.rm = TRUE,
   closure = c("zero", "zero", "normal", "lognormal", "gamma"),
   centralize = c(TRUE, FALSE, TRUE, FALSE, FALSE))
 }
 \arguments{
 \item{obj}{object of class \code{\link{polyPdmpModel}}.}
 
-\item{maxOrder}{integer defining the highest order of moments that are
+\item{maxorder}{integer defining the highest order of moments that are
 considered. Higher orders are droped and replaced by fixed values. The
 replacement method is specified in parameter \code{closure}.}
 
@@ -45,7 +45,7 @@ It contains 6 different elements:
   Column names are added to make the result
   understandable.
 \item \code{moments}: a data.frame with the resulting raw moments.
-\item \code{maxOrder}: value of parameter \code{maxOrder}
+\item \code{maxorder}: value of parameter \code{maxorder}
 \item \code{closure}: value of parameter \code{closure}
 \item \code{centralize}: value of parameter \code{centralize}
 }
@@ -75,7 +75,7 @@ This method works only for PDMPs with one discrete variable.
 }
 \examples{
 data(genePolyBF)
-a <- momApp(genePolyBF, maxOrder = 4)
+a <- momApp(genePolyBF, maxorder = 4)
 plot(a)
 print(a)
 summary(a)

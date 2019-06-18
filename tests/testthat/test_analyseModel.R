@@ -1,3 +1,5 @@
+#t1 hist gibt es in 2 versionen. das sollte in pdmpsim besser gelöst werden
+
 context("analyseModel")
 
 tmp <- tempfile()
@@ -20,10 +22,9 @@ test_that("'analyseModel' creates correct files", {
                      "testK2__simulations.rda"))
   
   # statistics = TRUE
-  
   analyseModel(polyModel = genePolyK2, model = genePdmpK2,
                seeds = 1:3, dir = tmp, momentorder = NULL,
-               sim = TRUE, plot = FALSE, modality = FALSE,
+               sim = FALSE, plot = FALSE, modality = FALSE,
                momApp = FALSE, statistics = TRUE,
                funs = c("min", "max"))
   
@@ -98,8 +99,9 @@ test_that("'analyseModel' throws errors and warnings", {
   expect_warning(analyseModel(polyModel = genePolyK2, model = genePdmpK2,
                               seeds = 1:3, dir = tmp, momentorder = 10,
                               sim = FALSE, plot = FALSE, modality = FALSE,
-                              lower = NULL, upper = getSupport(genePdmpK2)$upper,
-                              momApp = FALSE, statistics = FALSE),
+                              momApp = FALSE, statistics = FALSE,
+                              lower = NULL, 
+                              upper = getSupport(genePdmpK2)$upper),
                  regexp = "*moments_order<=10*")
   
   # change in seeds without new simulation

@@ -1,6 +1,7 @@
 #======== todo =================================================================
 #t2: example in documentation
 #v1: title of modality plots
+#t1: title of statistic plots (variable name should appear)
 #t2: throw warning if 'funs' is not identical to previous calculated statistics?
 
 #' Analyse a polynomial PDMP
@@ -75,8 +76,8 @@
 #'   should be identical to the continous variables of the PDMP and contain the
 #'   upper bounds for the corresponding variable and time value.
 #' @importFrom pdmpsim format multSim discStates getMultSimData descr
-#' @importFrom ggplot2 labs aes ggplot
-#' @importFrom simecol "times<-" "init<-" "init" "parms"
+#' @importFrom ggplot2 labs aes ggplot ggsave
+#' @importFrom pdmpsim "times<-" "init<-" "init" "parms"
 #' @importFrom grDevices dev.off dev.print png
 #' @export
 analyseModel <- function(polyModel, model = polyModel, seeds = NULL, 
@@ -280,11 +281,11 @@ analyseModel <- function(polyModel, model = polyModel, seeds = NULL,
     # histogram for last simulated time value
     try({
       message("histogram, ", appendLF = FALSE)
-      h <- hist(msData, t = times(model)["to"],
-                main = title,
-                sub = pdmpsim::format(model, short = F, slots = "parms"))
-      dev.print(png, filename = paste0(fname, "__histogram.png"),
-                width = 20.4, height = 11, units = "cm", res = 140)
+      png(filename = paste0(fname, "__histogram.png"),
+          width = 20.4, height = 11, units = "cm", res = 140)
+      hist(msData, t = times(model)["to"],
+           main = title, ggplot = FALSE,
+           sub = pdmpsim::format(model, short = F, slots = "parms"))
       dev.off()
     })
     
@@ -294,12 +295,15 @@ analyseModel <- function(polyModel, model = polyModel, seeds = NULL,
       times <- unique(msData$time)
       times <- times[seq(1, length(times), length.out = 6)]
       times <- times[2:6]
+      png(filename = paste0(fname, "__densities.png"),
+          width = 20.4, height = 11, units = "cm", res = 140)
       density(msData, t = times,
               main = title,
               sub = pdmpsim::format(model, short = F, slots = "parms"))
-      dev.print(png, filename = paste0(fname, "__densities.png"),
-                width = 20.4, height = 11, units = "cm", res = 140)
       dev.off()
+      # dev.print(png, filename = paste0(fname, "__densities.png"),
+      #           width = 20.4, height = 11, units = "cm", res = 140)
+      # dev.off()
     })
     
     # moments

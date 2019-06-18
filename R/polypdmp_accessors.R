@@ -24,8 +24,7 @@
 #' dynsprays(genePolyK) # different value than before
 #' 
 #' @include polypdmp_class.R polypdmp_methods.R
-#' @importMethodsFrom pdmpsim "dynfunc<-" "ratefunc<-"
-#' @importMethodsFrom simecol "parms<-"
+#' @importMethodsFrom pdmpsim "dynfunc<-" "ratefunc<-" "parms<-"
 #' @name polypdmp-accessors
 NULL
 
