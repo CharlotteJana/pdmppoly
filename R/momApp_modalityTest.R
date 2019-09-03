@@ -137,7 +137,7 @@ plotModalities <- function(momApp, modalities = NULL,
                            vars = names(init(momApp$model)), ...){
   
   if(is.null(modalities))
-    modalities <- modalityTest(momApp, ...)
+    modalities <- modalityTest(momApp, vars, ...)
   
   modalities <- subset(modalities, variable %in% vars)
   

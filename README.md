@@ -1,30 +1,41 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
-pdmppoly
-========
 
-The goal of package `pdmppoly` is to simulate polynomial piecewise deterministic markov processes (polynomial PDMPs) within `R` and to provide methods to calculate or approximate their moments.
+# pdmppoly
 
-In additon, it contains all models that are used in the (not yet published) doctoral thesis of Charlotte Jana.
+The goal of the package `pdmppoly` is to simulate polynomial piecewise
+deterministic Markov processes (polynomial PDMPs) within `R` and to
+provide methods to calculate or approximate their moments.
 
-Installation
-------------
+In addition, it contains all models that are used in the (not yet
+published) doctoral thesis of Charlotte Jana.
 
-You can install pdmppoly from github with:
+## Installation
+
+You can install `pmppoly` from GitHub with:
 
 ``` r
 # install.packages("devtools")
 devtools::install_github("CharlotteJana/pdmppoly")
 ```
 
-Polynomial PDMPs
-----------------
+## Polynomial PDMPs
 
-A *polynomial PDMP* is a piecewise deterministic Markov process (PDMP), whose dynamics and rates are all polynomials, depending on the different variables and parameters of the PDMP.
+A *polynomial PDMP* is a piecewise deterministic Markov process (PDMP),
+whose dynamics and rates are all polynomials, depending on the different
+variables and parameters of the PDMP.
 
-A polynomial PDMP in `pdmppoly` is represented by an object of class `polyPdmpModel`. This class is very similar to class `pdmpModel` of package [pdmpsim](https://github.com/CharlotteJana/pdmpsim) and every method provided by [pdmpsim](https://github.com/CharlotteJana/pdmpsim) can be applied to `polyPdmpModel`-objects. The polynomials appear in the new slots `dynfunc` and `ratefunc`. They are defined using package [spray](https://github.com/RobinHankin/spray.git) and internally represented as sparse coefficient matrices.
+A polynomial PDMP in `pdmppoly` is represented by an object of class
+`polyPdmpModel`. This class is very similar to class `pdmpModel` of the
+package [pdmpsim](https://github.com/CharlotteJana/pdmpsim) and every
+method provided by [pdmpsim](https://github.com/CharlotteJana/pdmpsim)
+can be applied to `polyPdmpModel`-objects. The polynomials appear in the
+new slots `dynfunc` and `ratefunc`. They are defined using the package
+[spray](https://github.com/RobinHankin/spray.git) and internally
+represented as sparse coefficient matrices.
 
-This is a simple example modelling gene expression with positive feedback:
+This is a simple example modelling gene expression with positive
+feedback:
 
 ``` r
 genePolyBF <- new("polyPdmpModel",
@@ -46,15 +57,23 @@ genePolyBF <- new("polyPdmpModel",
                   solver = "lsodar")
 ```
 
-Moment calculation
-------------------
+## Moment calculation
 
-Function `momApp` calculates the moments of the distribution of of a polynomial PDMP, up to a given order. It solves a system of differential equaitons with package `deSove` to obtain the results. This system is usually not closed and has to be altered by replacing moments of higher orders with fixed values. The moments to replace can be raw or central moments, depending on the argument `centralize`. The following closure methods are available:
+The function `momApp` calculates the moments of the distribution of of a
+polynomial PDMP, up to a given order. It solves a system of differential
+equations with the package `deSove` to obtain the results. This system
+is usually not closed and has to be altered by replacing moments of
+higher orders with fixed values. The moments to replace can be raw or
+central moments, depending on the argument `centralize`. The following
+closure methods are available:
 
--   `closure = "zero"`: Replace the moments with 0
--   `closure = "normal"`: Replace with moments of a normal distribution
--   `closure = "lognormal"`: Replace with moments of a lognormal distribution
--   `closure = "gamma"`: Replace with moments of a gamma distribution
+  - `closure = "zero"`: Replace the moments with 0
+  - `closure = "normal"`: Replace with moments of a normal distribution
+  - `closure = "lognormal"`: Replace with moments of a lognormal
+    distribution
+  - `closure = "gamma"`: Replace with moments of a gamma distribution
+
+<!-- end list -->
 
 ``` r
 mom <- momApp(genePolyBF, maxorder = 8,
@@ -99,11 +118,14 @@ mom
 plot(mom, plotorder = 1:2)
 ```
 
-![](man/figures/README-unnamed-chunk-5-1.png)
+![](man/figures/README-unnamed-chunk-5-1.png)<!-- -->
 
 ### Compare with empirical moments
 
-The results of `momApp` are approximated values of the moments of the distribution. To test their accuracy, it is best to simulate the model multiple times, calculate the empirical moments and compare them with the approximated moments.
+The results of `momApp` are approximated values of the moments of the
+distribution. To test their accuracy, it is best to simulate the model
+multiple times, calculate the empirical moments and compare them with
+the approximated moments.
 
 ``` r
 simulations <- multSim(genePolyBF, seeds = 1:300)
@@ -111,15 +133,27 @@ mom <- addSimulation(mom, simulations)
 plot(mom, plotorder = 1)
 ```
 
-The simulation needs some time. It would be faster, if the model was defined as object of class `pdmpModel`.
-These are the results:
+This simulation takes several minutes. If time consuming simulations are
+necessary, it is advised to define the same model as object of class
+`pdmpModel` and to use this object for simulation. Simulating with a
+`polyPdmpModel`-object is slower because of the internal representation
+of functions as coefficient matrices.
+
+These are the
+results:
 
 ![](https://raw.githubusercontent.com/CharlotteJana/pdmppoly/master/man/figures/compareMoments.png)
 
-Test if the distribution is unimodal
-------------------------------------
+## Testing if the distribution is unimodal
 
-The results of function `momApp` can also be used to test if the distribution of the PDMP is unimodal. Function `is.unimodal` from package [momcalc](https://github.com/CharlotteJana/momcalc) performs this test for one dimensional distributions. It is only meaningful for distributions with a known compact support. Package `pdmppoly` provides function `modalityTest` to apply the test directly on a data.frame generated by `momApp`. It performs the test for every time value and every variable of the PDMP seperately.
+The results of the function `momApp` can also be used to test if the
+distribution of the PDMP is unimodal. The function `is.unimodal` from
+the package [momcalc](https://github.com/CharlotteJana/momcalc) performs
+this test for one dimensional distributions. It is only meaningful for
+distributions with a known compact support. The package `pdmppoly`
+provides the function `modalityTest` to apply the test directly on a
+data.frame generated by `momApp`. It performs the test for every time
+value and every variable of the PDMP separately.
 
 ``` r
 testresults <- modalityTest(mom, lower = 0, upper = 35, vars = "f")
@@ -137,22 +171,26 @@ head(testresults)
 plotModalities(mom, modalities = testresults)
 ```
 
-![](man/figures/README-unnamed-chunk-8-1.png)
+![](man/figures/README-unnamed-chunk-8-1.png)<!-- -->
 
-Be aware that both `momApp` and `modalityTest` do not depend on time-consuming simulations!
+Be aware that both `momApp` and `modalityTest` do not depend on
+time-consuming simulations\!
 
-Analyse a polynomial PDMP
--------------------------
+## Analyse a polynomial PDMP
 
-Package `pdmppoly` provides a function `analyseModel` that analyses a polynomial PDMP as good as possible, meaning that it performs most of the functions available on packages [pdmpsim](https://github.com/CharlotteJana/pdmpsim) and `pdmppoly`. It
+The package `pdmppoly` provides a function `analyseModel` that analyses
+a polynomial PDMP as well as possible, meaning that it performs most of
+the functions available on the packages
+[pdmpsim](https://github.com/CharlotteJana/pdmpsim) and `pdmppoly`. It
 
--   simulates the model multiple times,
--   plots the simulated data with all available plot methods,
--   calculates statistics such as mean, sd, median, etc. ,
--   performs moment approximation with all available closure methods,
--   tests if the distribution is unimodal and plots the result.
+  - simulates the model multiple times,
+  - plots the simulated data with all available plot methods,
+  - calculates statistics such as mean, sd, median, etc. ,
+  - performs moment approximation with all available closure methods,
+  - tests if the distribution is unimodal and plots the result.
 
-License
--------
+## License
 
-GPL 2 or higher
+This package is free open source software licensed under the [GNU Public
+License](https://www.gnu.org/licenses/#GPL) (GPL 2.0 or above). The
+software is provided as is and comes WITHOUT WARRANTY.
